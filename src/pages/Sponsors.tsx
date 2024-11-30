@@ -20,33 +20,50 @@ const Sponsors = () => {
   const { data, isLoading, error } = useQuery({
     queryKey: ['sponsors', currentPage, searchTerm],
     queryFn: async () => {
-      let query = supabase
-        .from('Sponsors')
-        .select('*', { count: 'exact' });
+      console.log('Fetching sponsors with params:', { currentPage, searchTerm });
       
-      // Add search filter if searchTerm exists
-      if (searchTerm) {
-        query = query.ilike('Name', `%${searchTerm}%`);
-      }
-      
-      // Add pagination
-      const from = currentPage * ITEMS_PER_PAGE;
-      const to = from + ITEMS_PER_PAGE - 1;
-      
-      const { data, error, count } = await query
-        .range(from, to)
-        .order('Name', { ascending: true });
+      try {
+        let query = supabase
+          .from('Sponsors')
+          .select('*', { count: 'exact' });
+        
+        // Add search filter if searchTerm exists
+        if (searchTerm) {
+          query = query.ilike('Name', `%${searchTerm}%`);
+        }
+        
+        // Add pagination
+        const from = currentPage * ITEMS_PER_PAGE;
+        const to = from + ITEMS_PER_PAGE - 1;
+        
+        console.log('Query range:', { from, to });
+        
+        const { data, error, count } = await query
+          .range(from, to)
+          .order('Name', { ascending: true });
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
+        if (error) {
+          console.error('Supabase error:', error);
+          throw error;
+        }
 
-      return {
-        sponsors: data as Tables<'Sponsors'>[],
-        totalCount: count || 0
-      };
+        console.log('Query results:', { 
+          resultCount: data?.length, 
+          totalCount: count,
+          firstItem: data?.[0]
+        });
+
+        return {
+          sponsors: data as Tables<'Sponsors'>[],
+          totalCount: count || 0
+        };
+      } catch (err) {
+        console.error('Query execution error:', err);
+        throw err;
+      }
     },
+    retry: 1,
+    staleTime: 30000, // Cache results for 30 seconds
   });
 
   if (error) {
@@ -81,7 +98,12 @@ const Sponsors = () => {
           <div className="flex justify-center items-center min-h-[400px]">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-doorlist-navy"></div>
           </div>
-        ) : data?.sponsors.length === 0 ? (
+        ) : error ? (
+          <div className="text-center py-12">
+            <h3 className="text-xl font-semibold text-red-600">Error loading sponsors</h3>
+            <p className="text-gray-500 mt-2">Please try refreshing the page</p>
+          </div>
+        ) : !data || data.sponsors.length === 0 ? (
           <div className="text-center py-12">
             <h3 className="text-xl font-semibold text-gray-600">No sponsors found</h3>
             <p className="text-gray-500 mt-2">Try adjusting your search criteria</p>
@@ -89,15 +111,21 @@ const Sponsors = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {data?.sponsors.map((sponsor) => (
+              {data.sponsors.map((sponsor) => (
                 <Link key={sponsor.Primary_Key} to={`/sponsors/${sponsor.Primary_Key}`}>
                   <Card className="h-full hover:shadow-lg transition-shadow">
                     <CardHeader className="flex items-center">
-                      <img
-                        src={sponsor.Logo || '/placeholder.svg'}
-                        alt={sponsor.Name || 'Sponsor logo'}
-                        className="w-32 h-32 object-contain mb-4"
-                      />
+                      {sponsor.Logo && (
+                        <img
+                          src={sponsor.Logo}
+                          alt={`${sponsor.Name || 'Sponsor'} logo`}
+                          className="w-32 h-32 object-contain mb-4"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/placeholder.svg';
+                          }}
+                        />
+                      )}
                       <CardTitle className="text-xl text-center">{sponsor.Name}</CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -113,9 +141,9 @@ const Sponsors = () => {
                         </div>
                         {sponsor["Property Type"] && (
                           <div className="flex flex-wrap gap-2 mt-4">
-                            {sponsor["Property Type"].split(',').map((type) => (
+                            {sponsor["Property Type"].split(',').map((type, index) => (
                               <span
-                                key={type}
+                                key={index}
                                 className="bg-doorlist-navy/10 text-doorlist-navy px-3 py-1 rounded-full text-sm"
                               >
                                 {type.trim()}
@@ -130,7 +158,6 @@ const Sponsors = () => {
               ))}
             </div>
 
-            {/* Pagination Controls */}
             {totalPages > 1 && (
               <div className="flex justify-center gap-2 mt-8">
                 <button
