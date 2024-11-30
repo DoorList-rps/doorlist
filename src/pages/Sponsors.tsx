@@ -7,9 +7,13 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import type { Tables } from "@/integrations/supabase/types";
+import { Button } from "@/components/ui/button";
 
 const Sponsors = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedPropertyType, setSelectedPropertyType] = useState<string>("");
+  const [selectedInvestmentType, setSelectedInvestmentType] = useState<string>("");
+  const [minDeals, setMinDeals] = useState<number | "">("");
 
   const { data: sponsors, isLoading, error } = useQuery({
     queryKey: ['sponsors'],
@@ -37,6 +41,15 @@ const Sponsors = () => {
     }
   });
 
+  // Extract unique property and investment types
+  const propertyTypes = sponsors
+    ? Array.from(new Set(sponsors.flatMap(s => s.property_types || [])))
+    : [];
+  
+  const investmentTypes = sponsors
+    ? Array.from(new Set(sponsors.flatMap(s => s.investment_types || [])))
+    : [];
+
   const filteredSponsors = sponsors?.filter((sponsor) => {
     const searchFields = [
       sponsor.name,
@@ -45,9 +58,20 @@ const Sponsors = () => {
       sponsor.short_description
     ].filter(Boolean);
     
-    return searchFields.some(field => 
+    const matchesSearch = searchFields.some(field => 
       field.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    const matchesPropertyType = !selectedPropertyType || 
+      (sponsor.property_types && sponsor.property_types.includes(selectedPropertyType));
+
+    const matchesInvestmentType = !selectedInvestmentType || 
+      (sponsor.investment_types && sponsor.investment_types.includes(selectedInvestmentType));
+
+    const matchesMinDeals = !minDeals || 
+      (sponsor.number_of_deals && sponsor.number_of_deals >= Number(minDeals));
+
+    return matchesSearch && matchesPropertyType && matchesInvestmentType && matchesMinDeals;
   });
 
   return (
@@ -56,15 +80,68 @@ const Sponsors = () => {
       <main className="flex-grow container mx-auto px-4 py-8 mt-16">
         <h1 className="text-4xl font-bold text-doorlist-navy mb-8">Our Sponsors</h1>
         
-        <div className="relative mb-8">
-          <Input
-            type="text"
-            placeholder="Search sponsors..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+        <div className="space-y-4 mb-8">
+          <div className="relative">
+            <Input
+              type="text"
+              placeholder="Search sponsors..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Property Type
+              </label>
+              <select
+                className="w-full border border-gray-300 rounded-md p-2"
+                value={selectedPropertyType}
+                onChange={(e) => setSelectedPropertyType(e.target.value)}
+              >
+                <option value="">All Property Types</option>
+                {propertyTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Investment Type
+              </label>
+              <select
+                className="w-full border border-gray-300 rounded-md p-2"
+                value={selectedInvestmentType}
+                onChange={(e) => setSelectedInvestmentType(e.target.value)}
+              >
+                <option value="">All Investment Types</option>
+                {investmentTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Minimum Deals
+              </label>
+              <Input
+                type="number"
+                placeholder="Minimum number of deals"
+                value={minDeals}
+                onChange={(e) => setMinDeals(e.target.value ? Number(e.target.value) : "")}
+                min="0"
+              />
+            </div>
+          </div>
         </div>
 
         {isLoading && (
@@ -121,6 +198,14 @@ const Sponsors = () => {
                     {sponsor.headquarters}
                   </p>
                 )}
+
+                <div className="mt-4 text-sm text-gray-500">
+                  {sponsor.number_of_deals && (
+                    <p className="text-center">
+                      {sponsor.number_of_deals} Deals
+                    </p>
+                  )}
+                </div>
               </Link>
             ))}
           </div>

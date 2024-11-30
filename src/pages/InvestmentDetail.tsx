@@ -4,35 +4,46 @@ import { Card, CardContent } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useToast } from "@/components/ui/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 
 const InvestmentDetail = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
 
-  // Mock data - replace with actual API call
-  const investment = {
-    id: "1",
-    title: "Urban Residential Complex",
-    description: "Modern residential development in prime urban location with excellent amenities and strong rental demand. This investment opportunity offers a compelling blend of stable cash flow and appreciation potential.",
-    type: "Multifamily",
-    location: "Los Angeles, CA",
-    minInvestment: 25000,
-    targetReturn: "15-18%",
-    status: "Open",
-    imageUrl: "/placeholder.svg",
-    highlights: [
-      "Prime location in growing market",
-      "Strong rental demand",
-      "Professional property management",
-      "Value-add opportunity",
-    ],
-    details: {
-      propertyType: "Class A Multifamily",
-      units: "200",
-      yearBuilt: "2020",
-      occupancy: "95%",
+  const { data: investment, isLoading, error } = useQuery({
+    queryKey: ['investment', id],
+    queryFn: async () => {
+      if (!id) throw new Error('No investment ID provided');
+      
+      // Validate UUID format using regex
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(id)) {
+        throw new Error('Invalid investment ID format');
+      }
+
+      const { data, error } = await supabase
+        .from('investments')
+        .select(`
+          *,
+          sponsors (
+            name,
+            logo_url
+          )
+        `)
+        .eq('id', id)
+        .single();
+      
+      if (error) throw error;
+      if (!data) throw new Error('Investment not found');
+      
+      return data as Tables<'investments'> & {
+        sponsors: Pick<Tables<'sponsors'>, 'name' | 'logo_url'> | null
+      };
     },
-  };
+    enabled: !!id
+  });
 
   const handleContactClick = () => {
     toast({
@@ -41,6 +52,25 @@ const InvestmentDetail = () => {
     });
   };
 
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-2">Error</h2>
+          <p className="text-gray-600">{error instanceof Error ? error.message : 'Failed to load investment'}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!investment) {
+    return <div className="min-h-screen flex items-center justify-center">Investment not found</div>;
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -48,33 +78,49 @@ const InvestmentDetail = () => {
         <div className="grid md:grid-cols-2 gap-8">
           <div>
             <img
-              src={investment.imageUrl}
-              alt={investment.title}
+              src={investment.hero_image_url || '/placeholder.svg'}
+              alt={investment.name}
               className="w-full h-[400px] object-cover rounded-lg"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/placeholder.svg';
+              }}
             />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-doorlist-navy mb-4">{investment.title}</h1>
-            <p className="text-gray-600 mb-6">{investment.description}</p>
+            <h1 className="text-3xl font-bold text-doorlist-navy mb-4">{investment.name}</h1>
+            <p className="text-gray-600 mb-6">{investment.description || investment.short_description}</p>
             
             <Card className="mb-6">
               <CardContent className="grid grid-cols-2 gap-4 p-6">
-                <div>
-                  <p className="text-gray-500">Minimum Investment</p>
-                  <p className="text-xl font-semibold">${investment.minInvestment.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Target Return</p>
-                  <p className="text-xl font-semibold">{investment.targetReturn}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Location</p>
-                  <p className="text-xl font-semibold">{investment.location}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Status</p>
-                  <p className="text-xl font-semibold">{investment.status}</p>
-                </div>
+                {investment.minimum_investment && (
+                  <div>
+                    <p className="text-gray-500">Minimum Investment</p>
+                    <p className="text-xl font-semibold">${investment.minimum_investment.toLocaleString()}</p>
+                  </div>
+                )}
+                {investment.target_return && (
+                  <div>
+                    <p className="text-gray-500">Target Return</p>
+                    <p className="text-xl font-semibold">{investment.target_return}</p>
+                  </div>
+                )}
+                {(investment.location_city || investment.location_state) && (
+                  <div>
+                    <p className="text-gray-500">Location</p>
+                    <p className="text-xl font-semibold">
+                      {[investment.location_city, investment.location_state]
+                        .filter(Boolean)
+                        .join(', ')}
+                    </p>
+                  </div>
+                )}
+                {investment.status && (
+                  <div>
+                    <p className="text-gray-500">Status</p>
+                    <p className="text-xl font-semibold capitalize">{investment.status}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -90,29 +136,50 @@ const InvestmentDetail = () => {
 
         <div className="mt-12 grid md:grid-cols-2 gap-8">
           <div>
-            <h2 className="text-2xl font-bold text-doorlist-navy mb-4">Investment Highlights</h2>
-            <ul className="space-y-2">
-              {investment.highlights.map((highlight, index) => (
-                <li key={index} className="flex items-center gap-2">
-                  <div className="h-2 w-2 bg-doorlist-salmon rounded-full" />
-                  {highlight}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-doorlist-navy mb-4">Property Details</h2>
+            <h2 className="text-2xl font-bold text-doorlist-navy mb-4">Investment Details</h2>
             <Card>
               <CardContent className="p-6">
-                {Object.entries(investment.details).map(([key, value]) => (
-                  <div key={key} className="flex justify-between py-2 border-b last:border-0">
-                    <span className="text-gray-500">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                {[
+                  { label: 'Property Type', value: investment.property_type },
+                  { label: 'Investment Type', value: investment.investment_type },
+                  { label: 'Hold Period', value: investment.hold_period },
+                  { label: 'Distribution Frequency', value: investment.distribution_frequency },
+                  { label: 'Total Equity', value: investment.total_equity ? `$${investment.total_equity.toLocaleString()}` : null },
+                  { label: 'Equity Remaining', value: investment.equity_remaining ? `$${investment.equity_remaining.toLocaleString()}` : null },
+                  { label: 'Accredited Only', value: investment.accredited_only ? 'Yes' : 'No' },
+                  { label: 'Closing Date', value: investment.closing_date ? new Date(investment.closing_date).toLocaleDateString() : null }
+                ].map(({ label, value }) => value && (
+                  <div key={label} className="flex justify-between py-2 border-b last:border-0">
+                    <span className="text-gray-500">{label}</span>
                     <span className="font-medium">{value}</span>
                   </div>
                 ))}
               </CardContent>
             </Card>
           </div>
+          {investment.sponsors && (
+            <div>
+              <h2 className="text-2xl font-bold text-doorlist-navy mb-4">Sponsor</h2>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={investment.sponsors.logo_url || '/placeholder.svg'}
+                      alt={investment.sponsors.name}
+                      className="w-16 h-16 object-contain"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/placeholder.svg';
+                      }}
+                    />
+                    <div>
+                      <h3 className="text-xl font-semibold">{investment.sponsors.name}</h3>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </main>
       <Footer />
