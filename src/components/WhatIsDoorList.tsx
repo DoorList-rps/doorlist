@@ -51,8 +51,8 @@ const WhatIsDoorList = () => {
 
           <div>
             <img
-              src="/lovable-uploads/photo-1488590528505-98d2b5aba04b.jpg"
-              alt="DoorList Investment List"
+              src="/lovable-uploads/bd499f14-7353-49ac-939d-0da5c2df4ded.png"
+              alt="DoorList Investment Opportunities"
               className="w-full rounded-lg shadow-xl"
             />
           </div>
