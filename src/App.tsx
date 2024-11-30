@@ -19,35 +19,6 @@ import Disclosures from "./pages/Disclosures";
 
 const queryClient = new QueryClient();
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsAuthenticated(!!session);
-    };
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setIsAuthenticated(!!session);
-    });
-
-    checkAuth();
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  if (isAuthenticated === null) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return <>{children}</>;
-};
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
@@ -56,86 +27,16 @@ const App = () => (
         <Sonner />
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Index />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/investments"
-            element={
-              <ProtectedRoute>
-                <Investments />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/investments/:id"
-            element={
-              <ProtectedRoute>
-                <InvestmentDetail />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/sponsors"
-            element={
-              <ProtectedRoute>
-                <Sponsors />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/sponsors/:id"
-            element={
-              <ProtectedRoute>
-                <SponsorDetail />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/about"
-            element={
-              <ProtectedRoute>
-                <About />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/faq"
-            element={
-              <ProtectedRoute>
-                <FAQ />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/privacy"
-            element={
-              <ProtectedRoute>
-                <Privacy />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/terms"
-            element={
-              <ProtectedRoute>
-                <Terms />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/disclosures"
-            element={
-              <ProtectedRoute>
-                <Disclosures />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/" element={<Index />} />
+          <Route path="/investments" element={<Investments />} />
+          <Route path="/investments/:id" element={<InvestmentDetail />} />
+          <Route path="/sponsors" element={<Sponsors />} />
+          <Route path="/sponsors/:id" element={<SponsorDetail />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/disclosures" element={<Disclosures />} />
         </Routes>
       </TooltipProvider>
     </BrowserRouter>
