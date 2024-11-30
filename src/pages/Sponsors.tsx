@@ -23,19 +23,24 @@ const Sponsors = () => {
       console.log('Starting sponsor query with params:', { currentPage, searchTerm, ITEMS_PER_PAGE });
       
       try {
+        // First, let's check if there are any sponsors at all
+        const { count: totalSponsors } = await supabase
+          .from('Sponsors')
+          .select('*', { count: 'exact', head: true });
+          
+        console.log('Total sponsors in database:', totalSponsors);
+        
         let query = supabase
           .from('Sponsors')
           .select('*', { count: 'exact' });
         
         console.log('Base query created');
         
-        // Add search filter if searchTerm exists
         if (searchTerm) {
           query = query.ilike('Name', `%${searchTerm}%`);
           console.log('Search filter added:', searchTerm);
         }
         
-        // Add pagination
         const from = currentPage * ITEMS_PER_PAGE;
         const to = from + ITEMS_PER_PAGE - 1;
         
@@ -49,7 +54,8 @@ const Sponsors = () => {
           success: !queryError,
           errorMessage: queryError?.message,
           dataLength: sponsorsData?.length,
-          totalCount: count
+          totalCount: count,
+          rawData: sponsorsData // Log the actual data for inspection
         });
 
         if (queryError) {
