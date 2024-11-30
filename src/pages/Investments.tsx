@@ -1,50 +1,57 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-
-// Mock data - replace with actual API call
-const mockInvestments = [
-  {
-    id: "1",
-    title: "Urban Residential Complex",
-    description: "Modern residential development in prime urban location",
-    type: "Multifamily",
-    location: "Los Angeles, CA",
-    minInvestment: 25000,
-    targetReturn: "15-18%",
-    status: "Open",
-    imageUrl: "/placeholder.svg",
-  },
-  {
-    id: "2",
-    title: "Industrial Warehouse Portfolio",
-    description: "Strategic industrial assets in key logistics locations",
-    type: "Industrial",
-    location: "Dallas, TX",
-    minInvestment: 50000,
-    targetReturn: "12-15%",
-    status: "Open",
-    imageUrl: "/placeholder.svg",
-  },
-];
+import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 
 const Investments = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState<string>("");
 
-  const filteredInvestments = mockInvestments.filter((investment) => {
-    const matchesSearch = investment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      investment.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = selectedType === "" || investment.type === selectedType;
-    return matchesSearch && matchesType;
+  const { data: investments, isLoading, error } = useQuery({
+    queryKey: ['investments'],
+    queryFn: async () => {
+      console.log('Starting investments fetch...');
+      const { data, error } = await supabase
+        .from('investments')
+        .select(`
+          *,
+          sponsors (
+            name,
+            logo_url
+          )
+        `);
+
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      console.log('Investments found:', data?.length);
+      return data as (Tables<'investments'> & { sponsors: Pick<Tables<'sponsors'>, 'name' | 'logo_url'> })[];
+    }
   });
 
-  const types = Array.from(new Set(mockInvestments.map((i) => i.type)));
+  const types = investments 
+    ? Array.from(new Set(investments.map(i => i.property_type).filter(Boolean)))
+    : [];
+
+  const filteredInvestments = investments?.filter((investment) => {
+    const matchesSearch = (
+      investment.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      investment.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      investment.location_city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      investment.location_state?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    const matchesType = !selectedType || investment.property_type === selectedType;
+    return matchesSearch && matchesType;
+  });
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -63,7 +70,7 @@ const Investments = () => {
             />
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button
               variant={selectedType === "" ? "default" : "outline"}
               onClick={() => setSelectedType("")}
@@ -71,7 +78,7 @@ const Investments = () => {
             >
               All Types
             </Button>
-            {types.map((type) => (
+            {types.map((type) => type && (
               <Button
                 key={type}
                 variant={selectedType === type ? "default" : "outline"}
@@ -84,33 +91,67 @@ const Investments = () => {
           </div>
         </div>
 
+        {isLoading && (
+          <div className="flex justify-center items-center min-h-[200px]">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-doorlist-navy"></div>
+          </div>
+        )}
+
+        {error && (
+          <div className="text-center py-12">
+            <h3 className="text-xl font-semibold text-red-600">Error loading investments</h3>
+            <p className="text-gray-500 mt-2">{error instanceof Error ? error.message : 'Unknown error occurred'}</p>
+          </div>
+        )}
+
+        {!isLoading && !error && (!filteredInvestments || filteredInvestments.length === 0) && (
+          <div className="text-center py-12">
+            <h3 className="text-xl font-semibold text-gray-600">No investments found</h3>
+            <p className="text-gray-500 mt-2">Try adjusting your search criteria</p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredInvestments.map((investment) => (
+          {filteredInvestments?.map((investment) => (
             <Link key={investment.id} to={`/investments/${investment.id}`}>
               <Card className="h-full hover:shadow-lg transition-shadow">
                 <img
-                  src={investment.imageUrl}
-                  alt={investment.title}
+                  src={investment.thumbnail_url || '/placeholder.svg'}
+                  alt={investment.name}
                   className="w-full h-48 object-cover rounded-t-lg"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/placeholder.svg';
+                  }}
                 />
                 <CardHeader>
-                  <CardTitle className="text-xl">{investment.title}</CardTitle>
+                  <CardTitle className="text-xl">{investment.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600 mb-4">{investment.description}</p>
+                  <p className="text-gray-600 mb-4">{investment.short_description || investment.description}</p>
                   <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Minimum</span>
-                      <span className="font-medium">${investment.minInvestment.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Target Return</span>
-                      <span className="font-medium">{investment.targetReturn}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Location</span>
-                      <span className="font-medium">{investment.location}</span>
-                    </div>
+                    {investment.minimum_investment && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Minimum</span>
+                        <span className="font-medium">${investment.minimum_investment.toLocaleString()}</span>
+                      </div>
+                    )}
+                    {investment.target_return && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Target Return</span>
+                        <span className="font-medium">{investment.target_return}</span>
+                      </div>
+                    )}
+                    {(investment.location_city || investment.location_state) && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Location</span>
+                        <span className="font-medium">
+                          {[investment.location_city, investment.location_state]
+                            .filter(Boolean)
+                            .join(', ')}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>

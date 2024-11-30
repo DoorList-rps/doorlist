@@ -1,11 +1,16 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import type { Tables } from "@/integrations/supabase/types";
 
 const Sponsors = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+
   const { data: sponsors, isLoading, error } = useQuery({
     queryKey: ['sponsors'],
     queryFn: async () => {
@@ -32,7 +37,18 @@ const Sponsors = () => {
     }
   });
 
-  console.log('Component render state:', { isLoading, error, sponsorsCount: sponsors?.length });
+  const filteredSponsors = sponsors?.filter((sponsor) => {
+    const searchFields = [
+      sponsor.name,
+      sponsor.description,
+      sponsor.headquarters,
+      sponsor.short_description
+    ].filter(Boolean);
+    
+    return searchFields.some(field => 
+      field.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -40,6 +56,17 @@ const Sponsors = () => {
       <main className="flex-grow container mx-auto px-4 py-8 mt-16">
         <h1 className="text-4xl font-bold text-doorlist-navy mb-8">Our Sponsors</h1>
         
+        <div className="relative mb-8">
+          <Input
+            type="text"
+            placeholder="Search sponsors..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+        </div>
+
         {isLoading && (
           <div className="flex justify-center items-center min-h-[200px]">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-doorlist-navy"></div>
@@ -53,16 +80,16 @@ const Sponsors = () => {
           </div>
         )}
 
-        {!isLoading && !error && (!sponsors || sponsors.length === 0) && (
+        {!isLoading && !error && (!filteredSponsors || filteredSponsors.length === 0) && (
           <div className="text-center py-12">
             <h3 className="text-xl font-semibold text-gray-600">No sponsors found</h3>
-            <p className="text-gray-500 mt-2">Please check back later</p>
+            <p className="text-gray-500 mt-2">Try adjusting your search criteria</p>
           </div>
         )}
 
-        {sponsors && sponsors.length > 0 && (
+        {filteredSponsors && filteredSponsors.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sponsors.map((sponsor) => (
+            {filteredSponsors.map((sponsor) => (
               <Link 
                 key={sponsor.id}
                 to={`/sponsors/${sponsor.id}`}
@@ -72,7 +99,7 @@ const Sponsors = () => {
                   {sponsor.logo_url && (
                     <img
                       src={sponsor.logo_url}
-                      alt={`${sponsor.name || 'Sponsor'} logo`}
+                      alt={`${sponsor.name} logo`}
                       className="w-32 h-32 object-contain mb-4"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
@@ -81,13 +108,19 @@ const Sponsors = () => {
                     />
                   )}
                   <h3 className="text-xl font-semibold text-center mb-2">
-                    {sponsor.name || 'Unnamed Sponsor'}
+                    {sponsor.name}
                   </h3>
                 </div>
                 
                 <p className="text-gray-600 mb-4 text-center">
-                  {sponsor.description || 'No description available'}
+                  {sponsor.short_description || sponsor.description || 'No description available'}
                 </p>
+
+                {sponsor.headquarters && (
+                  <p className="text-sm text-gray-500 text-center">
+                    {sponsor.headquarters}
+                  </p>
+                )}
               </Link>
             ))}
           </div>
