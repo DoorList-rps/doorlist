@@ -116,7 +116,7 @@ const Investments = () => {
             <Link key={investment.id} to={`/investments/${investment.id}`}>
               <Card className="h-full hover:shadow-lg transition-shadow">
                 <img
-                  src={investment.thumbnail_url || '/placeholder.svg'}
+                  src={investment.hero_image_url || '/placeholder.svg'}
                   alt={investment.name}
                   className="w-full h-48 object-cover rounded-t-lg"
                   onError={(e) => {
