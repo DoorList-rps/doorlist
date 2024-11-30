@@ -8,30 +8,57 @@ import Footer from "@/components/Footer";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
+import { useToast } from "@/components/ui/use-toast";
+
+const ITEMS_PER_PAGE = 20;
 
 const Sponsors = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
+  const { toast } = useToast();
 
-  const { data: sponsors, isLoading } = useQuery({
-    queryKey: ['sponsors'],
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['sponsors', currentPage, searchTerm],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('Sponsors')
-        .select('*');
+        .select('*', { count: 'exact' });
       
-      if (error) throw error;
-      return data as Tables<'Sponsors'>[];
-    }
+      // Add search filter if searchTerm exists
+      if (searchTerm) {
+        query = query.ilike('Name', `%${searchTerm}%`);
+      }
+      
+      // Add pagination
+      const from = currentPage * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
+      
+      const { data, error, count } = await query
+        .range(from, to)
+        .order('Name', { ascending: true });
+
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      return {
+        sponsors: data as Tables<'Sponsors'>[],
+        totalCount: count || 0
+      };
+    },
   });
 
-  const filteredSponsors = sponsors?.filter((sponsor) =>
-    sponsor.Name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    sponsor.Description?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) ?? [];
-
-  if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  if (error) {
+    console.error('Query error:', error);
+    toast({
+      variant: "destructive",
+      title: "Error loading sponsors",
+      description: "Please try again later.",
+    });
   }
+
+  const totalPages = data ? Math.ceil(data.totalCount / ITEMS_PER_PAGE) : 0;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -50,47 +77,83 @@ const Sponsors = () => {
           <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredSponsors.map((sponsor) => (
-            <Link key={sponsor.Primary_Key} to={`/sponsors/${sponsor.Primary_Key}`}>
-              <Card className="h-full hover:shadow-lg transition-shadow">
-                <CardHeader className="flex items-center">
-                  <img
-                    src={sponsor.Logo || '/placeholder.svg'}
-                    alt={sponsor.Name || 'Sponsor logo'}
-                    className="w-32 h-32 object-contain mb-4"
-                  />
-                  <CardTitle className="text-xl text-center">{sponsor.Name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 mb-4">{sponsor["Short Description"] || sponsor.Description}</p>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Experience</span>
-                      <span className="font-medium">{sponsor["Year Founded"] ? `Since ${sponsor["Year Founded"]}` : 'N/A'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">AUM</span>
-                      <span className="font-medium">{sponsor["Assets Under Management"] || 'N/A'}</span>
-                    </div>
-                    {sponsor["Property Type"] && (
-                      <div className="flex flex-wrap gap-2 mt-4">
-                        {sponsor["Property Type"].split(',').map((type) => (
-                          <span
-                            key={type}
-                            className="bg-doorlist-navy/10 text-doorlist-navy px-3 py-1 rounded-full text-sm"
-                          >
-                            {type.trim()}
-                          </span>
-                        ))}
+        {isLoading ? (
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-doorlist-navy"></div>
+          </div>
+        ) : data?.sponsors.length === 0 ? (
+          <div className="text-center py-12">
+            <h3 className="text-xl font-semibold text-gray-600">No sponsors found</h3>
+            <p className="text-gray-500 mt-2">Try adjusting your search criteria</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {data?.sponsors.map((sponsor) => (
+                <Link key={sponsor.Primary_Key} to={`/sponsors/${sponsor.Primary_Key}`}>
+                  <Card className="h-full hover:shadow-lg transition-shadow">
+                    <CardHeader className="flex items-center">
+                      <img
+                        src={sponsor.Logo || '/placeholder.svg'}
+                        alt={sponsor.Name || 'Sponsor logo'}
+                        className="w-32 h-32 object-contain mb-4"
+                      />
+                      <CardTitle className="text-xl text-center">{sponsor.Name}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600 mb-4">{sponsor["Short Description"] || sponsor.Description}</p>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Experience</span>
+                          <span className="font-medium">{sponsor["Year Founded"] ? `Since ${sponsor["Year Founded"]}` : 'N/A'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">AUM</span>
+                          <span className="font-medium">{sponsor["Assets Under Management"] || 'N/A'}</span>
+                        </div>
+                        {sponsor["Property Type"] && (
+                          <div className="flex flex-wrap gap-2 mt-4">
+                            {sponsor["Property Type"].split(',').map((type) => (
+                              <span
+                                key={type}
+                                className="bg-doorlist-navy/10 text-doorlist-navy px-3 py-1 rounded-full text-sm"
+                              >
+                                {type.trim()}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-center gap-2 mt-8">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                  disabled={currentPage === 0}
+                  className="px-4 py-2 border rounded-md disabled:opacity-50 hover:bg-gray-50"
+                >
+                  Previous
+                </button>
+                <span className="px-4 py-2">
+                  Page {currentPage + 1} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
+                  disabled={currentPage === totalPages - 1}
+                  className="px-4 py-2 border rounded-md disabled:opacity-50 hover:bg-gray-50"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
+        )}
       </main>
       <Footer />
     </div>
