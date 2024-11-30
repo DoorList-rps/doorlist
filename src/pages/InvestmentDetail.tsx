@@ -7,6 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
+import { Link } from "react-router-dom";
 
 const InvestmentDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -43,6 +44,24 @@ const InvestmentDetail = () => {
       };
     },
     enabled: !!id
+  });
+
+  const { data: otherInvestments } = useQuery({
+    queryKey: ['sponsor-investments', investment?.sponsor_id],
+    queryFn: async () => {
+      if (!investment?.sponsor_id) throw new Error('No sponsor ID available');
+
+      const { data, error } = await supabase
+        .from('investments')
+        .select('*')
+        .eq('sponsor_id', investment.sponsor_id)
+        .neq('id', id)
+        .limit(3);
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!investment?.sponsor_id
   });
 
   const handleContactClick = () => {
@@ -181,6 +200,40 @@ const InvestmentDetail = () => {
             </div>
           )}
         </div>
+
+        {otherInvestments && otherInvestments.length > 0 && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-doorlist-navy mb-6">More Investments from {investment.sponsors?.name}</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              {otherInvestments.map((inv) => (
+                <Link key={inv.id} to={`/investments/${inv.id}`}>
+                  <Card className="h-full hover:shadow-lg transition-shadow">
+                    <div className="aspect-video relative">
+                      <img
+                        src={inv.thumbnail_url || inv.hero_image_url || '/placeholder.svg'}
+                        alt={inv.name}
+                        className="w-full h-full object-cover rounded-t-lg"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder.svg';
+                        }}
+                      />
+                    </div>
+                    <CardContent className="p-4">
+                      <h3 className="font-semibold text-lg mb-2">{inv.name}</h3>
+                      <p className="text-sm text-gray-600 line-clamp-2">{inv.short_description}</p>
+                      {inv.minimum_investment && (
+                        <p className="mt-2 text-sm text-gray-500">
+                          Min. Investment: ${inv.minimum_investment.toLocaleString()}
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
       <Footer />
     </div>
