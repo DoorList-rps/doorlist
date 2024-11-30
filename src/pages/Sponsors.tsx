@@ -9,12 +9,19 @@ const Sponsors = () => {
     queryFn: async () => {
       console.log('Starting sponsor fetch...');
       
+      // First, let's check if we can access the table at all
+      const { count, error: countError } = await supabase
+        .from('Sponsors')
+        .count();
+      
+      console.log('Total sponsors count:', { count, countError });
+
+      // Now try to fetch all records without any conditions
       const { data, error } = await supabase
         .from('Sponsors')
-        .select('Primary_Key, Name, Logo, Description')
-        .limit(10);
+        .select('*');
 
-      console.log('Supabase response:', { data, error });
+      console.log('Supabase full response:', { data, error });
 
       if (error) {
         console.error('Supabase error:', error);
