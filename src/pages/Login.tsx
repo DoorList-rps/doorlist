@@ -30,7 +30,7 @@ const Login = () => {
           <img
             src="/lovable-uploads/336614b9-911c-41d0-91e8-a09a6168c0f2.png"
             alt="DoorList Logo"
-            className="h-12 mx-auto mb-6"
+            className="h-16 mx-auto mb-6"
           />
           <h2 className="text-3xl font-bold text-doorlist-navy">Welcome to DoorList</h2>
           <p className="mt-2 text-gray-600">Sign in to access exclusive investment opportunities</p>
