@@ -64,7 +64,7 @@ const Sponsors = () => {
                   <CardTitle className="text-xl text-center">{sponsor.Name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600 mb-4">{sponsor.Short_Description || sponsor.Description}</p>
+                  <p className="text-gray-600 mb-4">{sponsor["Short Description"] || sponsor.Description}</p>
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-gray-500">Experience</span>
