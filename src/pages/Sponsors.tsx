@@ -20,41 +20,53 @@ const Sponsors = () => {
   const { data, isLoading, error } = useQuery({
     queryKey: ['sponsors', currentPage, searchTerm],
     queryFn: async () => {
-      console.log('Fetching sponsors with params:', { currentPage, searchTerm });
+      console.log('Starting sponsor query with params:', { currentPage, searchTerm, ITEMS_PER_PAGE });
       
       try {
         let query = supabase
           .from('Sponsors')
           .select('*', { count: 'exact' });
         
+        console.log('Base query created');
+        
         // Add search filter if searchTerm exists
         if (searchTerm) {
           query = query.ilike('Name', `%${searchTerm}%`);
+          console.log('Search filter added:', searchTerm);
         }
         
         // Add pagination
         const from = currentPage * ITEMS_PER_PAGE;
         const to = from + ITEMS_PER_PAGE - 1;
         
-        console.log('Query range:', { from, to });
+        console.log('Pagination range:', { from, to });
         
-        const { data, error, count } = await query
+        const { data: sponsorsData, error: queryError, count } = await query
           .range(from, to)
           .order('Name', { ascending: true });
 
-        if (error) {
-          console.error('Supabase error:', error);
-          throw error;
-        }
-
-        console.log('Query results:', { 
-          resultCount: data?.length, 
-          totalCount: count,
-          firstItem: data?.[0]
+        console.log('Query executed. Results:', {
+          success: !queryError,
+          errorMessage: queryError?.message,
+          dataLength: sponsorsData?.length,
+          totalCount: count
         });
 
+        if (queryError) {
+          console.error('Supabase query error:', queryError);
+          throw queryError;
+        }
+
+        if (!sponsorsData) {
+          console.error('No data returned from query');
+          throw new Error('No data returned from query');
+        }
+
+        console.log('First sponsor in results:', sponsorsData[0]);
+        console.log('Last sponsor in results:', sponsorsData[sponsorsData.length - 1]);
+
         return {
-          sponsors: data as Tables<'Sponsors'>[],
+          sponsors: sponsorsData as Tables<'Sponsors'>[],
           totalCount: count || 0
         };
       } catch (err) {
@@ -63,19 +75,27 @@ const Sponsors = () => {
       }
     },
     retry: 1,
-    staleTime: 30000, // Cache results for 30 seconds
+    staleTime: 30000,
   });
 
   if (error) {
-    console.error('Query error:', error);
+    console.error('Query error details:', error);
     toast({
       variant: "destructive",
       title: "Error loading sponsors",
-      description: "Please try again later.",
+      description: "Please try again later. Error: " + (error as Error).message,
     });
   }
 
   const totalPages = data ? Math.ceil(data.totalCount / ITEMS_PER_PAGE) : 0;
+
+  console.log('Render state:', {
+    isLoading,
+    hasError: !!error,
+    dataPresent: !!data,
+    sponsorsCount: data?.sponsors?.length,
+    totalPages
+  });
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -101,9 +121,9 @@ const Sponsors = () => {
         ) : error ? (
           <div className="text-center py-12">
             <h3 className="text-xl font-semibold text-red-600">Error loading sponsors</h3>
-            <p className="text-gray-500 mt-2">Please try refreshing the page</p>
+            <p className="text-gray-500 mt-2">Error details: {(error as Error).message}</p>
           </div>
-        ) : !data || data.sponsors.length === 0 ? (
+        ) : !data || !data.sponsors || data.sponsors.length === 0 ? (
           <div className="text-center py-12">
             <h3 className="text-xl font-semibold text-gray-600">No sponsors found</h3>
             <p className="text-gray-500 mt-2">Try adjusting your search criteria</p>
@@ -121,6 +141,7 @@ const Sponsors = () => {
                           alt={`${sponsor.Name || 'Sponsor'} logo`}
                           className="w-32 h-32 object-contain mb-4"
                           onError={(e) => {
+                            console.log('Image load error for sponsor:', sponsor.Name);
                             const target = e.target as HTMLImageElement;
                             target.src = '/placeholder.svg';
                           }}
