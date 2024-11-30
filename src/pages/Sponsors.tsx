@@ -13,30 +13,15 @@ const Sponsors = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPropertyType, setSelectedPropertyType] = useState<string>("");
   const [selectedInvestmentType, setSelectedInvestmentType] = useState<string>("");
-  const [minDeals, setMinDeals] = useState<number | "">("");
 
   const { data: sponsors, isLoading, error } = useQuery({
     queryKey: ['sponsors'],
     queryFn: async () => {
-      console.log('Starting sponsor fetch...');
-      
       const { data, error } = await supabase
         .from('sponsors')
         .select('*');
 
-      console.log('Supabase response:', { data, error });
-
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
-
-      if (!data) {
-        console.log('No data returned from Supabase');
-        return [];
-      }
-
-      console.log('Sponsors found:', data.length);
+      if (error) throw error;
       return data as Tables<'sponsors'>[];
     }
   });
@@ -59,7 +44,7 @@ const Sponsors = () => {
     ].filter(Boolean);
     
     const matchesSearch = searchFields.some(field => 
-      field.toLowerCase().includes(searchTerm.toLowerCase())
+      field?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const matchesPropertyType = !selectedPropertyType || 
@@ -68,10 +53,7 @@ const Sponsors = () => {
     const matchesInvestmentType = !selectedInvestmentType || 
       (sponsor.investment_types && sponsor.investment_types.includes(selectedInvestmentType));
 
-    const matchesMinDeals = !minDeals || 
-      (sponsor.number_of_deals && sponsor.number_of_deals >= Number(minDeals));
-
-    return matchesSearch && matchesPropertyType && matchesInvestmentType && matchesMinDeals;
+    return matchesSearch && matchesPropertyType && matchesInvestmentType;
   });
 
   return (
@@ -92,7 +74,7 @@ const Sponsors = () => {
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Property Type
@@ -127,19 +109,6 @@ const Sponsors = () => {
                   </option>
                 ))}
               </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Minimum Deals
-              </label>
-              <Input
-                type="number"
-                placeholder="Minimum number of deals"
-                value={minDeals}
-                onChange={(e) => setMinDeals(e.target.value ? Number(e.target.value) : "")}
-                min="0"
-              />
             </div>
           </div>
         </div>
@@ -189,8 +158,8 @@ const Sponsors = () => {
                   </h3>
                 </div>
                 
-                <p className="text-gray-600 mb-4 text-center">
-                  {sponsor.short_description || sponsor.description || 'No description available'}
+                <p className="text-gray-600 mb-4 text-center line-clamp-3">
+                  {sponsor.short_description || 'No description available'}
                 </p>
 
                 {sponsor.headquarters && (
@@ -198,14 +167,6 @@ const Sponsors = () => {
                     {sponsor.headquarters}
                   </p>
                 )}
-
-                <div className="mt-4 text-sm text-gray-500">
-                  {sponsor.number_of_deals && (
-                    <p className="text-center">
-                      {sponsor.number_of_deals} Deals
-                    </p>
-                  )}
-                </div>
               </Link>
             ))}
           </div>
