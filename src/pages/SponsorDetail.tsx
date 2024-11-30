@@ -12,11 +12,17 @@ const SponsorDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
 
-  const { data: sponsor, isLoading } = useQuery({
+  const { data: sponsor, isLoading, error } = useQuery({
     queryKey: ['sponsor', id],
     queryFn: async () => {
       if (!id) throw new Error('No sponsor ID provided');
       
+      // Validate UUID format using regex
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(id)) {
+        throw new Error('Invalid sponsor ID format');
+      }
+
       const { data, error } = await supabase
         .from('Sponsors')
         .select('*')
@@ -24,6 +30,8 @@ const SponsorDetail = () => {
         .single();
       
       if (error) throw error;
+      if (!data) throw new Error('Sponsor not found');
+      
       return data as Tables<'Sponsors'>;
     },
     enabled: !!id
@@ -38,6 +46,17 @@ const SponsorDetail = () => {
 
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-2">Error</h2>
+          <p className="text-gray-600">{error instanceof Error ? error.message : 'Failed to load sponsor'}</p>
+        </div>
+      </div>
+    );
   }
 
   if (!sponsor) {
