@@ -1,10 +1,26 @@
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { useEffect, useState } from "react";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
+    };
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsLoggedIn(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -53,12 +69,29 @@ const Navbar = () => {
             >
               About
             </Link>
-            <button
-              onClick={handleSignOut}
-              className="px-6 py-2.5 bg-doorlist-salmon text-white rounded-full hover:bg-opacity-90 transition-colors font-medium shadow-sm hover:shadow-md"
-            >
-              Sign Out
-            </button>
+            {isLoggedIn ? (
+              <>
+                <Link 
+                  to="/profile" 
+                  className="text-doorlist-navy hover:text-doorlist-salmon transition-colors font-medium"
+                >
+                  Profile
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="px-6 py-2.5 bg-doorlist-salmon text-white rounded-full hover:bg-opacity-90 transition-colors font-medium shadow-sm hover:shadow-md"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                className="px-6 py-2.5 bg-doorlist-salmon text-white rounded-full hover:bg-opacity-90 transition-colors font-medium shadow-sm hover:shadow-md"
+              >
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       </div>
