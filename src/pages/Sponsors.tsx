@@ -23,39 +23,51 @@ const Sponsors = () => {
       console.log('Starting sponsor query with params:', { currentPage, searchTerm, ITEMS_PER_PAGE });
       
       try {
-        // First, do a simple count query
-        const { count } = await supabase
+        // First, let's do a basic count without any conditions
+        console.log('Attempting basic count query...');
+        const { count, error: countError } = await supabase
           .from('Sponsors')
           .select('*', { count: 'exact', head: true });
-          
-        console.log('Total sponsors count:', count);
         
-        // Then do the actual data query
-        let query = supabase
-          .from('Sponsors')
-          .select('Primary_Key, Name, Logo, Description, "Short Description", "Year Founded", "Assets Under Management", "Property Type"');
-        
-        if (searchTerm) {
-          query = query.ilike('Name', `%${searchTerm}%`);
+        if (countError) {
+          console.error('Count query error:', countError);
+          throw countError;
         }
         
-        const from = currentPage * ITEMS_PER_PAGE;
-        const to = from + ITEMS_PER_PAGE - 1;
-        
-        const { data: sponsorsData, error: queryError } = await query
-          .range(from, to)
-          .order('Name', { ascending: true });
+        console.log('Basic count result:', count);
 
-        console.log('Query results:', {
-          success: !queryError,
-          errorMessage: queryError?.message,
-          dataLength: sponsorsData?.length,
-          firstSponsor: sponsorsData?.[0],
-          totalCount: count
+        // Now let's do the simplest possible data query
+        console.log('Attempting basic data query...');
+        const { data: sponsorsData, error: queryError } = await supabase
+          .from('Sponsors')
+          .select(`
+            "Primary_Key",
+            "Name",
+            "Logo",
+            "Description",
+            "Short Description",
+            "Year Founded",
+            "Assets Under Management",
+            "Property Type"
+          `)
+          .range(0, 19);  // Just get the first 20 records for now
+
+        console.log('Query completed. Results:', {
+          error: queryError?.message || 'none',
+          dataReceived: !!sponsorsData,
+          recordCount: sponsorsData?.length || 0,
+          firstRecord: sponsorsData?.[0] || 'none'
         });
 
-        if (queryError) throw queryError;
-        if (!sponsorsData) throw new Error('No data returned from query');
+        if (queryError) {
+          console.error('Data query error:', queryError);
+          throw queryError;
+        }
+
+        if (!sponsorsData) {
+          console.error('No data returned from query');
+          throw new Error('No data returned from query');
+        }
 
         return {
           sponsors: sponsorsData as Tables<'Sponsors'>[],
