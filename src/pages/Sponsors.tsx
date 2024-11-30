@@ -23,53 +23,39 @@ const Sponsors = () => {
       console.log('Starting sponsor query with params:', { currentPage, searchTerm, ITEMS_PER_PAGE });
       
       try {
-        // First, let's check if there are any sponsors at all
-        const { count: totalSponsors } = await supabase
+        // First, do a simple count query
+        const { count } = await supabase
           .from('Sponsors')
           .select('*', { count: 'exact', head: true });
           
-        console.log('Total sponsors in database:', totalSponsors);
+        console.log('Total sponsors count:', count);
         
+        // Then do the actual data query
         let query = supabase
           .from('Sponsors')
-          .select('*', { count: 'exact' });
-        
-        console.log('Base query created');
+          .select('Primary_Key, Name, Logo, Description, "Short Description", "Year Founded", "Assets Under Management", "Property Type"');
         
         if (searchTerm) {
           query = query.ilike('Name', `%${searchTerm}%`);
-          console.log('Search filter added:', searchTerm);
         }
         
         const from = currentPage * ITEMS_PER_PAGE;
         const to = from + ITEMS_PER_PAGE - 1;
         
-        console.log('Pagination range:', { from, to });
-        
-        const { data: sponsorsData, error: queryError, count } = await query
+        const { data: sponsorsData, error: queryError } = await query
           .range(from, to)
           .order('Name', { ascending: true });
 
-        console.log('Query executed. Results:', {
+        console.log('Query results:', {
           success: !queryError,
           errorMessage: queryError?.message,
           dataLength: sponsorsData?.length,
-          totalCount: count,
-          rawData: sponsorsData // Log the actual data for inspection
+          firstSponsor: sponsorsData?.[0],
+          totalCount: count
         });
 
-        if (queryError) {
-          console.error('Supabase query error:', queryError);
-          throw queryError;
-        }
-
-        if (!sponsorsData) {
-          console.error('No data returned from query');
-          throw new Error('No data returned from query');
-        }
-
-        console.log('First sponsor in results:', sponsorsData[0]);
-        console.log('Last sponsor in results:', sponsorsData[sponsorsData.length - 1]);
+        if (queryError) throw queryError;
+        if (!sponsorsData) throw new Error('No data returned from query');
 
         return {
           sponsors: sponsorsData as Tables<'Sponsors'>[],
@@ -94,14 +80,6 @@ const Sponsors = () => {
   }
 
   const totalPages = data ? Math.ceil(data.totalCount / ITEMS_PER_PAGE) : 0;
-
-  console.log('Render state:', {
-    isLoading,
-    hasError: !!error,
-    dataPresent: !!data,
-    sponsorsCount: data?.sponsors?.length,
-    totalPages
-  });
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -147,7 +125,6 @@ const Sponsors = () => {
                           alt={`${sponsor.Name || 'Sponsor'} logo`}
                           className="w-32 h-32 object-contain mb-4"
                           onError={(e) => {
-                            console.log('Image load error for sponsor:', sponsor.Name);
                             const target = e.target as HTMLImageElement;
                             target.src = '/placeholder.svg';
                           }}
