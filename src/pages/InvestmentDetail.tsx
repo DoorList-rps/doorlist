@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
@@ -7,7 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
-import { Link } from "react-router-dom";
+import { ChevronLeft } from "lucide-react";
 
 const InvestmentDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -94,37 +94,33 @@ const InvestmentDetail = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8 mt-16">
+        <Link to="/investments" className="inline-block mb-6">
+          <Button variant="ghost" className="gap-2">
+            <ChevronLeft className="h-4 w-4" />
+            Back to Investments
+          </Button>
+        </Link>
+        
         <div className="grid md:grid-cols-2 gap-8">
           <div>
-            <img
-              src={investment.hero_image_url || '/placeholder.svg'}
-              alt={investment.name}
-              className="w-full h-[400px] object-cover rounded-lg"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = '/placeholder.svg';
-              }}
-            />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-doorlist-navy mb-4">{investment.name}</h1>
-            <p className="text-gray-600 mb-6">{investment.description || investment.short_description}</p>
+            <h1 className="text-3xl font-bold text-doorlist-navy mb-4">{investment?.name}</h1>
+            <p className="text-gray-600 mb-6">{investment?.description || investment?.short_description}</p>
             
             <Card className="mb-6">
               <CardContent className="grid grid-cols-2 gap-4 p-6">
-                {investment.minimum_investment && (
+                {investment?.minimum_investment && (
                   <div>
                     <p className="text-gray-500">Minimum Investment</p>
                     <p className="text-xl font-semibold">${investment.minimum_investment.toLocaleString()}</p>
                   </div>
                 )}
-                {investment.target_return && (
+                {investment?.target_return && (
                   <div>
                     <p className="text-gray-500">Target Return</p>
                     <p className="text-xl font-semibold">{investment.target_return}</p>
                   </div>
                 )}
-                {(investment.location_city || investment.location_state) && (
+                {(investment?.location_city || investment?.location_state) && (
                   <div>
                     <p className="text-gray-500">Location</p>
                     <p className="text-xl font-semibold">
@@ -134,7 +130,7 @@ const InvestmentDetail = () => {
                     </p>
                   </div>
                 )}
-                {investment.status && (
+                {investment?.status && (
                   <div>
                     <p className="text-gray-500">Status</p>
                     <p className="text-xl font-semibold capitalize">{investment.status}</p>
@@ -150,6 +146,17 @@ const InvestmentDetail = () => {
             >
               Contact Us About This Investment
             </Button>
+          </div>
+          <div>
+            <img
+              src={investment?.hero_image_url || '/placeholder.svg'}
+              alt={investment?.name}
+              className="w-full h-[400px] object-cover rounded-lg"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/placeholder.svg';
+              }}
+            />
           </div>
         </div>
 

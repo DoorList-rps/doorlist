@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "./ui/card";
-import { Building2, Users, BadgeDollarSign, ShieldCheck } from "lucide-react";
+import { Building2, Users, BadgeDollarSign } from "lucide-react";
 
 const InvestmentHighlights = () => {
   const highlights = [
@@ -19,11 +19,6 @@ const InvestmentHighlights = () => {
       title: "Low Minimums",
       description: "Investment minimums starting as low as $25,000",
     },
-    {
-      icon: <ShieldCheck className="w-12 h-12 text-doorlist-salmon mb-4" />,
-      title: "Thorough Due Diligence",
-      description: "All sponsors and deals undergo thorough due diligence",
-    },
   ];
 
   return (
@@ -38,11 +33,11 @@ const InvestmentHighlights = () => {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {highlights.map((highlight, index) => (
             <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-6 text-center">
-                {highlight.icon}
+              <CardContent className="p-6 text-center flex flex-col items-center">
+                <div className="flex justify-center">{highlight.icon}</div>
                 <h3 className="text-xl font-semibold text-doorlist-navy mb-2">{highlight.title}</h3>
                 <p className="text-gray-600">{highlight.description}</p>
               </CardContent>
