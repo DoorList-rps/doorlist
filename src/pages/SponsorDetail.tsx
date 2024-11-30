@@ -9,12 +9,14 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
 const SponsorDetail = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
 
   const { data: sponsor, isLoading } = useQuery({
     queryKey: ['sponsor', id],
     queryFn: async () => {
+      if (!id) throw new Error('No sponsor ID provided');
+      
       const { data, error } = await supabase
         .from('Sponsors')
         .select('*')
@@ -23,7 +25,8 @@ const SponsorDetail = () => {
       
       if (error) throw error;
       return data as Tables<'Sponsors'>;
-    }
+    },
+    enabled: !!id
   });
 
   const handleContactClick = () => {
