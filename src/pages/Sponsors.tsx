@@ -10,11 +10,11 @@ const Sponsors = () => {
       console.log('Starting sponsor fetch...');
       
       // First, let's check if we can access the table at all
-      const { count, error: countError } = await supabase
+      const { data: countData, error: countError } = await supabase
         .from('Sponsors')
-        .count();
+        .select('*', { count: 'exact', head: true });
       
-      console.log('Total sponsors count:', { count, countError });
+      console.log('Total sponsors count:', { count: countData?.length, countError });
 
       // Now try to fetch all records without any conditions
       const { data, error } = await supabase
