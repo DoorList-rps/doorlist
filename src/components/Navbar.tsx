@@ -1,6 +1,28 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Signed out",
+        description: "You have been successfully signed out.",
+      });
+      navigate("/login");
+    }
+  };
+
   return (
     <nav className="fixed w-full bg-white/90 backdrop-blur-md z-50 border-b border-gray-100">
       <div className="container mx-auto px-4">
@@ -31,12 +53,12 @@ const Navbar = () => {
             >
               About
             </Link>
-            <Link
-              to="/contact"
+            <button
+              onClick={handleSignOut}
               className="px-6 py-2.5 bg-doorlist-salmon text-white rounded-full hover:bg-opacity-90 transition-colors font-medium shadow-sm hover:shadow-md"
             >
-              Contact Us
-            </Link>
+              Sign Out
+            </button>
           </div>
         </div>
       </div>
