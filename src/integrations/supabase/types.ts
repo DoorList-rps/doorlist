@@ -9,7 +9,170 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      investments: {
+        Row: {
+          accredited_only: boolean | null
+          closing_date: string | null
+          created_at: string
+          description: string | null
+          distribution_frequency: string | null
+          equity_remaining: number | null
+          hero_image_url: string | null
+          hold_period: string | null
+          id: string
+          investment_type: string | null
+          location_city: string | null
+          location_country: string | null
+          location_state: string | null
+          location_street: string | null
+          location_zip: string | null
+          minimum_investment: number | null
+          name: string
+          property_type: string | null
+          short_description: string | null
+          sponsor_id: string | null
+          status: string | null
+          target_return: string | null
+          thumbnail_url: string | null
+          total_equity: number | null
+          updated_at: string
+        }
+        Insert: {
+          accredited_only?: boolean | null
+          closing_date?: string | null
+          created_at?: string
+          description?: string | null
+          distribution_frequency?: string | null
+          equity_remaining?: number | null
+          hero_image_url?: string | null
+          hold_period?: string | null
+          id?: string
+          investment_type?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          location_state?: string | null
+          location_street?: string | null
+          location_zip?: string | null
+          minimum_investment?: number | null
+          name: string
+          property_type?: string | null
+          short_description?: string | null
+          sponsor_id?: string | null
+          status?: string | null
+          target_return?: string | null
+          thumbnail_url?: string | null
+          total_equity?: number | null
+          updated_at?: string
+        }
+        Update: {
+          accredited_only?: boolean | null
+          closing_date?: string | null
+          created_at?: string
+          description?: string | null
+          distribution_frequency?: string | null
+          equity_remaining?: number | null
+          hero_image_url?: string | null
+          hold_period?: string | null
+          id?: string
+          investment_type?: string | null
+          location_city?: string | null
+          location_country?: string | null
+          location_state?: string | null
+          location_street?: string | null
+          location_zip?: string | null
+          minimum_investment?: number | null
+          name?: string
+          property_type?: string | null
+          short_description?: string | null
+          sponsor_id?: string | null
+          status?: string | null
+          target_return?: string | null
+          thumbnail_url?: string | null
+          total_equity?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investments_sponsor_id_fkey"
+            columns: ["sponsor_id"]
+            isOneToOne: false
+            referencedRelation: "sponsors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sponsors: {
+        Row: {
+          advertised_returns: string | null
+          assets_under_management: string | null
+          contact_email: string | null
+          created_at: string
+          deal_volume: string | null
+          description: string | null
+          headquarters: string | null
+          hero_image_url: string | null
+          holding_period: string | null
+          id: string
+          investment_types: string[] | null
+          linkedin_url: string | null
+          logo_url: string | null
+          minimum_investment: string | null
+          name: string
+          number_of_deals: number | null
+          property_types: string[] | null
+          short_description: string | null
+          updated_at: string
+          website_url: string | null
+          year_founded: number | null
+        }
+        Insert: {
+          advertised_returns?: string | null
+          assets_under_management?: string | null
+          contact_email?: string | null
+          created_at?: string
+          deal_volume?: string | null
+          description?: string | null
+          headquarters?: string | null
+          hero_image_url?: string | null
+          holding_period?: string | null
+          id?: string
+          investment_types?: string[] | null
+          linkedin_url?: string | null
+          logo_url?: string | null
+          minimum_investment?: string | null
+          name: string
+          number_of_deals?: number | null
+          property_types?: string[] | null
+          short_description?: string | null
+          updated_at?: string
+          website_url?: string | null
+          year_founded?: number | null
+        }
+        Update: {
+          advertised_returns?: string | null
+          assets_under_management?: string | null
+          contact_email?: string | null
+          created_at?: string
+          deal_volume?: string | null
+          description?: string | null
+          headquarters?: string | null
+          hero_image_url?: string | null
+          holding_period?: string | null
+          id?: string
+          investment_types?: string[] | null
+          linkedin_url?: string | null
+          logo_url?: string | null
+          minimum_investment?: string | null
+          name?: string
+          number_of_deals?: number | null
+          property_types?: string[] | null
+          short_description?: string | null
+          updated_at?: string
+          website_url?: string | null
+          year_founded?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

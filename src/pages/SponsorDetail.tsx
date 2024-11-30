@@ -24,15 +24,15 @@ const SponsorDetail = () => {
       }
 
       const { data, error } = await supabase
-        .from('Sponsors')
+        .from('sponsors')
         .select('*')
-        .eq('Primary_Key', id)
+        .eq('id', id)
         .single();
       
       if (error) throw error;
       if (!data) throw new Error('Sponsor not found');
       
-      return data as Tables<'Sponsors'>;
+      return data as Tables<'sponsors'>;
     },
     enabled: !!id
   });
@@ -70,37 +70,37 @@ const SponsorDetail = () => {
         <div className="grid md:grid-cols-2 gap-8">
           <div>
             <img
-              src={sponsor.Logo || '/placeholder.svg'}
-              alt={sponsor.Name || 'Sponsor logo'}
+              src={sponsor.logo_url || '/placeholder.svg'}
+              alt={sponsor.name || 'Sponsor logo'}
               className="w-full max-h-[300px] object-contain rounded-lg bg-gray-50 p-8"
             />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-doorlist-navy mb-4">{sponsor.Name}</h1>
-            <p className="text-gray-600 mb-6">{sponsor.Description}</p>
+            <h1 className="text-3xl font-bold text-doorlist-navy mb-4">{sponsor.name}</h1>
+            <p className="text-gray-600 mb-6">{sponsor.description}</p>
             
             <Card className="mb-6">
               <CardContent className="grid grid-cols-2 gap-4 p-6">
                 <div>
                   <p className="text-gray-500">Experience</p>
                   <p className="text-xl font-semibold">
-                    {sponsor["Year Founded"] ? `Since ${sponsor["Year Founded"]}` : 'N/A'}
+                    {sponsor.year_founded ? `Since ${sponsor.year_founded}` : 'N/A'}
                   </p>
                 </div>
                 <div>
                   <p className="text-gray-500">Assets Under Management</p>
-                  <p className="text-xl font-semibold">{sponsor["Assets Under Management"] || 'N/A'}</p>
+                  <p className="text-xl font-semibold">{sponsor.assets_under_management || 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-gray-500">Location</p>
-                  <p className="text-xl font-semibold">{sponsor.Headquarters || 'N/A'}</p>
+                  <p className="text-xl font-semibold">{sponsor.headquarters || 'N/A'}</p>
                 </div>
               </CardContent>
             </Card>
 
-            {sponsor["Property Type"] && (
+            {sponsor.property_types && sponsor.property_types.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-6">
-                {sponsor["Property Type"].split(',').map((type) => (
+                {sponsor.property_types.map((type) => (
                   <span
                     key={type}
                     className="bg-doorlist-navy/10 text-doorlist-navy px-4 py-2 rounded-full"
@@ -127,19 +127,19 @@ const SponsorDetail = () => {
             <Card>
               <CardContent className="p-6 grid grid-cols-2 gap-4">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-doorlist-navy">{sponsor["Number of Deals"] || '0'}</p>
+                  <p className="text-2xl font-bold text-doorlist-navy">{sponsor.number_of_deals || '0'}</p>
                   <p className="text-gray-500">Total Deals</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-doorlist-navy">{sponsor["Deal Volume to Date"] || 'N/A'}</p>
+                  <p className="text-2xl font-bold text-doorlist-navy">{sponsor.deal_volume || 'N/A'}</p>
                   <p className="text-gray-500">Deal Volume</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-doorlist-navy">{sponsor["Advertised Returns"] || 'N/A'}</p>
+                  <p className="text-2xl font-bold text-doorlist-navy">{sponsor.advertised_returns || 'N/A'}</p>
                   <p className="text-gray-500">Target Returns</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-doorlist-navy">{sponsor["Minimum Investment"] || 'N/A'}</p>
+                  <p className="text-2xl font-bold text-doorlist-navy">{sponsor.minimum_investment || 'N/A'}</p>
                   <p className="text-gray-500">Minimum Investment</p>
                 </div>
               </CardContent>
@@ -152,17 +152,19 @@ const SponsorDetail = () => {
                 <div className="space-y-4">
                   <div>
                     <p className="font-semibold">Investment Types</p>
-                    <p className="text-gray-600">{sponsor["Investment Type"] || 'N/A'}</p>
+                    <p className="text-gray-600">
+                      {sponsor.investment_types ? sponsor.investment_types.join(', ') : 'N/A'}
+                    </p>
                   </div>
                   <div>
                     <p className="font-semibold">Holding Period</p>
-                    <p className="text-gray-600">{sponsor["Holding Period"] || 'N/A'}</p>
+                    <p className="text-gray-600">{sponsor.holding_period || 'N/A'}</p>
                   </div>
-                  {sponsor["LinkedIn URL"] && (
+                  {sponsor.linkedin_url && (
                     <div>
                       <p className="font-semibold">LinkedIn</p>
                       <a 
-                        href={sponsor["LinkedIn URL"]} 
+                        href={sponsor.linkedin_url} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-doorlist-navy hover:underline"

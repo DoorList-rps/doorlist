@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import type { Tables } from "@/integrations/supabase/types";
 
 const Sponsors = () => {
   const { data: sponsors, isLoading, error } = useQuery({
@@ -9,19 +11,11 @@ const Sponsors = () => {
     queryFn: async () => {
       console.log('Starting sponsor fetch...');
       
-      // First, let's check if we can access the table at all
-      const { data: countData, error: countError } = await supabase
-        .from('Sponsors')
-        .select('*', { count: 'exact', head: true });
-      
-      console.log('Total sponsors count:', { count: countData?.length, countError });
-
-      // Now try to fetch all records without any conditions
       const { data, error } = await supabase
-        .from('Sponsors')
+        .from('sponsors')
         .select('*');
 
-      console.log('Supabase full response:', { data, error });
+      console.log('Supabase response:', { data, error });
 
       if (error) {
         console.error('Supabase error:', error);
@@ -34,7 +28,7 @@ const Sponsors = () => {
       }
 
       console.log('Sponsors found:', data.length);
-      return data;
+      return data as Tables<'sponsors'>[];
     }
   });
 
@@ -69,15 +63,16 @@ const Sponsors = () => {
         {sponsors && sponsors.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {sponsors.map((sponsor) => (
-              <div 
-                key={sponsor.Primary_Key}
+              <Link 
+                key={sponsor.id}
+                to={`/sponsors/${sponsor.id}`}
                 className="border rounded-lg p-6 hover:shadow-lg transition-shadow"
               >
                 <div className="flex flex-col items-center">
-                  {sponsor.Logo && (
+                  {sponsor.logo_url && (
                     <img
-                      src={sponsor.Logo}
-                      alt={`${sponsor.Name || 'Sponsor'} logo`}
+                      src={sponsor.logo_url}
+                      alt={`${sponsor.name || 'Sponsor'} logo`}
                       className="w-32 h-32 object-contain mb-4"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
@@ -86,14 +81,14 @@ const Sponsors = () => {
                     />
                   )}
                   <h3 className="text-xl font-semibold text-center mb-2">
-                    {sponsor.Name || 'Unnamed Sponsor'}
+                    {sponsor.name || 'Unnamed Sponsor'}
                   </h3>
                 </div>
                 
                 <p className="text-gray-600 mb-4 text-center">
-                  {sponsor.Description || 'No description available'}
+                  {sponsor.description || 'No description available'}
                 </p>
-              </div>
+              </Link>
             ))}
           </div>
         )}
