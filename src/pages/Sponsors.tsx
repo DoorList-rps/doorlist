@@ -7,7 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import type { Tables } from "@/integrations/supabase/types";
-import { Button } from "@/components/ui/button";
 
 const Sponsors = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -138,7 +137,7 @@ const Sponsors = () => {
             {filteredSponsors.map((sponsor) => (
               <Link 
                 key={sponsor.id}
-                to={`/sponsors/${sponsor.id}`}
+                to={`/sponsors/${sponsor.slug}`}
                 className="border rounded-lg p-6 hover:shadow-lg transition-shadow"
               >
                 <div className="flex flex-col items-center">

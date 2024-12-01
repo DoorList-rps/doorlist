@@ -113,7 +113,7 @@ const Investments = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredInvestments?.map((investment) => (
-            <Link key={investment.id} to={`/investments/${investment.id}`}>
+            <Link key={investment.id} to={`/investments/${investment.slug}`}>
               <Card className="h-full hover:shadow-lg transition-shadow flex flex-col">
                 <img
                   src={investment.hero_image_url || '/placeholder.svg'}
