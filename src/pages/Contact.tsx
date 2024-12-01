@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -18,26 +18,26 @@ const Contact = () => {
   });
 
   // Get user profile data if logged in
-  const getUserProfile = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("first_name, last_name, email")
-        .eq("id", session.user.id)
-        .single();
+  useEffect(() => {
+    const getUserProfile = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("first_name, last_name, email")
+          .eq("id", session.user.id)
+          .single();
 
-      if (profile) {
-        setFormData({
-          ...formData,
-          name: `${profile.first_name || ""} ${profile.last_name || ""}`.trim(),
-          email: profile.email || "",
-        });
+        if (profile) {
+          setFormData({
+            ...formData,
+            name: `${profile.first_name || ""} ${profile.last_name || ""}`.trim(),
+            email: profile.email || "",
+          });
+        }
       }
-    }
-  };
+    };
 
-  useState(() => {
     getUserProfile();
   }, []);
 
