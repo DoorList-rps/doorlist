@@ -15,7 +15,7 @@ const RelatedInvestments = ({ investments, sponsorName }: RelatedInvestmentsProp
       <h2 className="text-2xl font-bold text-doorlist-navy mb-6">More Investments from {sponsorName}</h2>
       <div className="grid md:grid-cols-3 gap-6">
         {investments.map((inv) => (
-          <Link key={inv.id} to={`/investments/${inv.id}`}>
+          <Link key={inv.id} to={`/investments/${inv.slug}`}>
             <Card className="h-full hover:shadow-lg transition-shadow">
               <div className="aspect-video relative">
                 <img

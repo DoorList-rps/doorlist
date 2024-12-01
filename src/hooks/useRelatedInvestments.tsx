@@ -11,7 +11,13 @@ export const useRelatedInvestments = (sponsorName: string | undefined, currentIn
       
       const { data, error } = await supabase
         .from('investments')
-        .select('*')
+        .select(`
+          *,
+          sponsors (
+            name,
+            logo_url
+          )
+        `)
         .eq('sponsor_name', sponsorName)
         .neq('id', currentInvestmentId)
         .limit(3);
