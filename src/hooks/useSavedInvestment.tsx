@@ -16,9 +16,9 @@ export const useSavedInvestment = (investmentId: string | undefined, userId: str
         .select('*')
         .eq('investment_id', investmentId)
         .eq('user_id', userId)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single
 
-      if (error && error.code !== 'PGRST116') throw error;
+      if (error) throw error;
       return data;
     },
     enabled: !!userId && !!investmentId
