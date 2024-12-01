@@ -5,12 +5,14 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import InvestmentFilters from "@/components/investments/InvestmentFilters";
 import InvestmentCard from "@/components/investments/InvestmentCard";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import type { InvestmentFilters as IInvestmentFilters } from "@/types/investments";
 
 const Investments = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState<string>("");
 
@@ -41,6 +43,12 @@ const Investments = () => {
   const types = investments 
     ? Array.from(new Set(investments.map(i => i.property_type).filter(Boolean)))
     : [];
+
+  const handleReset = () => {
+    setSearchTerm("");
+    setSelectedType("");
+    setSearchParams({});
+  };
 
   const filteredInvestments = investments?.filter((investment) => {
     const matchesSearch = (
@@ -95,6 +103,7 @@ const Investments = () => {
           onSearchChange={setSearchTerm}
           onTypeChange={setSelectedType}
           selectedType={selectedType}
+          onReset={handleReset}
         />
 
         {isLoading && (
@@ -114,6 +123,14 @@ const Investments = () => {
           <div className="text-center py-12">
             <h3 className="text-xl font-semibold text-gray-600">No investments found</h3>
             <p className="text-gray-500 mt-2">Try adjusting your search criteria</p>
+            <Button
+              onClick={handleReset}
+              variant="outline"
+              className="mt-4 gap-2"
+            >
+              <X className="h-4 w-4" />
+              Clear All Filters
+            </Button>
           </div>
         )}
 

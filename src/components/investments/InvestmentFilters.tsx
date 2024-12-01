@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { InvestmentFilters as IInvestmentFilters } from "@/types/investments";
 
 interface InvestmentFiltersProps {
@@ -10,9 +10,16 @@ interface InvestmentFiltersProps {
   onSearchChange: (value: string) => void;
   onTypeChange: (type: string) => void;
   selectedType: string;
+  onReset: () => void;
 }
 
-const InvestmentFilters = ({ types, onSearchChange, onTypeChange, selectedType }: InvestmentFiltersProps) => {
+const InvestmentFilters = ({ 
+  types, 
+  onSearchChange, 
+  onTypeChange, 
+  selectedType,
+  onReset 
+}: InvestmentFiltersProps) => {
   const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -36,6 +43,11 @@ const InvestmentFilters = ({ types, onSearchChange, onTypeChange, selectedType }
     onSearchChange(value);
   };
 
+  const handleReset = () => {
+    setSearchTerm("");
+    onReset();
+  };
+
   return (
     <div className="flex flex-col md:flex-row gap-4 mb-8">
       <div className="relative flex-grow">
@@ -48,7 +60,7 @@ const InvestmentFilters = ({ types, onSearchChange, onTypeChange, selectedType }
         />
         <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
       </div>
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-2 flex-wrap items-center">
         <Button
           variant={selectedType === "" ? "default" : "outline"}
           onClick={() => onTypeChange("")}
@@ -66,6 +78,16 @@ const InvestmentFilters = ({ types, onSearchChange, onTypeChange, selectedType }
             {type}
           </Button>
         ))}
+        {(searchTerm || selectedType) && (
+          <Button
+            variant="ghost"
+            onClick={handleReset}
+            className="gap-2"
+          >
+            <X className="h-4 w-4" />
+            Clear Filters
+          </Button>
+        )}
       </div>
     </div>
   );
