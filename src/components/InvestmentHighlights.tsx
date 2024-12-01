@@ -7,7 +7,7 @@ const InvestmentHighlights = () => {
     {
       icon: <Building2 className="w-12 h-12 text-doorlist-salmon mb-4" />,
       title: "Institutional Quality",
-      description: "Access institutional-quality real estate deals typically reserved for large investors",
+      description: "Access real estate deals typically reserved for large investors",
     },
     {
       icon: <Users className="w-12 h-12 text-doorlist-salmon mb-4" />,
@@ -17,7 +17,7 @@ const InvestmentHighlights = () => {
     {
       icon: <BadgeDollarSign className="w-12 h-12 text-doorlist-salmon mb-4" />,
       title: "Low Minimums",
-      description: "Investment minimums starting as low as $25,000",
+      description: "Investment minimums starting as low as $100",
     },
   ];
 
