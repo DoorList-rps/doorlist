@@ -30,8 +30,7 @@ const ConnectionsInProgress = () => {
             slug
           )
         `)
-        .eq('user_id', session.user.id)
-        .eq('status', 'pending');
+        .eq('user_id', session.user.id);
 
       if (error) throw error;
       return data as SponsorIntroduction[];
@@ -57,8 +56,7 @@ const ConnectionsInProgress = () => {
             slug
           )
         `)
-        .eq('user_id', session.user.id)
-        .eq('status', 'pending');
+        .eq('user_id', session.user.id);
 
       if (error) throw error;
       return data as InvestmentInquiry[];
@@ -80,7 +78,7 @@ const ConnectionsInProgress = () => {
     return (
       <Card>
         <CardContent className="p-6">
-          <p className="text-gray-500">No pending connections or inquiries</p>
+          <p className="text-gray-500">No connections or inquiries</p>
         </CardContent>
       </Card>
     );
