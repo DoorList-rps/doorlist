@@ -16,7 +16,6 @@ import About from "./pages/About";
 import FAQ from "./pages/FAQ";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
-import Disclosures from "./pages/Disclosures";
 
 const queryClient = new QueryClient();
 
@@ -40,7 +39,6 @@ const App = () => (
           <Route path="/faq" element={<FAQ />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/terms" element={<Terms />} />
-          <Route path="/disclosures" element={<Disclosures />} />
         </Routes>
       </TooltipProvider>
     </BrowserRouter>

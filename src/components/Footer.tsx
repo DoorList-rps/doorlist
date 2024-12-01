@@ -42,7 +42,6 @@ const Footer = () => {
             <ul className="space-y-2">
               <li><a href="/privacy" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
               <li><a href="/terms" className="text-gray-400 hover:text-white transition-colors">Terms of Service</a></li>
-              <li><a href="/disclosures" className="text-gray-400 hover:text-white transition-colors">Disclosures</a></li>
             </ul>
           </div>
         </div>
