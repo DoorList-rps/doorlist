@@ -1,52 +1,37 @@
-import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export const useInvestmentDetail = (id: string | undefined) => {
+export const useInvestmentDetail = (slug: string | undefined) => {
   return useQuery({
-    queryKey: ['investment', id],
+    queryKey: ['investment', slug],
     queryFn: async () => {
-      if (!id) throw new Error('No investment ID provided');
+      if (!slug) throw new Error('Investment slug is required');
       
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(id)) {
-        throw new Error('Invalid investment ID format');
-      }
-
-      const { data: investment, error: investmentError } = await supabase
+      const { data, error } = await supabase
         .from('investments')
-        .select('*')
-        .eq('id', id)
-        .single();
-      
-      if (investmentError) throw investmentError;
-      if (!investment) throw new Error('Investment not found');
-
-      // Fetch sponsor details using sponsor_name
-      const { data: sponsor, error: sponsorError } = await supabase
-        .from('sponsors')
         .select(`
-          name,
-          logo_url,
-          year_founded,
-          assets_under_management,
-          deal_volume,
-          number_of_deals,
-          advertised_returns,
-          holding_period
+          *,
+          sponsors (
+            name,
+            logo_url,
+            year_founded,
+            assets_under_management,
+            deal_volume,
+            number_of_deals,
+            advertised_returns,
+            holding_period,
+            website_url,
+            slug
+          )
         `)
-        .eq('name', investment.sponsor_name)
+        .eq('slug', slug)
         .single();
 
-      if (sponsorError) {
-        console.error('Error fetching sponsor:', sponsorError);
-      }
-
-      return {
-        ...investment,
-        sponsors: sponsor
-      };
+      if (error) throw error;
+      if (!data) throw new Error('Investment not found');
+      
+      return data;
     },
-    enabled: !!id
+    enabled: !!slug
   });
 };

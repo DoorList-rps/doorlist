@@ -30,6 +30,7 @@ export type Database = {
           name: string
           property_type: string | null
           short_description: string | null
+          slug: string
           sponsor_id: string | null
           sponsor_name: string | null
           status: string | null
@@ -58,6 +59,7 @@ export type Database = {
           name: string
           property_type?: string | null
           short_description?: string | null
+          slug: string
           sponsor_id?: string | null
           sponsor_name?: string | null
           status?: string | null
@@ -86,6 +88,7 @@ export type Database = {
           name?: string
           property_type?: string | null
           short_description?: string | null
+          slug?: string
           sponsor_id?: string | null
           sponsor_name?: string | null
           status?: string | null
@@ -181,6 +184,7 @@ export type Database = {
           number_of_deals: number | null
           property_types: string[] | null
           short_description: string | null
+          slug: string
           updated_at: string
           website_url: string | null
           year_founded: number | null
@@ -204,6 +208,7 @@ export type Database = {
           number_of_deals?: number | null
           property_types?: string[] | null
           short_description?: string | null
+          slug: string
           updated_at?: string
           website_url?: string | null
           year_founded?: number | null
@@ -227,6 +232,7 @@ export type Database = {
           number_of_deals?: number | null
           property_types?: string[] | null
           short_description?: string | null
+          slug?: string
           updated_at?: string
           website_url?: string | null
           year_founded?: number | null

@@ -16,7 +16,8 @@ interface InvestmentContentProps {
       'deal_volume' | 
       'number_of_deals' | 
       'advertised_returns' | 
-      'holding_period'
+      'holding_period' |
+      'slug'
     > | null;
   };
 }
@@ -31,7 +32,7 @@ const InvestmentContent = ({ investment }: InvestmentContentProps) => {
     <>
       {investment.sponsor_name && (
         <div className="mt-12 mb-8">
-          <Link to={`/sponsors/${investment.sponsor_name}`}>
+          <Link to={`/sponsors/${investment.sponsors?.slug || ''}`}>
             <SponsorCard sponsor={investment.sponsors || { name: investment.sponsor_name, logo_url: null }} />
           </Link>
         </div>
