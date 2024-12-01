@@ -2,6 +2,7 @@ import InvestmentDetails from "./InvestmentDetails";
 import SponsorCard from "./SponsorCard";
 import SponsorDetails from "./SponsorDetails";
 import RelatedInvestments from "./RelatedInvestments";
+import { useRelatedInvestments } from "@/hooks/useRelatedInvestments";
 import type { Tables } from "@/integrations/supabase/types";
 
 interface InvestmentContentProps {
@@ -17,10 +18,14 @@ interface InvestmentContentProps {
       'holding_period'
     > | null;
   };
-  otherInvestments: Tables<'investments'>[] | undefined;
 }
 
-const InvestmentContent = ({ investment, otherInvestments }: InvestmentContentProps) => {
+const InvestmentContent = ({ investment }: InvestmentContentProps) => {
+  const { data: relatedInvestments } = useRelatedInvestments(
+    investment.sponsor_name,
+    investment.id
+  );
+
   return (
     <>
       <div className="mt-12 grid md:grid-cols-2 gap-8">
@@ -35,7 +40,7 @@ const InvestmentContent = ({ investment, otherInvestments }: InvestmentContentPr
 
       {investment.sponsor_name && (
         <RelatedInvestments 
-          investments={otherInvestments || []}
+          investments={relatedInvestments || []}
           sponsorName={investment.sponsor_name}
         />
       )}

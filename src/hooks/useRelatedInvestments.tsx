@@ -3,10 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const useRelatedInvestments = (sponsorName: string | undefined, currentInvestmentId: string | undefined) => {
   return useQuery({
-    queryKey: ['sponsor-investments', sponsorName],
+    queryKey: ['related-investments', sponsorName, currentInvestmentId],
     queryFn: async () => {
-      if (!sponsorName) throw new Error('No sponsor name available');
-
+      if (!sponsorName) throw new Error('No sponsor name provided');
+      
+      console.log('Fetching related investments for sponsor:', sponsorName);
+      
       const { data, error } = await supabase
         .from('investments')
         .select('*')
@@ -14,9 +16,14 @@ export const useRelatedInvestments = (sponsorName: string | undefined, currentIn
         .neq('id', currentInvestmentId)
         .limit(3);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching related investments:', error);
+        throw error;
+      }
+      
+      console.log('Found related investments:', data?.length || 0);
       return data;
     },
-    enabled: !!sponsorName
+    enabled: !!sponsorName && !!currentInvestmentId
   });
 };
