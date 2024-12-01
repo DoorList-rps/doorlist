@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -59,68 +59,92 @@ const SponsorFilters = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Property Types
           </label>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full justify-start">
-                {selectedPropertyTypes.length === 0
-                  ? "Select property types..."
-                  : `${selectedPropertyTypes.length} selected`}
+          <div className="relative">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full justify-start">
+                  {selectedPropertyTypes.length === 0
+                    ? "Select property types..."
+                    : `${selectedPropertyTypes.length} selected`}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                {propertyTypes.map((type) => (
+                  <DropdownMenuCheckboxItem
+                    key={type}
+                    checked={selectedPropertyTypes.includes(type)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setSelectedPropertyTypes([...selectedPropertyTypes, type]);
+                      } else {
+                        setSelectedPropertyTypes(
+                          selectedPropertyTypes.filter((t) => t !== type)
+                        );
+                      }
+                    }}
+                  >
+                    {type}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {selectedPropertyTypes.length > 0 && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-0 top-0 h-full"
+                onClick={() => setSelectedPropertyTypes([])}
+              >
+                <X className="h-4 w-4" />
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              {propertyTypes.map((type) => (
-                <DropdownMenuCheckboxItem
-                  key={type}
-                  checked={selectedPropertyTypes.includes(type)}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      setSelectedPropertyTypes([...selectedPropertyTypes, type]);
-                    } else {
-                      setSelectedPropertyTypes(
-                        selectedPropertyTypes.filter((t) => t !== type)
-                      );
-                    }
-                  }}
-                >
-                  {type}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            )}
+          </div>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Investment Types
           </label>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-full justify-start">
-                {selectedInvestmentTypes.length === 0
-                  ? "Select investment types..."
-                  : `${selectedInvestmentTypes.length} selected`}
+          <div className="relative">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full justify-start">
+                  {selectedInvestmentTypes.length === 0
+                    ? "Select investment types..."
+                    : `${selectedInvestmentTypes.length} selected`}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                {investmentTypes.map((type) => (
+                  <DropdownMenuCheckboxItem
+                    key={type}
+                    checked={selectedInvestmentTypes.includes(type)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setSelectedInvestmentTypes([...selectedInvestmentTypes, type]);
+                      } else {
+                        setSelectedInvestmentTypes(
+                          selectedInvestmentTypes.filter((t) => t !== type)
+                        );
+                      }
+                    }}
+                  >
+                    {type}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {selectedInvestmentTypes.length > 0 && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-0 top-0 h-full"
+                onClick={() => setSelectedInvestmentTypes([])}
+              >
+                <X className="h-4 w-4" />
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              {investmentTypes.map((type) => (
-                <DropdownMenuCheckboxItem
-                  key={type}
-                  checked={selectedInvestmentTypes.includes(type)}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      setSelectedInvestmentTypes([...selectedInvestmentTypes, type]);
-                    } else {
-                      setSelectedInvestmentTypes(
-                        selectedInvestmentTypes.filter((t) => t !== type)
-                      );
-                    }
-                  }}
-                >
-                  {type}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            )}
+          </div>
         </div>
 
         <div>
