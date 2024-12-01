@@ -28,7 +28,7 @@ const SponsorHeader = ({ sponsor }: SponsorHeaderProps) => {
           .select('status')
           .eq('user_id', session.user.id)
           .eq('sponsor_id', sponsor.id)
-          .single();
+          .maybeSingle();
         
         if (data) {
           setIntroductionStatus(data.status);
