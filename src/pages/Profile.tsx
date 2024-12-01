@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProfileInformation from "@/components/profile/ProfileInformation";
 import SavedInvestments from "@/components/profile/SavedInvestments";
+import ConnectionsInProgress from "@/components/profile/ConnectionsInProgress";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -76,6 +77,11 @@ const Profile = () => {
             userProfile={userProfile} 
             isLoading={profileLoading} 
           />
+        </div>
+
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-doorlist-navy mb-6">Connections in Progress</h2>
+          <ConnectionsInProgress />
         </div>
 
         <h2 className="text-2xl font-bold text-doorlist-navy mb-6">Saved Investments</h2>
