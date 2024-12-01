@@ -125,7 +125,11 @@ const Investments = () => {
                   }}
                 />
                 <CardHeader>
-                  <CardTitle className="text-xl mb-2">{investment.name}</CardTitle>
+                  <CardTitle 
+                    className={`text-xl ${investment.name.length < 35 ? 'mb-2' : 'mb-0'}`}
+                  >
+                    {investment.name}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col flex-grow">
                   <div className="flex-grow">
