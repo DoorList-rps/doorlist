@@ -1,4 +1,32 @@
+import { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { useSEOFooterLinks } from "@/hooks/useSEOFooterLinks";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+
 const Footer = () => {
+  const { data: seoLinks } = useSEOFooterLinks();
+  const [openCategories, setOpenCategories] = useState<string[]>([]);
+
+  const toggleCategory = (category: string) => {
+    setOpenCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
+  };
+
+  const groupedLinks = seoLinks?.reduce((acc, link) => {
+    if (!acc[link.category]) {
+      acc[link.category] = [];
+    }
+    acc[link.category].push(link);
+    return acc;
+  }, {} as Record<string, typeof seoLinks>);
+
   return (
     <footer className="bg-doorlist-navy text-white py-12">
       <div className="container mx-auto px-4">
@@ -45,6 +73,39 @@ const Footer = () => {
             </ul>
           </div>
         </div>
+
+        {/* SEO Footer Links */}
+        {groupedLinks && Object.entries(groupedLinks).map(([category, links]) => (
+          <div key={category} className="mt-8 border-t border-gray-800 pt-6">
+            <Collapsible
+              open={openCategories.includes(category)}
+              onOpenChange={() => toggleCategory(category)}
+            >
+              <CollapsibleTrigger className="flex items-center justify-between w-full text-left">
+                <h4 className="font-semibold text-lg">{category}</h4>
+                {openCategories.includes(category) ? (
+                  <ChevronUp className="h-5 w-5" />
+                ) : (
+                  <ChevronDown className="h-5 w-5" />
+                )}
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="grid md:grid-cols-3 gap-4 mt-4">
+                  {links?.map((link) => (
+                    <a
+                      key={link.id}
+                      href={`${link.url}${link.filters ? `?filters=${encodeURIComponent(JSON.stringify(link.filters))}` : ''}`}
+                      className="text-gray-400 hover:text-white transition-colors"
+                    >
+                      {link.title}
+                    </a>
+                  ))}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          </div>
+        ))}
+
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
           <p>&copy; {new Date().getFullYear()} DoorList. All rights reserved.</p>
         </div>
