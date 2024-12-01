@@ -19,12 +19,12 @@ const RelatedInvestments = ({ investments, sponsorName }: RelatedInvestmentsProp
             <Card className="h-full hover:shadow-lg transition-shadow">
               <div className="aspect-video relative">
                 <img
-                  src={inv.thumbnail_url || inv.hero_image_url || '/placeholder.svg'}
+                  src={inv.hero_image_url || 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b'}
                   alt={inv.name}
                   className="w-full h-full object-cover rounded-t-lg"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    target.src = '/placeholder.svg';
+                    target.src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b';
                   }}
                 />
               </div>
