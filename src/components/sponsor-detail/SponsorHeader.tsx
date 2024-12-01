@@ -1,5 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import type { Tables } from "@/integrations/supabase/types";
 
 interface SponsorHeaderProps {
@@ -8,12 +11,86 @@ interface SponsorHeaderProps {
 
 const SponsorHeader = ({ sponsor }: SponsorHeaderProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [introductionStatus, setIntroductionStatus] = useState<string | null>(null);
 
-  const handleContactClick = () => {
-    toast({
-      title: "Contact Request Sent",
-      description: "Thank you for your interest. Our team will contact you shortly about this sponsor.",
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
+      setUserId(session?.user?.id || null);
+
+      if (session?.user?.id && sponsor.id) {
+        const { data } = await supabase
+          .from('sponsor_introductions')
+          .select('status')
+          .eq('user_id', session.user.id)
+          .eq('sponsor_id', sponsor.id)
+          .single();
+        
+        if (data) {
+          setIntroductionStatus(data.status);
+        }
+      }
+    };
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsLoggedIn(!!session);
+      setUserId(session?.user?.id || null);
     });
+
+    return () => subscription.unsubscribe();
+  }, [sponsor.id]);
+
+  const handleContactClick = async () => {
+    if (!isLoggedIn) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to request an introduction.",
+      });
+      navigate("/login");
+      return;
+    }
+
+    if (!userId || !sponsor.id) return;
+
+    const { error } = await supabase
+      .from('sponsor_introductions')
+      .insert([
+        { user_id: userId, sponsor_id: sponsor.id }
+      ]);
+
+    if (error) {
+      if (error.code === '23505') { // Unique violation
+        toast({
+          title: "Already Requested",
+          description: "You have already requested an introduction to this sponsor.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to request introduction. Please try again.",
+          variant: "destructive",
+        });
+      }
+      return;
+    }
+
+    setIntroductionStatus('pending');
+    toast({
+      title: "Introduction Requested",
+      description: "We'll connect you with " + sponsor.name + " shortly.",
+    });
+  };
+
+  const getButtonText = () => {
+    if (introductionStatus === 'pending') {
+      return `Connecting you with ${sponsor.name}...`;
+    }
+    return `I'd Like a Personal Introduction to ${sponsor.name}`;
   };
 
   return (
@@ -45,9 +122,10 @@ const SponsorHeader = ({ sponsor }: SponsorHeaderProps) => {
         <Button
           onClick={handleContactClick}
           size="lg"
-          className="w-full bg-doorlist-salmon hover:bg-doorlist-salmon/90"
+          className="w-full bg-doorlist-salmon hover:bg-doorlist-salmon/90 disabled:bg-gray-300"
+          disabled={introductionStatus === 'pending'}
         >
-          {`I'd Like a Personal Introduction to ${sponsor.name}`}
+          {getButtonText()}
         </Button>
       </div>
     </div>
