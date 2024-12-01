@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import type { Tables } from "@/integrations/supabase/types";
 
 interface SponsorCardProps {
-  sponsor: Pick<Tables<'sponsors'>, 'name' | 'logo_url'>;
+  sponsor: Pick<Tables<'sponsors'>, 'name' | 'logo_url'> | { name: string; logo_url: string | null };
 }
 
 const SponsorCard = ({ sponsor }: SponsorCardProps) => {

@@ -30,17 +30,22 @@ const InvestmentContent = ({ investment }: InvestmentContentProps) => {
 
   return (
     <>
-      {investment.sponsors && (
+      {investment.sponsor_name && (
         <div className="mt-12 mb-8">
-          <Link to={`/sponsors/${investment.sponsors.slug}`}>
-            <SponsorCard sponsor={investment.sponsors} />
+          <Link to={`/sponsors/${investment.sponsors?.slug || ''}`}>
+            <SponsorCard 
+              sponsor={
+                investment.sponsors || 
+                { name: investment.sponsor_name, logo_url: null }
+              } 
+            />
           </Link>
         </div>
       )}
       
       <div className="grid md:grid-cols-2 gap-8">
         <InvestmentDetails investment={investment} />
-        {investment.sponsors && (
+        {investment.sponsor_name && (
           <div className="space-y-8">
             <SponsorDetails sponsor={investment.sponsors} />
           </div>
