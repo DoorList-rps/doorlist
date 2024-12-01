@@ -15,7 +15,7 @@ const Hero = () => {
           <img 
             src="/lovable-uploads/57591e9e-a8d6-4180-b51a-6b8bdabb29fb.png" 
             alt="DoorList Logo" 
-            className="h-20 mx-auto mb-8"
+            className="h-40 mx-auto mb-8"
           />
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
             Invest in Real Estate Deals from Top Sponsors

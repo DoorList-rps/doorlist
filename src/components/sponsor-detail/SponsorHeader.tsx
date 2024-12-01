@@ -94,12 +94,12 @@ const SponsorHeader = ({ sponsor }: SponsorHeaderProps) => {
   };
 
   return (
-    <div className="grid md:grid-cols-2 gap-8">
+    <div className="grid md:grid-cols-2 gap-8 mb-12">
       <div>
         <img
           src={sponsor.logo_url || '/placeholder.svg'}
           alt={sponsor.name || 'Sponsor logo'}
-          className="w-full max-h-[300px] object-contain rounded-lg bg-gray-50 p-8"
+          className="w-full max-h-[300px] object-contain rounded-lg bg-gray-50 p-8 mb-6"
         />
       </div>
       <div>
@@ -119,14 +119,26 @@ const SponsorHeader = ({ sponsor }: SponsorHeaderProps) => {
           </div>
         )}
 
-        <Button
-          onClick={handleContactClick}
-          size="lg"
-          className="w-full bg-doorlist-salmon hover:bg-doorlist-salmon/90 disabled:bg-gray-300"
-          disabled={introductionStatus === 'pending'}
-        >
-          {getButtonText()}
-        </Button>
+        <div className="space-y-4">
+          <Button
+            onClick={handleContactClick}
+            size="lg"
+            className="w-full bg-doorlist-salmon hover:bg-doorlist-salmon/90 disabled:bg-gray-300"
+            disabled={introductionStatus === 'pending'}
+          >
+            {getButtonText()}
+          </Button>
+
+          {sponsor.website_url && (
+            <Button
+              onClick={() => window.open(sponsor.website_url, '_blank')}
+              size="lg"
+              className="w-full bg-doorlist-salmon/20 hover:bg-doorlist-salmon/30 text-doorlist-salmon"
+            >
+              View Sponsor Website
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

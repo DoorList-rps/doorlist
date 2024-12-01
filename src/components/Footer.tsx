@@ -4,7 +4,7 @@ const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-4 gap-8">
           <div>
-            <img src="/lovable-uploads/57591e9e-a8d6-4180-b51a-6b8bdabb29fb.png" alt="DoorList Logo" className="h-8 mb-4" />
+            <img src="/lovable-uploads/57591e9e-a8d6-4180-b51a-6b8bdabb29fb.png" alt="DoorList Logo" className="h-40 mb-4" />
             <p className="text-gray-400">
               Access institutional-quality real estate investments
             </p>
