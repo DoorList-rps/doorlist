@@ -18,14 +18,16 @@ const Footer = () => {
   };
 
   const handleLinkClick = (link: any) => {
-    // Categories that should use search instead of filters
-    const searchCategories = ['Popular Markets', 'Investment Strategies', 'Property Types'];
+    // Categories that should use filters instead of search
+    const filterCategories = ['Investment Sizes'];
     
-    if (searchCategories.includes(link.category)) {
-      // For these categories, we'll use the search functionality
+    if (!filterCategories.includes(link.category)) {
+      // For most categories, we'll use the search functionality
       const searchParams = new URLSearchParams();
       searchParams.set('search', link.title);
-      return `/investments?${searchParams.toString()}`;
+      return link.url.includes('sponsor') 
+        ? `/sponsors?${searchParams.toString()}`
+        : `/investments?${searchParams.toString()}`;
     } else {
       // For other categories (like investment sizes), keep using filters
       return `${link.url}${link.filters ? `?filters=${encodeURIComponent(JSON.stringify(link.filters))}` : ''}`;
