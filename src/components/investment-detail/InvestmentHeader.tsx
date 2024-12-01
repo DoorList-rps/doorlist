@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Heart } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 import InvestmentInquiryButton from "./InvestmentInquiryButton";
 
@@ -37,20 +37,29 @@ const InvestmentHeader = ({
             {isLoggedIn && (
               <Button
                 onClick={onSaveInvestment}
-                variant={isSaved ? "secondary" : "default"}
-                className="ml-4"
+                variant="ghost"
+                size="icon"
+                className={`ml-4 ${isSaved ? 'text-doorlist-salmon hover:text-doorlist-salmon/90' : 'text-gray-400 hover:text-doorlist-salmon'}`}
               >
-                {isSaved ? "Unsave Investment" : "Save Investment"}
+                <Heart className={`h-5 w-5 ${isSaved ? 'fill-current' : ''}`} />
               </Button>
             )}
           </div>
           <p className="text-gray-600 mb-6">{investment.description || investment.short_description}</p>
-          <div className="mb-6">
+          <div className="space-y-4 mb-6">
             <InvestmentInquiryButton
               investmentId={investment.id}
               isLoggedIn={isLoggedIn}
               userId={userId}
             />
+            {investment.investment_url && (
+              <Button
+                onClick={() => window.open(investment.investment_url, '_blank')}
+                className="w-full bg-doorlist-salmon/20 hover:bg-doorlist-salmon/30 text-doorlist-salmon"
+              >
+                View Investment Website
+              </Button>
+            )}
           </div>
         </div>
         <div>

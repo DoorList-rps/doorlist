@@ -102,6 +102,7 @@ export type Database = {
           hold_period: string | null
           id: string
           investment_type: string | null
+          investment_url: string | null
           location_city: string | null
           location_country: string | null
           location_state: string | null
@@ -116,7 +117,6 @@ export type Database = {
           sponsor_name: string | null
           status: string | null
           target_return: string | null
-          thumbnail_url: string | null
           total_equity: number | null
           updated_at: string
         }
@@ -131,6 +131,7 @@ export type Database = {
           hold_period?: string | null
           id?: string
           investment_type?: string | null
+          investment_url?: string | null
           location_city?: string | null
           location_country?: string | null
           location_state?: string | null
@@ -145,7 +146,6 @@ export type Database = {
           sponsor_name?: string | null
           status?: string | null
           target_return?: string | null
-          thumbnail_url?: string | null
           total_equity?: number | null
           updated_at?: string
         }
@@ -160,6 +160,7 @@ export type Database = {
           hold_period?: string | null
           id?: string
           investment_type?: string | null
+          investment_url?: string | null
           location_city?: string | null
           location_country?: string | null
           location_state?: string | null
@@ -174,7 +175,6 @@ export type Database = {
           sponsor_name?: string | null
           status?: string | null
           target_return?: string | null
-          thumbnail_url?: string | null
           total_equity?: number | null
           updated_at?: string
         }
