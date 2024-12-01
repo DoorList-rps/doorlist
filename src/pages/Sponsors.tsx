@@ -1,26 +1,17 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import type { Tables } from "@/integrations/supabase/types";
-
-type SortOption = "latest" | "nameAsc" | "nameDesc" | "returnsDesc";
+import SponsorCard from "@/components/sponsors/SponsorCard";
+import SponsorFilters from "@/components/sponsors/SponsorFilters";
+import type { SortOption } from "@/components/sponsors/types";
 
 const Sponsors = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedPropertyType, setSelectedPropertyType] = useState<string>("");
-  const [selectedInvestmentType, setSelectedInvestmentType] = useState<string>("");
+  const [selectedPropertyTypes, setSelectedPropertyTypes] = useState<string[]>([]);
+  const [selectedInvestmentTypes, setSelectedInvestmentTypes] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>("latest");
 
   const { data: sponsors, isLoading, error } = useQuery({
@@ -82,11 +73,13 @@ const Sponsors = () => {
         field?.toLowerCase().includes(searchTerm.toLowerCase())
       );
 
-      const matchesPropertyType = !selectedPropertyType || 
-        (sponsor.property_types && sponsor.property_types.includes(selectedPropertyType));
+      const matchesPropertyType = selectedPropertyTypes.length === 0 || 
+        (sponsor.property_types && 
+          selectedPropertyTypes.some(type => sponsor.property_types?.includes(type)));
 
-      const matchesInvestmentType = !selectedInvestmentType || 
-        (sponsor.investment_types && sponsor.investment_types.includes(selectedInvestmentType));
+      const matchesInvestmentType = selectedInvestmentTypes.length === 0 || 
+        (sponsor.investment_types && 
+          selectedInvestmentTypes.some(type => sponsor.investment_types?.includes(type)));
 
       return matchesSearch && matchesPropertyType && matchesInvestmentType;
     })
@@ -98,76 +91,18 @@ const Sponsors = () => {
       <main className="flex-grow container mx-auto px-4 py-8 mt-16">
         <h1 className="text-4xl font-bold text-doorlist-navy mb-8">Our Sponsors</h1>
         
-        <div className="space-y-4 mb-8">
-          <div className="relative">
-            <Input
-              type="text"
-              placeholder="Search sponsors..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Property Type
-              </label>
-              <select
-                className="w-full border border-gray-300 rounded-md p-2"
-                value={selectedPropertyType}
-                onChange={(e) => setSelectedPropertyType(e.target.value)}
-              >
-                <option value="">All Property Types</option>
-                {propertyTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Investment Type
-              </label>
-              <select
-                className="w-full border border-gray-300 rounded-md p-2"
-                value={selectedInvestmentType}
-                onChange={(e) => setSelectedInvestmentType(e.target.value)}
-              >
-                <option value="">All Investment Types</option>
-                {investmentTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Sort By
-              </label>
-              <Select
-                value={sortBy}
-                onValueChange={(value: SortOption) => setSortBy(value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Sort by..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="latest">Latest</SelectItem>
-                  <SelectItem value="nameAsc">Name (A to Z)</SelectItem>
-                  <SelectItem value="nameDesc">Name (Z to A)</SelectItem>
-                  <SelectItem value="returnsDesc">Highest Returns</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
+        <SponsorFilters
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          selectedPropertyTypes={selectedPropertyTypes}
+          setSelectedPropertyTypes={setSelectedPropertyTypes}
+          selectedInvestmentTypes={selectedInvestmentTypes}
+          setSelectedInvestmentTypes={setSelectedInvestmentTypes}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          propertyTypes={propertyTypes}
+          investmentTypes={investmentTypes}
+        />
 
         {isLoading && (
           <div className="flex justify-center items-center min-h-[200px]">
@@ -192,38 +127,7 @@ const Sponsors = () => {
         {filteredSponsors && filteredSponsors.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredSponsors.map((sponsor) => (
-              <Link 
-                key={sponsor.id}
-                to={`/sponsors/${sponsor.slug}`}
-                className="border rounded-lg p-6 hover:shadow-lg transition-shadow"
-              >
-                <div className="flex flex-col items-center">
-                  {sponsor.logo_url && (
-                    <img
-                      src={sponsor.logo_url}
-                      alt={`${sponsor.name} logo`}
-                      className="w-32 h-32 object-contain mb-4"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/placeholder.svg';
-                      }}
-                    />
-                  )}
-                  <h3 className="text-xl font-semibold text-center mb-2">
-                    {sponsor.name}
-                  </h3>
-                </div>
-                
-                <p className="text-gray-600 mb-4 text-center line-clamp-3">
-                  {sponsor.short_description || 'No description available'}
-                </p>
-
-                {sponsor.headquarters && (
-                  <p className="text-sm text-gray-500 text-center">
-                    {sponsor.headquarters}
-                  </p>
-                )}
-              </Link>
+              <SponsorCard key={sponsor.id} sponsor={sponsor} />
             ))}
           </div>
         )}
