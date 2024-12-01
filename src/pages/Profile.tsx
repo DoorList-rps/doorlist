@@ -74,16 +74,16 @@ const Profile = () => {
         <h2 className="text-2xl font-bold text-doorlist-navy mb-6">Profile</h2>
         
         <div className="mb-12">
+          <h2 className="text-2xl font-bold text-doorlist-navy mb-6">Connections in Progress</h2>
+          <ConnectionsInProgress />
+        </div>
+
+        <div className="mb-12">
           <h2 className="text-2xl font-bold text-doorlist-navy mb-6">Saved Investments</h2>
           <SavedInvestments 
             savedInvestments={savedInvestments} 
             isLoading={investmentsLoading}
           />
-        </div>
-
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-doorlist-navy mb-6">Connections in Progress</h2>
-          <ConnectionsInProgress />
         </div>
 
         <div className="mb-12">
