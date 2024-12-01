@@ -11,14 +11,14 @@ import { useRelatedInvestments } from "@/hooks/useRelatedInvestments";
 import { useSavedInvestment } from "@/hooks/useSavedInvestment";
 
 const InvestmentDetail = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const { toast } = useToast();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
-  const { data: investment, isLoading, error } = useInvestmentDetail(id);
-  const { data: otherInvestments } = useRelatedInvestments(investment?.sponsor_id, id);
-  const { savedInvestment, saveMutation } = useSavedInvestment(id, userId);
+  const { data: investment, isLoading, error } = useInvestmentDetail(slug);
+  const { data: otherInvestments } = useRelatedInvestments(investment?.sponsor_name, investment?.id);
+  const { savedInvestment, saveMutation } = useSavedInvestment(investment?.id, userId);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -79,7 +79,6 @@ const InvestmentDetail = () => {
         />
         <InvestmentContent 
           investment={investment}
-          otherInvestments={otherInvestments}
         />
       </main>
       <Footer />
