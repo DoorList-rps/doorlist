@@ -33,10 +33,10 @@ const InvestmentContent = ({ investment, otherInvestments }: InvestmentContentPr
         )}
       </div>
 
-      {otherInvestments && otherInvestments.length > 0 && (
+      {investment.sponsor_name && (
         <RelatedInvestments 
-          investments={otherInvestments}
-          sponsorName={investment.sponsor_name || ''}
+          investments={otherInvestments || []}
+          sponsorName={investment.sponsor_name}
         />
       )}
     </>
