@@ -13,9 +13,9 @@ const Hero = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           <img 
-            src="/lovable-uploads/8be013ca-f41e-4ecb-b1ad-1fdf32d634a0.png" 
+            src="/lovable-uploads/57591e9e-a8d6-4180-b51a-6b8bdabb29fb.png" 
             alt="DoorList Logo" 
-            className="h-32 mx-auto mb-8 invert"
+            className="h-20 mx-auto mb-8"
           />
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
             Invest in Real Estate Deals from Top Sponsors
