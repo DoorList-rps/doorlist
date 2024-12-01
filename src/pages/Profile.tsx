@@ -71,11 +71,13 @@ const Profile = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8 mt-16">
+        <h2 className="text-2xl font-bold text-doorlist-navy mb-6">Profile</h2>
+        
         <div className="mb-12">
-          <h2 className="text-2xl font-bold text-doorlist-navy mb-6">Profile</h2>
-          <ProfileInformation 
-            userProfile={userProfile} 
-            isLoading={profileLoading} 
+          <h2 className="text-2xl font-bold text-doorlist-navy mb-6">Saved Investments</h2>
+          <SavedInvestments 
+            savedInvestments={savedInvestments} 
+            isLoading={investmentsLoading}
           />
         </div>
 
@@ -84,11 +86,12 @@ const Profile = () => {
           <ConnectionsInProgress />
         </div>
 
-        <h2 className="text-2xl font-bold text-doorlist-navy mb-6">Saved Investments</h2>
-        <SavedInvestments 
-          savedInvestments={savedInvestments} 
-          isLoading={investmentsLoading}
-        />
+        <div className="mb-12">
+          <ProfileInformation 
+            userProfile={userProfile} 
+            isLoading={profileLoading} 
+          />
+        </div>
       </main>
       <Footer />
     </div>
