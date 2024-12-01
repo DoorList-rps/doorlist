@@ -7,6 +7,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 import { SortOption } from "./types";
 
 interface SponsorFiltersProps {
@@ -52,42 +59,68 @@ const SponsorFilters = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Property Types
           </label>
-          <select
-            className="w-full border border-gray-300 rounded-md p-2"
-            value={selectedPropertyTypes}
-            multiple
-            onChange={(e) => {
-              const options = Array.from(e.target.selectedOptions, option => option.value);
-              setSelectedPropertyTypes(options);
-            }}
-          >
-            {propertyTypes.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-full justify-start">
+                {selectedPropertyTypes.length === 0
+                  ? "Select property types..."
+                  : `${selectedPropertyTypes.length} selected`}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+              {propertyTypes.map((type) => (
+                <DropdownMenuCheckboxItem
+                  key={type}
+                  checked={selectedPropertyTypes.includes(type)}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setSelectedPropertyTypes([...selectedPropertyTypes, type]);
+                    } else {
+                      setSelectedPropertyTypes(
+                        selectedPropertyTypes.filter((t) => t !== type)
+                      );
+                    }
+                  }}
+                >
+                  {type}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Investment Types
           </label>
-          <select
-            className="w-full border border-gray-300 rounded-md p-2"
-            value={selectedInvestmentTypes}
-            multiple
-            onChange={(e) => {
-              const options = Array.from(e.target.selectedOptions, option => option.value);
-              setSelectedInvestmentTypes(options);
-            }}
-          >
-            {investmentTypes.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-full justify-start">
+                {selectedInvestmentTypes.length === 0
+                  ? "Select investment types..."
+                  : `${selectedInvestmentTypes.length} selected`}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+              {investmentTypes.map((type) => (
+                <DropdownMenuCheckboxItem
+                  key={type}
+                  checked={selectedInvestmentTypes.includes(type)}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setSelectedInvestmentTypes([...selectedInvestmentTypes, type]);
+                    } else {
+                      setSelectedInvestmentTypes(
+                        selectedInvestmentTypes.filter((t) => t !== type)
+                      );
+                    }
+                  }}
+                >
+                  {type}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <div>
