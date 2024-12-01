@@ -3,7 +3,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import type { Tables } from "@/integrations/supabase/types";
 
 interface SponsorInvestmentsProps {
-  investments: Tables<'investments'>[];
+  investments: (Tables<'investments'> & {
+    sponsors: Pick<Tables<'sponsors'>, 
+      'name' | 
+      'logo_url' | 
+      'year_founded' | 
+      'assets_under_management' | 
+      'deal_volume' | 
+      'number_of_deals' | 
+      'advertised_returns' | 
+      'holding_period' |
+      'slug'
+    > | null;
+  })[];
   sponsorName: string;
 }
 

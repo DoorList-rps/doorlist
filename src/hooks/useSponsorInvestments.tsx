@@ -11,7 +11,20 @@ export const useSponsorInvestments = (sponsorName: string | undefined) => {
       
       const { data, error } = await supabase
         .from('investments')
-        .select('*')
+        .select(`
+          *,
+          sponsors (
+            name,
+            logo_url,
+            year_founded,
+            assets_under_management,
+            deal_volume,
+            number_of_deals,
+            advertised_returns,
+            holding_period,
+            slug
+          )
+        `)
         .eq('sponsor_name', sponsorName)
         .eq('status', 'active');
 
