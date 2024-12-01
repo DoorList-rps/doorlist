@@ -76,6 +76,7 @@ const InvestmentDetail = () => {
           onSaveInvestment={handleSaveInvestment}
           isSaved={!!savedInvestment}
           isLoggedIn={isLoggedIn}
+          userId={userId}
         />
         <InvestmentContent 
           investment={investment}

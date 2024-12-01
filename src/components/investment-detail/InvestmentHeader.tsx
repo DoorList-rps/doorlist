@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
+import InvestmentInquiryButton from "./InvestmentInquiryButton";
 
 interface InvestmentHeaderProps {
   investment: Tables<'investments'> & {
@@ -10,9 +11,16 @@ interface InvestmentHeaderProps {
   onSaveInvestment: () => void;
   isSaved: boolean;
   isLoggedIn: boolean;
+  userId: string | null;
 }
 
-const InvestmentHeader = ({ investment, onSaveInvestment, isSaved, isLoggedIn }: InvestmentHeaderProps) => {
+const InvestmentHeader = ({ 
+  investment, 
+  onSaveInvestment, 
+  isSaved, 
+  isLoggedIn,
+  userId 
+}: InvestmentHeaderProps) => {
   return (
     <>
       <Link to="/investments" className="inline-block mb-6">
@@ -24,8 +32,8 @@ const InvestmentHeader = ({ investment, onSaveInvestment, isSaved, isLoggedIn }:
       
       <div className="grid md:grid-cols-2 gap-8">
         <div>
-          <div className="flex justify-between items-start">
-            <h1 className="text-3xl font-bold text-doorlist-navy mb-4">{investment.name}</h1>
+          <div className="flex justify-between items-start mb-4">
+            <h1 className="text-3xl font-bold text-doorlist-navy">{investment.name}</h1>
             {isLoggedIn && (
               <Button
                 onClick={onSaveInvestment}
@@ -37,6 +45,13 @@ const InvestmentHeader = ({ investment, onSaveInvestment, isSaved, isLoggedIn }:
             )}
           </div>
           <p className="text-gray-600 mb-6">{investment.description || investment.short_description}</p>
+          <div className="mb-6">
+            <InvestmentInquiryButton
+              investmentId={investment.id}
+              isLoggedIn={isLoggedIn}
+              userId={userId}
+            />
+          </div>
         </div>
         <div>
           <img
