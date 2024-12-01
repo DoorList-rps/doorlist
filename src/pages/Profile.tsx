@@ -20,6 +20,23 @@ const Profile = () => {
     checkAuth();
   }, [navigate]);
 
+  const { data: userProfile, isLoading: profileLoading } = useQuery({
+    queryKey: ['user-profile'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    }
+  });
+
   const { data: savedInvestments, isLoading: investmentsLoading } = useQuery({
     queryKey: ['saved-investments'],
     queryFn: async () => {
@@ -39,7 +56,8 @@ const Profile = () => {
             minimum_investment,
             target_return,
             location_city,
-            location_state
+            location_state,
+            slug
           )
         `)
         .eq('user_id', session.user.id);
@@ -49,74 +67,68 @@ const Profile = () => {
     }
   });
 
-  const { data: sponsorIntroductions, isLoading: introductionsLoading } = useQuery({
-    queryKey: ['sponsor-introductions'],
-    queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Not authenticated');
-
-      const { data, error } = await supabase
-        .from('sponsor_introductions')
-        .select(`
-          id,
-          status,
-          created_at,
-          sponsors (
-            id,
-            name,
-            logo_url,
-            short_description
-          )
-        `)
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  const isLoading = investmentsLoading || introductionsLoading;
+  const isLoading = profileLoading || investmentsLoading;
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8 mt-16">
-        {sponsorIntroductions && sponsorIntroductions.length > 0 && (
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-doorlist-navy mb-6">Pending Introductions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {sponsorIntroductions.map((intro) => (
-                <Card key={intro.id} className="hover:shadow-lg transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-4 mb-4">
-                      <img
-                        src={intro.sponsors?.logo_url || '/placeholder.svg'}
-                        alt={intro.sponsors?.name}
-                        className="w-16 h-16 object-contain"
-                      />
-                      <div>
-                        <h3 className="font-semibold text-lg">{intro.sponsors?.name}</h3>
-                        <p className="text-sm text-gray-500">
-                          Status: <span className="capitalize">{intro.status}</span>
-                        </p>
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-600 line-clamp-2">
-                      {intro.sponsors?.short_description}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
+        {/* User Profile Section */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-doorlist-navy mb-6">Profile Information</h2>
+          {isLoading ? (
+            <div className="animate-pulse space-y-4">
+              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/3"></div>
             </div>
-          </div>
-        )}
+          ) : userProfile ? (
+            <Card>
+              <CardContent className="p-6 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-gray-500">Name</p>
+                    <p className="font-medium">
+                      {userProfile.first_name || userProfile.last_name 
+                        ? `${userProfile.first_name || ''} ${userProfile.last_name || ''}`
+                        : 'Not provided'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Email</p>
+                    <p className="font-medium">{userProfile.email || 'Not provided'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Phone Number</p>
+                    <p className="font-medium">{userProfile.phone_number || 'Not provided'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Accredited Investor Status</p>
+                    <p className="font-medium">
+                      {userProfile.is_accredited_investor === true ? 'Yes' 
+                        : userProfile.is_accredited_investor === false ? 'No' 
+                        : 'Not specified'}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <p className="text-gray-600">Failed to load profile information</p>
+          )}
+        </div>
 
+        {/* Saved Investments Section */}
         <h2 className="text-2xl font-bold text-doorlist-navy mb-6">Saved Investments</h2>
-        
         {isLoading ? (
-          <div className="flex justify-center items-center min-h-[200px]">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-doorlist-navy"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((n) => (
+              <div key={n} className="animate-pulse">
+                <div className="bg-gray-200 aspect-video rounded-lg mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              </div>
+            ))}
           </div>
         ) : !savedInvestments || savedInvestments.length === 0 ? (
           <div className="text-center py-12">
@@ -130,7 +142,7 @@ const Profile = () => {
             {savedInvestments.map((saved) => (
               <Link 
                 key={saved.investment_id} 
-                to={`/investments/${saved.investment_id}`}
+                to={`/investments/${saved.investments?.slug}`}
                 className="block"
               >
                 <Card className="h-full hover:shadow-lg transition-shadow">
