@@ -64,6 +64,12 @@ const Navbar = () => {
               Sponsors
             </Link>
             <Link 
+              to="/blog" 
+              className="text-doorlist-navy hover:text-doorlist-salmon transition-colors font-medium"
+            >
+              Blog
+            </Link>
+            <Link 
               to="/about" 
               className="text-doorlist-navy hover:text-doorlist-salmon transition-colors font-medium"
             >
