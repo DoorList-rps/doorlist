@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,8 +11,25 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
 const Investments = () => {
+  const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState<string>("");
+  
+  // Parse filters from URL
+  useEffect(() => {
+    const filtersParam = searchParams.get('filters');
+    if (filtersParam) {
+      try {
+        const filters = JSON.parse(decodeURIComponent(filtersParam));
+        if (filters.property_type) {
+          setSelectedType(filters.property_type);
+        }
+        // Add more filter handling as needed
+      } catch (error) {
+        console.error('Error parsing filters:', error);
+      }
+    }
+  }, [searchParams]);
 
   const { data: investments, isLoading, error } = useQuery({
     queryKey: ['investments'],
@@ -49,8 +66,39 @@ const Investments = () => {
       investment.location_city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       investment.location_state?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    const matchesType = !selectedType || investment.property_type === selectedType;
-    return matchesSearch && matchesType;
+
+    // Get filters from URL
+    const filtersParam = searchParams.get('filters');
+    let urlFilters = {};
+    if (filtersParam) {
+      try {
+        urlFilters = JSON.parse(decodeURIComponent(filtersParam));
+      } catch (error) {
+        console.error('Error parsing filters:', error);
+      }
+    }
+
+    // Apply URL filters
+    const matchesPropertyType = !urlFilters?.property_type || investment.property_type === urlFilters.property_type;
+    const matchesState = !urlFilters?.location_state || investment.location_state === urlFilters.location_state;
+    const matchesInvestmentType = !urlFilters?.investment_type || investment.investment_type === urlFilters.investment_type;
+    
+    // Handle minimum investment range filters
+    const matchesMinInvestment = (
+      !urlFilters?.minimum_investment_min || 
+      (investment.minimum_investment && investment.minimum_investment >= urlFilters.minimum_investment_min)
+    ) && (
+      !urlFilters?.minimum_investment_max || 
+      (investment.minimum_investment && investment.minimum_investment <= urlFilters.minimum_investment_max)
+    );
+
+    // Combine all filter conditions
+    const matchesUrlFilters = matchesPropertyType && matchesState && matchesInvestmentType && matchesMinInvestment;
+
+    // If there's a selected type from the UI, also apply that
+    const matchesSelectedType = !selectedType || investment.property_type === selectedType;
+
+    return matchesSearch && matchesUrlFilters && matchesSelectedType;
   });
 
   return (
