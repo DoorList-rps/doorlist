@@ -13,7 +13,7 @@ export const useInvestmentDetail = (slug: string | undefined) => {
         .from('investments')
         .select(`
           *,
-          sponsors (
+          sponsors!sponsor_name (
             name,
             logo_url,
             year_founded,
