@@ -1,43 +1,18 @@
-import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import InvestmentFilters from "@/components/investments/InvestmentFilters";
+import InvestmentCard from "@/components/investments/InvestmentCard";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
-
-interface InvestmentFilters {
-  property_type?: string;
-  location_state?: string;
-  investment_type?: string;
-  minimum_investment_min?: number;
-  minimum_investment_max?: number;
-}
+import type { InvestmentFilters as IInvestmentFilters } from "@/types/investments";
 
 const Investments = () => {
   const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState<string>("");
-  
-  // Parse filters from URL
-  useEffect(() => {
-    const filtersParam = searchParams.get('filters');
-    if (filtersParam) {
-      try {
-        const filters = JSON.parse(decodeURIComponent(filtersParam)) as InvestmentFilters;
-        if (filters.property_type) {
-          setSelectedType(filters.property_type);
-        }
-        // Add more filter handling as needed
-      } catch (error) {
-        console.error('Error parsing filters:', error);
-      }
-    }
-  }, [searchParams]);
 
   const { data: investments, isLoading, error } = useQuery({
     queryKey: ['investments'],
@@ -77,7 +52,7 @@ const Investments = () => {
 
     // Get filters from URL
     const filtersParam = searchParams.get('filters');
-    let urlFilters: InvestmentFilters = {};
+    let urlFilters: IInvestmentFilters = {};
     if (filtersParam) {
       try {
         urlFilters = JSON.parse(decodeURIComponent(filtersParam));
@@ -115,37 +90,12 @@ const Investments = () => {
       <main className="flex-grow container mx-auto px-4 py-8 mt-16">
         <h1 className="text-4xl font-bold text-doorlist-navy mb-8">Investment Opportunities</h1>
         
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="relative flex-grow">
-            <Input
-              type="text"
-              placeholder="Search investments..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            <Button
-              variant={selectedType === "" ? "default" : "outline"}
-              onClick={() => setSelectedType("")}
-              className="whitespace-nowrap"
-            >
-              All Types
-            </Button>
-            {types.map((type) => type && (
-              <Button
-                key={type}
-                variant={selectedType === type ? "default" : "outline"}
-                onClick={() => setSelectedType(type)}
-                className="whitespace-nowrap"
-              >
-                {type}
-              </Button>
-            ))}
-          </div>
-        </div>
+        <InvestmentFilters
+          types={types}
+          onSearchChange={setSearchTerm}
+          onTypeChange={setSelectedType}
+          selectedType={selectedType}
+        />
 
         {isLoading && (
           <div className="flex justify-center items-center min-h-[200px]">
@@ -169,55 +119,7 @@ const Investments = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredInvestments?.map((investment) => (
-            <Link key={investment.id} to={`/investments/${investment.slug}`}>
-              <Card className="h-full hover:shadow-lg transition-shadow flex flex-col">
-                <img
-                  src={investment.hero_image_url || '/placeholder.svg'}
-                  alt={investment.name}
-                  className="w-full h-48 object-cover rounded-t-lg"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = '/placeholder.svg';
-                  }}
-                />
-                <CardHeader>
-                  <CardTitle 
-                    className={`text-xl ${investment.name.length < 35 ? 'mb-2' : 'mb-0'}`}
-                  >
-                    {investment.name}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col flex-grow">
-                  <div className="flex-grow">
-                    <p className="text-gray-600 mb-6">{investment.short_description || investment.description}</p>
-                  </div>
-                  <div className="mt-auto space-y-2">
-                    {investment.minimum_investment && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Minimum</span>
-                        <span className="font-medium">${investment.minimum_investment.toLocaleString()}</span>
-                      </div>
-                    )}
-                    {investment.target_return && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Target Return</span>
-                        <span className="font-medium">{investment.target_return}</span>
-                      </div>
-                    )}
-                    {(investment.location_city || investment.location_state) && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Location</span>
-                        <span className="font-medium">
-                          {[investment.location_city, investment.location_state]
-                            .filter(Boolean)
-                            .join(', ')}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+            <InvestmentCard key={investment.id} investment={investment} />
           ))}
         </div>
       </main>
