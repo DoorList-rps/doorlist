@@ -9,12 +9,12 @@ export const useInvestmentDetail = (slug: string | undefined) => {
       
       console.log('Fetching investment details for slug:', slug);
       
-      // First try to get the investment with its sponsor
+      // Get the investment with its sponsor matched by sponsor_name
       const { data: investment, error: investmentError } = await supabase
         .from('investments')
         .select(`
           *,
-          sponsors (
+          sponsors!inner(
             name,
             logo_url,
             year_founded,
@@ -27,6 +27,7 @@ export const useInvestmentDetail = (slug: string | undefined) => {
           )
         `)
         .eq('slug', slug)
+        .eq('sponsors.name', 'sponsor_name')
         .single();
 
       if (investmentError) throw investmentError;
