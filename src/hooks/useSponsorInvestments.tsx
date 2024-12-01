@@ -7,6 +7,8 @@ export const useSponsorInvestments = (sponsorName: string | undefined) => {
     queryFn: async () => {
       if (!sponsorName) throw new Error('No sponsor name provided');
       
+      console.log('Fetching investments for sponsor:', sponsorName);
+      
       const { data, error } = await supabase
         .from('investments')
         .select('*')
@@ -17,6 +19,8 @@ export const useSponsorInvestments = (sponsorName: string | undefined) => {
         console.error('Error fetching sponsor investments:', error);
         throw error;
       }
+
+      console.log('Found investments:', data);
       
       return data;
     },

@@ -13,6 +13,9 @@ const SponsorDetail = () => {
   const { data: sponsor, isLoading, error } = useSponsorDetail(slug);
   const { data: investments } = useSponsorInvestments(sponsor?.name);
 
+  console.log('Sponsor:', sponsor);
+  console.log('Investments:', investments);
+
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
