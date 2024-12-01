@@ -257,6 +257,36 @@ export type Database = {
           },
         ]
       }
+      seo_footer_links: {
+        Row: {
+          category: string
+          created_at: string
+          filters: Json | null
+          id: string
+          title: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          filters?: Json | null
+          id?: string
+          title: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          filters?: Json | null
+          id?: string
+          title?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       sponsor_introductions: {
         Row: {
           created_at: string
