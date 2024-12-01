@@ -45,9 +45,9 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-20">
           <Link to="/" className="flex items-center space-x-2">
             <img 
-              src="/lovable-uploads/336614b9-911c-41d0-91e8-a09a6168c0f2.png" 
+              src="/lovable-uploads/d1f54f8f-4675-4969-8b15-20412e122947.png" 
               alt="DoorList Logo" 
-              className="h-12 w-auto"
+              className="h-8 w-auto brightness-0"
             />
           </Link>
           <div className="hidden md:flex items-center space-x-10">
