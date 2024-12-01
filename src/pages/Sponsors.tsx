@@ -6,12 +6,22 @@ import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { Tables } from "@/integrations/supabase/types";
+
+type SortOption = "latest" | "nameAsc" | "nameDesc" | "returnsDesc";
 
 const Sponsors = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPropertyType, setSelectedPropertyType] = useState<string>("");
   const [selectedInvestmentType, setSelectedInvestmentType] = useState<string>("");
+  const [sortBy, setSortBy] = useState<SortOption>("latest");
 
   const { data: sponsors, isLoading, error } = useQuery({
     queryKey: ['sponsors'],
@@ -34,26 +44,53 @@ const Sponsors = () => {
     ? Array.from(new Set(sponsors.flatMap(s => s.investment_types || [])))
     : [];
 
-  const filteredSponsors = sponsors?.filter((sponsor) => {
-    const searchFields = [
-      sponsor.name,
-      sponsor.description,
-      sponsor.headquarters,
-      sponsor.short_description
-    ].filter(Boolean);
+  const sortSponsors = (sponsors: Tables<'sponsors'>[]) => {
+    const sortedSponsors = [...sponsors];
     
-    const matchesSearch = searchFields.some(field => 
-      field?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    switch (sortBy) {
+      case "nameAsc":
+        return sortedSponsors.sort((a, b) => a.name.localeCompare(b.name));
+      case "nameDesc":
+        return sortedSponsors.sort((a, b) => b.name.localeCompare(a.name));
+      case "returnsDesc":
+        return sortedSponsors.sort((a, b) => {
+          const getNumericReturn = (returns: string | null) => {
+            if (!returns) return 0;
+            const match = returns.match(/\d+/);
+            return match ? parseInt(match[0]) : 0;
+          };
+          return getNumericReturn(b.advertised_returns) - getNumericReturn(a.advertised_returns);
+        });
+      case "latest":
+      default:
+        return sortedSponsors.sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+    }
+  };
 
-    const matchesPropertyType = !selectedPropertyType || 
-      (sponsor.property_types && sponsor.property_types.includes(selectedPropertyType));
+  const filteredSponsors = sponsors ? sortSponsors(
+    sponsors.filter((sponsor) => {
+      const searchFields = [
+        sponsor.name,
+        sponsor.description,
+        sponsor.headquarters,
+        sponsor.short_description
+      ].filter(Boolean);
+      
+      const matchesSearch = searchFields.some(field => 
+        field?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
 
-    const matchesInvestmentType = !selectedInvestmentType || 
-      (sponsor.investment_types && sponsor.investment_types.includes(selectedInvestmentType));
+      const matchesPropertyType = !selectedPropertyType || 
+        (sponsor.property_types && sponsor.property_types.includes(selectedPropertyType));
 
-    return matchesSearch && matchesPropertyType && matchesInvestmentType;
-  });
+      const matchesInvestmentType = !selectedInvestmentType || 
+        (sponsor.investment_types && sponsor.investment_types.includes(selectedInvestmentType));
+
+      return matchesSearch && matchesPropertyType && matchesInvestmentType;
+    })
+  ) : [];
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -73,7 +110,7 @@ const Sponsors = () => {
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Property Type
@@ -108,6 +145,26 @@ const Sponsors = () => {
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Sort By
+              </label>
+              <Select
+                value={sortBy}
+                onValueChange={(value: SortOption) => setSortBy(value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Sort by..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="latest">Latest</SelectItem>
+                  <SelectItem value="nameAsc">Name (A to Z)</SelectItem>
+                  <SelectItem value="nameDesc">Name (Z to A)</SelectItem>
+                  <SelectItem value="returnsDesc">Highest Returns</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
