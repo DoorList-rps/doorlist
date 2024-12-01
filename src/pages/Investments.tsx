@@ -10,6 +10,14 @@ import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
+interface InvestmentFilters {
+  property_type?: string;
+  location_state?: string;
+  investment_type?: string;
+  minimum_investment_min?: number;
+  minimum_investment_max?: number;
+}
+
 const Investments = () => {
   const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,7 +28,7 @@ const Investments = () => {
     const filtersParam = searchParams.get('filters');
     if (filtersParam) {
       try {
-        const filters = JSON.parse(decodeURIComponent(filtersParam));
+        const filters = JSON.parse(decodeURIComponent(filtersParam)) as InvestmentFilters;
         if (filters.property_type) {
           setSelectedType(filters.property_type);
         }
@@ -69,7 +77,7 @@ const Investments = () => {
 
     // Get filters from URL
     const filtersParam = searchParams.get('filters');
-    let urlFilters = {};
+    let urlFilters: InvestmentFilters = {};
     if (filtersParam) {
       try {
         urlFilters = JSON.parse(decodeURIComponent(filtersParam));
@@ -79,16 +87,16 @@ const Investments = () => {
     }
 
     // Apply URL filters
-    const matchesPropertyType = !urlFilters?.property_type || investment.property_type === urlFilters.property_type;
-    const matchesState = !urlFilters?.location_state || investment.location_state === urlFilters.location_state;
-    const matchesInvestmentType = !urlFilters?.investment_type || investment.investment_type === urlFilters.investment_type;
+    const matchesPropertyType = !urlFilters.property_type || investment.property_type === urlFilters.property_type;
+    const matchesState = !urlFilters.location_state || investment.location_state === urlFilters.location_state;
+    const matchesInvestmentType = !urlFilters.investment_type || investment.investment_type === urlFilters.investment_type;
     
     // Handle minimum investment range filters
     const matchesMinInvestment = (
-      !urlFilters?.minimum_investment_min || 
+      !urlFilters.minimum_investment_min || 
       (investment.minimum_investment && investment.minimum_investment >= urlFilters.minimum_investment_min)
     ) && (
-      !urlFilters?.minimum_investment_max || 
+      !urlFilters.minimum_investment_max || 
       (investment.minimum_investment && investment.minimum_investment <= urlFilters.minimum_investment_max)
     );
 
