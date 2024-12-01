@@ -95,6 +95,21 @@ const SponsorDetail = () => {
                   <p className="text-gray-500">Location</p>
                   <p className="text-xl font-semibold">{sponsor.headquarters || 'N/A'}</p>
                 </div>
+                <div>
+                  <p className="text-gray-500">Website</p>
+                  {sponsor.website_url ? (
+                    <a 
+                      href={sponsor.website_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xl font-semibold text-doorlist-navy hover:underline"
+                    >
+                      Visit Site
+                    </a>
+                  ) : (
+                    <p className="text-xl font-semibold">N/A</p>
+                  )}
+                </div>
               </CardContent>
             </Card>
 
