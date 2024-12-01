@@ -57,7 +57,16 @@ const Investments = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8 mt-16">
-        <h1 className="text-4xl font-bold text-doorlist-navy mb-8">Investment Opportunities</h1>
+        <div className="max-w-4xl mx-auto mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold text-doorlist-navy mb-6">
+            Browse Investments from DoorList Sponsors.
+          </h1>
+          <p className="text-lg text-gray-600 leading-relaxed">
+            We connect potential investors with opportunities to invest in private real estate funds and syndications. 
+            These opportunities have long been hard to find and exclusive to a select few. Our goal is to be the most 
+            comprehensive source for real estate investing in the market.
+          </p>
+        </div>
         
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="relative flex-grow">
