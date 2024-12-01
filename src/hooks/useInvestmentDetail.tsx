@@ -28,6 +28,21 @@ export const useInvestmentDetail = (slug: string | undefined) => {
 
       if (error) throw error;
       if (!data) throw new Error('Investment not found');
+
+      // If we have a sponsor_name but no matching sponsor record, create a basic sponsor object
+      if (data.sponsor_name && !data.sponsors) {
+        data.sponsors = {
+          name: data.sponsor_name,
+          logo_url: null,
+          year_founded: null,
+          assets_under_management: null,
+          deal_volume: null,
+          number_of_deals: null,
+          advertised_returns: null,
+          holding_period: null,
+          slug: null
+        };
+      }
       
       return data;
     },
