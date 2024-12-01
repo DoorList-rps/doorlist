@@ -2,13 +2,16 @@ import { useParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useSponsorDetail } from "@/hooks/useSponsorDetail";
+import { useSponsorInvestments } from "@/hooks/useSponsorInvestments";
 import SponsorHeader from "@/components/sponsor-detail/SponsorHeader";
 import SponsorOverview from "@/components/sponsor-detail/SponsorOverview";
 import SponsorStats from "@/components/sponsor-detail/SponsorStats";
+import SponsorInvestments from "@/components/sponsor-detail/SponsorInvestments";
 
 const SponsorDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: sponsor, isLoading, error } = useSponsorDetail(slug);
+  const { data: investments } = useSponsorInvestments(sponsor?.name);
 
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -36,6 +39,10 @@ const SponsorDetail = () => {
         <SponsorHeader sponsor={sponsor} />
         <SponsorOverview sponsor={sponsor} />
         <SponsorStats sponsor={sponsor} />
+        <SponsorInvestments 
+          investments={investments || []} 
+          sponsorName={sponsor.name}
+        />
       </main>
       <Footer />
     </div>
