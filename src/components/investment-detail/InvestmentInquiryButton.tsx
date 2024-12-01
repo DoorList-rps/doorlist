@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,12 +14,26 @@ const InvestmentInquiryButton = ({ investmentId, isLoggedIn, userId }: Investmen
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasRequested, setHasRequested] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleInquiry = async () => {
-    if (!isLoggedIn || !userId) {
+    if (!isLoggedIn) {
+      // Store the current location to return after login
+      const returnPath = location.pathname;
+      const searchParams = new URLSearchParams();
+      searchParams.set('redirect', returnPath);
+      searchParams.set('action', 'request_details');
+      searchParams.set('investment_id', investmentId);
+      
+      navigate(`/login?${searchParams.toString()}`);
+      return;
+    }
+
+    if (!userId) {
       toast({
-        title: "Authentication Required",
-        description: "Please sign in to request investment details.",
+        title: "Error",
+        description: "Unable to verify user credentials. Please try again.",
         variant: "destructive",
       });
       return;
@@ -69,7 +84,7 @@ const InvestmentInquiryButton = ({ investmentId, isLoggedIn, userId }: Investmen
   return (
     <Button
       onClick={handleInquiry}
-      disabled={isSubmitting || !isLoggedIn}
+      disabled={isSubmitting}
       className="w-full bg-doorlist-salmon hover:bg-doorlist-salmon/90"
     >
       {isSubmitting ? "Submitting..." : "Request Investment Details"}
