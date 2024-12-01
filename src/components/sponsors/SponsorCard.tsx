@@ -10,7 +10,7 @@ const SponsorCard = ({ sponsor }: SponsorCardProps) => {
   return (
     <Link 
       to={`/sponsors/${sponsor.slug}`}
-      className="border rounded-lg p-6 hover:shadow-lg transition-shadow bg-white"
+      className="border rounded-lg p-6 hover:shadow-lg transition-shadow bg-white h-full"
     >
       <div className="flex flex-col h-full">
         <div className="flex flex-col items-center mb-4">
@@ -30,12 +30,12 @@ const SponsorCard = ({ sponsor }: SponsorCardProps) => {
           </h3>
         </div>
         
-        <div className="flex-grow">
+        <div className="flex flex-col flex-grow">
           <p className="text-gray-600 mb-4 text-center line-clamp-3">
             {sponsor.short_description || 'No description available'}
           </p>
 
-          <div className="space-y-2 text-sm text-gray-600">
+          <div className="mt-auto space-y-2 text-sm text-gray-600">
             {sponsor.headquarters && (
               <div className="flex items-center gap-2">
                 <Building2 className="h-4 w-4" />
