@@ -114,7 +114,7 @@ const Investments = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredInvestments?.map((investment) => (
             <Link key={investment.id} to={`/investments/${investment.id}`}>
-              <Card className="h-full hover:shadow-lg transition-shadow">
+              <Card className="h-full hover:shadow-lg transition-shadow flex flex-col">
                 <img
                   src={investment.hero_image_url || '/placeholder.svg'}
                   alt={investment.name}
@@ -125,11 +125,13 @@ const Investments = () => {
                   }}
                 />
                 <CardHeader>
-                  <CardTitle className="text-xl">{investment.name}</CardTitle>
+                  <CardTitle className="text-xl mb-2">{investment.name}</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 mb-4">{investment.short_description || investment.description}</p>
-                  <div className="space-y-2">
+                <CardContent className="flex flex-col flex-grow">
+                  <div className="flex-grow">
+                    <p className="text-gray-600 mb-6">{investment.short_description || investment.description}</p>
+                  </div>
+                  <div className="mt-auto space-y-2">
                     {investment.minimum_investment && (
                       <div className="flex justify-between">
                         <span className="text-gray-500">Minimum</span>
