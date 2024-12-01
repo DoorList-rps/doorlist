@@ -9,7 +9,7 @@ const SponsorCard = ({ sponsor }: SponsorCardProps) => {
   return (
     <div>
       <h2 className="text-2xl font-bold text-doorlist-navy mb-4">Sponsor</h2>
-      <Card>
+      <Card className="hover:shadow-lg transition-shadow">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <img
