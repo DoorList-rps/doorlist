@@ -47,7 +47,7 @@ const SponsorHeader = ({ sponsor }: SponsorHeaderProps) => {
           size="lg"
           className="w-full bg-doorlist-salmon hover:bg-doorlist-salmon/90"
         >
-          Contact This Sponsor
+          {`I'd Like a Personal Introduction to ${sponsor.name}`}
         </Button>
       </div>
     </div>
