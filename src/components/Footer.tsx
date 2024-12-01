@@ -19,6 +19,21 @@ const Footer = () => {
     );
   };
 
+  const handleLinkClick = (link: any) => {
+    // Categories that should use search instead of filters
+    const searchCategories = ['Popular Markets', 'Investment Strategies', 'Property Types'];
+    
+    if (searchCategories.includes(link.category)) {
+      // For these categories, we'll use the search functionality
+      const searchParams = new URLSearchParams();
+      searchParams.set('search', link.title);
+      return `/investments?${searchParams.toString()}`;
+    } else {
+      // For other categories (like investment sizes), keep using filters
+      return `${link.url}${link.filters ? `?filters=${encodeURIComponent(JSON.stringify(link.filters))}` : ''}`;
+    }
+  };
+
   const groupedLinks = seoLinks?.reduce((acc, link) => {
     if (!acc[link.category]) {
       acc[link.category] = [];
@@ -94,7 +109,7 @@ const Footer = () => {
                   {links?.map((link) => (
                     <a
                       key={link.id}
-                      href={`${link.url}${link.filters ? `?filters=${encodeURIComponent(JSON.stringify(link.filters))}` : ''}`}
+                      href={handleLinkClick(link)}
                       className="text-gray-400 hover:text-white transition-colors"
                     >
                       {link.title}
