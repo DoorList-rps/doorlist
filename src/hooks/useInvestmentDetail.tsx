@@ -9,11 +9,12 @@ export const useInvestmentDetail = (slug: string | undefined) => {
       
       console.log('Fetching investment details for slug:', slug);
       
+      // First try to get the investment with its sponsor
       const { data: investment, error: investmentError } = await supabase
         .from('investments')
         .select(`
           *,
-          sponsors:sponsor_name(
+          sponsors (
             name,
             logo_url,
             year_founded,
