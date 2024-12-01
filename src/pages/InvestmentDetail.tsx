@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import InvestmentHeader from "@/components/investment-detail/InvestmentHeader";
 import InvestmentDetails from "@/components/investment-detail/InvestmentDetails";
 import SponsorCard from "@/components/investment-detail/SponsorCard";
+import SponsorDetails from "@/components/investment-detail/SponsorDetails";
 import RelatedInvestments from "@/components/investment-detail/RelatedInvestments";
 import { useEffect, useState } from "react";
 
@@ -49,7 +50,13 @@ const InvestmentDetail = () => {
           *,
           sponsors (
             name,
-            logo_url
+            logo_url,
+            year_founded,
+            assets_under_management,
+            deal_volume,
+            number_of_deals,
+            advertised_returns,
+            holding_period
           )
         `)
         .eq('id', id)
@@ -185,7 +192,10 @@ const InvestmentDetail = () => {
         <div className="mt-12 grid md:grid-cols-2 gap-8">
           <InvestmentDetails investment={investment} />
           {investment.sponsors && (
-            <SponsorCard sponsor={investment.sponsors} />
+            <div className="space-y-8">
+              <SponsorCard sponsor={investment.sponsors} />
+              <SponsorDetails sponsor={investment.sponsors} />
+            </div>
           )}
         </div>
 
