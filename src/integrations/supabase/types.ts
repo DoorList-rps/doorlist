@@ -31,6 +31,7 @@ export type Database = {
           property_type: string | null
           short_description: string | null
           sponsor_id: string | null
+          sponsor_name: string | null
           status: string | null
           target_return: string | null
           thumbnail_url: string | null
@@ -58,6 +59,7 @@ export type Database = {
           property_type?: string | null
           short_description?: string | null
           sponsor_id?: string | null
+          sponsor_name?: string | null
           status?: string | null
           target_return?: string | null
           thumbnail_url?: string | null
@@ -85,6 +87,7 @@ export type Database = {
           property_type?: string | null
           short_description?: string | null
           sponsor_id?: string | null
+          sponsor_name?: string | null
           status?: string | null
           target_return?: string | null
           thumbnail_url?: string | null

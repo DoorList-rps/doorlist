@@ -13,28 +13,39 @@ export const useInvestmentDetail = (id: string | undefined) => {
         throw new Error('Invalid investment ID format');
       }
 
-      const { data, error } = await supabase
+      const { data: investment, error: investmentError } = await supabase
         .from('investments')
-        .select(`
-          *,
-          sponsors (
-            name,
-            logo_url,
-            year_founded,
-            assets_under_management,
-            deal_volume,
-            number_of_deals,
-            advertised_returns,
-            holding_period
-          )
-        `)
+        .select('*')
         .eq('id', id)
         .single();
       
-      if (error) throw error;
-      if (!data) throw new Error('Investment not found');
-      
-      return data;
+      if (investmentError) throw investmentError;
+      if (!investment) throw new Error('Investment not found');
+
+      // Fetch sponsor details using sponsor_name
+      const { data: sponsor, error: sponsorError } = await supabase
+        .from('sponsors')
+        .select(`
+          name,
+          logo_url,
+          year_founded,
+          assets_under_management,
+          deal_volume,
+          number_of_deals,
+          advertised_returns,
+          holding_period
+        `)
+        .eq('name', investment.sponsor_name)
+        .single();
+
+      if (sponsorError) {
+        console.error('Error fetching sponsor:', sponsorError);
+      }
+
+      return {
+        ...investment,
+        sponsors: sponsor
+      };
     },
     enabled: !!id
   });

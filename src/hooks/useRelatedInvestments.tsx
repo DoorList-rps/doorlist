@@ -1,22 +1,22 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export const useRelatedInvestments = (sponsorId: string | undefined, currentInvestmentId: string | undefined) => {
+export const useRelatedInvestments = (sponsorName: string | undefined, currentInvestmentId: string | undefined) => {
   return useQuery({
-    queryKey: ['sponsor-investments', sponsorId],
+    queryKey: ['sponsor-investments', sponsorName],
     queryFn: async () => {
-      if (!sponsorId) throw new Error('No sponsor ID available');
+      if (!sponsorName) throw new Error('No sponsor name available');
 
       const { data, error } = await supabase
         .from('investments')
         .select('*')
-        .eq('sponsor_id', sponsorId)
+        .eq('sponsor_name', sponsorName)
         .neq('id', currentInvestmentId)
         .limit(3);
 
       if (error) throw error;
       return data;
     },
-    enabled: !!sponsorId
+    enabled: !!sponsorName
   });
 };
