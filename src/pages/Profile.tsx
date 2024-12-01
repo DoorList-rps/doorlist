@@ -1,14 +1,26 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 
 const Profile = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -37,6 +49,39 @@ const Profile = () => {
     }
   });
 
+  const updateProfileMutation = useMutation({
+    mutationFn: async (updatedProfile: {
+      first_name?: string;
+      last_name?: string;
+      phone_number?: string;
+      is_accredited_investor?: boolean;
+    }) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      const { error } = await supabase
+        .from('profiles')
+        .update(updatedProfile)
+        .eq('id', session.user.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been successfully updated.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
   const { data: savedInvestments, isLoading: investmentsLoading } = useQuery({
     queryKey: ['saved-investments'],
     queryFn: async () => {
@@ -51,7 +96,6 @@ const Profile = () => {
             id,
             name,
             short_description,
-            thumbnail_url,
             hero_image_url,
             minimum_investment,
             target_return,
@@ -66,6 +110,15 @@ const Profile = () => {
       return data;
     }
   });
+
+  const handleProfileUpdate = (field: string, value: string | boolean) => {
+    if (!userProfile) return;
+    
+    updateProfileMutation.mutate({
+      ...userProfile,
+      [field]: value
+    });
+  };
 
   const isLoading = profileLoading || investmentsLoading;
 
@@ -86,29 +139,57 @@ const Profile = () => {
             <Card>
               <CardContent className="p-6 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <p className="text-gray-500">Name</p>
-                    <p className="font-medium">
-                      {userProfile.first_name || userProfile.last_name 
-                        ? `${userProfile.first_name || ''} ${userProfile.last_name || ''}`
-                        : 'Not provided'}
-                    </p>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-500">First Name</label>
+                    <Input
+                      value={userProfile.first_name || ''}
+                      onChange={(e) => handleProfileUpdate('first_name', e.target.value)}
+                      placeholder="Enter your first name"
+                    />
                   </div>
-                  <div>
-                    <p className="text-gray-500">Email</p>
-                    <p className="font-medium">{userProfile.email || 'Not provided'}</p>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-500">Last Name</label>
+                    <Input
+                      value={userProfile.last_name || ''}
+                      onChange={(e) => handleProfileUpdate('last_name', e.target.value)}
+                      placeholder="Enter your last name"
+                    />
                   </div>
-                  <div>
-                    <p className="text-gray-500">Phone Number</p>
-                    <p className="font-medium">{userProfile.phone_number || 'Not provided'}</p>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-500">Email</label>
+                    <Input
+                      value={userProfile.email || ''}
+                      disabled
+                      className="bg-gray-50"
+                    />
                   </div>
-                  <div>
-                    <p className="text-gray-500">Accredited Investor Status</p>
-                    <p className="font-medium">
-                      {userProfile.is_accredited_investor === true ? 'Yes' 
-                        : userProfile.is_accredited_investor === false ? 'No' 
-                        : 'Not specified'}
-                    </p>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-500">Phone Number</label>
+                    <Input
+                      value={userProfile.phone_number || ''}
+                      onChange={(e) => handleProfileUpdate('phone_number', e.target.value)}
+                      placeholder="Enter your phone number"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-500">Accredited Investor Status</label>
+                    <Select
+                      value={userProfile.is_accredited_investor === null 
+                        ? "" 
+                        : userProfile.is_accredited_investor 
+                          ? "true" 
+                          : "false"
+                      }
+                      onValueChange={(value) => handleProfileUpdate('is_accredited_investor', value === "true")}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select accredited status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="true">Yes</SelectItem>
+                        <SelectItem value="false">No</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </CardContent>
@@ -148,7 +229,7 @@ const Profile = () => {
                 <Card className="h-full hover:shadow-lg transition-shadow">
                   <div className="aspect-video relative">
                     <img
-                      src={saved.investments?.thumbnail_url || saved.investments?.hero_image_url || '/placeholder.svg'}
+                      src={saved.investments?.hero_image_url || '/placeholder.svg'}
                       alt={saved.investments?.name}
                       className="w-full h-full object-cover rounded-t-lg"
                       onError={(e) => {
