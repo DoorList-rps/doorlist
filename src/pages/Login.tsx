@@ -18,6 +18,9 @@ const Login = () => {
         });
         navigate("/");
       }
+      if (event === "USER_DELETED" || event === "SIGNED_OUT") {
+        navigate("/login");
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -50,6 +53,13 @@ const Login = () => {
           }}
           providers={["google"]}
           redirectTo={`${window.location.origin}/`}
+          onError={(error) => {
+            toast({
+              title: "Error",
+              description: error.message,
+              variant: "destructive",
+            });
+          }}
         />
       </div>
     </div>
