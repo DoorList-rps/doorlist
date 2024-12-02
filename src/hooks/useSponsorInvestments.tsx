@@ -33,8 +33,9 @@ export const useSponsorInvestments = (sponsorName: string | undefined) => {
         throw error;
       }
 
-      // Add additional logging to help debug
-      console.log('Query result:', data);
+      console.log('Raw query result:', data);
+      console.log('Number of investments found:', data?.length || 0);
+      console.log('First investment details:', data?.[0]);
       
       return data;
     },
