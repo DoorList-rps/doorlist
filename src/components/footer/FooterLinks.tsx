@@ -16,6 +16,7 @@ const FooterLinks = () => {
           <li><a href="/investments" className="text-gray-400 hover:text-white transition-colors">Investments</a></li>
           <li><a href="/sponsors" className="text-gray-400 hover:text-white transition-colors">Sponsors</a></li>
           <li><a href="/faq" className="text-gray-400 hover:text-white transition-colors">FAQ</a></li>
+          <li><a href="/calculator" className="text-gray-400 hover:text-white transition-colors">Investment Calculator</a></li>
         </ul>
       </div>
       <div>
