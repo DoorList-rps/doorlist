@@ -13,7 +13,7 @@ export const useSponsorInvestments = (sponsorName: string | undefined) => {
       const { data: sponsor, error: sponsorError } = await supabase
         .from('sponsors')
         .select('name')
-        .eq('name', sponsorName)
+        .ilike('name', sponsorName)
         .single();
 
       if (sponsorError) {
@@ -26,7 +26,7 @@ export const useSponsorInvestments = (sponsorName: string | undefined) => {
         throw new Error('Sponsor not found');
       }
 
-      // Now fetch investments using the exact sponsor name
+      // Now fetch investments using case-insensitive matching
       const { data, error } = await supabase
         .from('investments')
         .select(`
@@ -43,7 +43,7 @@ export const useSponsorInvestments = (sponsorName: string | undefined) => {
             slug
           )
         `)
-        .eq('sponsor_name', sponsor.name)
+        .ilike('sponsor_name', sponsor.name)
         .eq('status', 'active');
 
       if (error) {
