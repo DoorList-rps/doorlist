@@ -36,7 +36,7 @@ const Calculator = () => {
           </CalculatorProvider>
 
           <div className="text-center bg-white p-8 rounded-lg shadow">
-            <h2 className="text-2xl font-bold mb-4">Ready to Start Investing?</h2>
+            <h2 className="text-2xl font-bold mb-4">Ready to Start Investing with DoorList?</h2>
             <p className="text-gray-600 mb-6">
               Explore our curated list of investment opportunities and find the perfect match for your investment goals.
             </p>
