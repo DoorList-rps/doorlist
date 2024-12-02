@@ -8,14 +8,17 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useCalculator } from "./CalculatorContext";
 
 const DividendsChart = () => {
+  const { state } = useCalculator();
+  
   const data = useMemo(() => {
-    return Array.from({ length: 5 }, (_, i) => ({
+    return Array.from({ length: state.holdingPeriod }, (_, i) => ({
       year: i + 1,
-      dividends: 7000 * (1 + i * 0.05),
+      dividends: state.investmentAmount * (state.cashYield / 100) * (1 + i * (state.annualAppreciation / 100)),
     }));
-  }, []);
+  }, [state.investmentAmount, state.holdingPeriod, state.cashYield, state.annualAppreciation]);
 
   return (
     <div className="h-[300px] w-full">

@@ -8,14 +8,17 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useCalculator } from "./CalculatorContext";
 
 const InvestmentValueChart = () => {
+  const { state } = useCalculator();
+  
   const data = useMemo(() => {
-    return Array.from({ length: 5 }, (_, i) => ({
+    return Array.from({ length: state.holdingPeriod }, (_, i) => ({
       year: i + 1,
-      value: 100000 * Math.pow(1.15, i),
+      value: state.investmentAmount * Math.pow(1 + state.targetIRR / 100, i),
     }));
-  }, []);
+  }, [state.investmentAmount, state.holdingPeriod, state.targetIRR]);
 
   return (
     <div className="h-[300px] w-full">

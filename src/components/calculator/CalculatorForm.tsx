@@ -1,33 +1,17 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Toggle } from "@/components/ui/toggle";
 import { useToast } from "@/components/ui/use-toast";
-
-interface CalculatorState {
-  investmentAmount: number;
-  holdingPeriod: number;
-  targetIRR: number;
-  annualAppreciation: number;
-  cashYield: number;
-  showAdvanced: boolean;
-}
+import { useCalculator } from "./CalculatorContext";
 
 const CalculatorForm = () => {
   const { toast } = useToast();
-  const [state, setState] = useState<CalculatorState>({
-    investmentAmount: 100000,
-    holdingPeriod: 5,
-    targetIRR: 15,
-    annualAppreciation: 3,
-    cashYield: 7,
-    showAdvanced: false,
-  });
+  const { state, setState } = useCalculator();
 
-  const handleInputChange = (field: keyof CalculatorState, value: number) => {
-    setState(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: keyof typeof state, value: number | boolean) => {
+    setState({ ...state, [field]: value });
   };
 
   const handleCalculate = () => {
@@ -82,7 +66,7 @@ const CalculatorForm = () => {
       <div className="flex items-center gap-2 my-4">
         <Toggle
           pressed={state.showAdvanced}
-          onPressedChange={(pressed) => setState(prev => ({ ...prev, showAdvanced: pressed }))}
+          onPressedChange={(pressed) => handleInputChange('showAdvanced', pressed)}
         >
           Advanced Options
         </Toggle>
