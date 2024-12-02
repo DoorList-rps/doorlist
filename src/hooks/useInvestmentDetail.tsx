@@ -1,5 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
+
+type InvestmentWithSponsor = Tables<'investments'> & {
+  sponsors: Pick<Tables<'sponsors'>, 
+    'name' | 
+    'logo_url' | 
+    'year_founded' | 
+    'assets_under_management' | 
+    'deal_volume' | 
+    'number_of_deals' | 
+    'advertised_returns' | 
+    'holding_period' |
+    'slug'
+  > | null;
+};
 
 export const useInvestmentDetail = (slug: string | undefined) => {
   return useQuery({
@@ -19,8 +34,13 @@ export const useInvestmentDetail = (slug: string | undefined) => {
       if (investmentError) throw investmentError;
       if (!investmentData) throw new Error('Investment not found');
 
+      const result: InvestmentWithSponsor = {
+        ...investmentData,
+        sponsors: null
+      };
+
       // Then, if we have a sponsor_name, get the sponsor details
-      if (investmentData.sponsor_name) {
+      if (result.sponsor_name) {
         const { data: sponsorData, error: sponsorError } = await supabase
           .from('sponsors')
           .select(`
@@ -34,15 +54,15 @@ export const useInvestmentDetail = (slug: string | undefined) => {
             holding_period,
             slug
           `)
-          .eq('name', investmentData.sponsor_name)
+          .eq('name', result.sponsor_name)
           .single();
 
         if (!sponsorError && sponsorData) {
-          investmentData.sponsors = sponsorData;
+          result.sponsors = sponsorData;
         } else {
           // If no sponsor found, create a basic sponsor object from the name
-          investmentData.sponsors = {
-            name: investmentData.sponsor_name,
+          result.sponsors = {
+            name: result.sponsor_name,
             logo_url: null,
             year_founded: null,
             assets_under_management: null,
@@ -55,7 +75,7 @@ export const useInvestmentDetail = (slug: string | undefined) => {
         }
       }
       
-      return investmentData;
+      return result;
     },
     enabled: !!slug
   });
