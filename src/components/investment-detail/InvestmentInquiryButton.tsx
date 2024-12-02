@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,10 +13,32 @@ interface InvestmentInquiryButtonProps {
 
 const InvestmentInquiryButton = ({ investmentId, isLoggedIn, userId }: InvestmentInquiryButtonProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hasRequested, setHasRequested] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Query to check if user has already requested details
+  const { data: existingInquiry } = useQuery({
+    queryKey: ['investment-inquiry', investmentId, userId],
+    queryFn: async () => {
+      if (!userId) return null;
+      
+      const { data, error } = await supabase
+        .from('investment_inquiries')
+        .select('*')
+        .eq('investment_id', investmentId)
+        .eq('user_id', userId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 is the "no rows returned" error
+        console.error('Error fetching inquiry:', error);
+        throw error;
+      }
+
+      return data;
+    },
+    enabled: !!userId && isLoggedIn,
+  });
 
   const handleInquiry = async () => {
     if (!isLoggedIn) {
@@ -53,7 +76,6 @@ const InvestmentInquiryButton = ({ investmentId, isLoggedIn, userId }: Investmen
 
       if (error) throw error;
 
-      setHasRequested(true);
       toast({
         title: "Request Submitted",
         description: "We'll connect you with the sponsor shortly.",
@@ -70,7 +92,7 @@ const InvestmentInquiryButton = ({ investmentId, isLoggedIn, userId }: Investmen
     }
   };
 
-  if (hasRequested) {
+  if (existingInquiry) {
     return (
       <Button 
         disabled 
