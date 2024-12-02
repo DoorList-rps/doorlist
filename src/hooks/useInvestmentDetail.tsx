@@ -9,33 +9,19 @@ export const useInvestmentDetail = (slug: string | undefined) => {
       
       console.log('Fetching investment details for slug:', slug);
       
-      // Get the investment first to get the sponsor_name
-      const { data: investment, error: investmentError } = await supabase
+      // First, get the investment details
+      const { data: investmentData, error: investmentError } = await supabase
         .from('investments')
-        .select(`
-          *,
-          sponsors!inner(
-            name,
-            logo_url,
-            year_founded,
-            assets_under_management,
-            deal_volume,
-            number_of_deals,
-            advertised_returns,
-            holding_period,
-            slug
-          )
-        `)
+        .select('*')
         .eq('slug', slug)
-        .eq('sponsors.name', investment?.sponsor_name)
         .single();
 
       if (investmentError) throw investmentError;
-      if (!investment) throw new Error('Investment not found');
+      if (!investmentData) throw new Error('Investment not found');
 
-      // If we have a sponsor_name but no matching sponsor record, fetch the sponsor by name
-      if (investment.sponsor_name && !investment.sponsors) {
-        const { data: sponsorByName, error: sponsorError } = await supabase
+      // Then, if we have a sponsor_name, get the sponsor details
+      if (investmentData.sponsor_name) {
+        const { data: sponsorData, error: sponsorError } = await supabase
           .from('sponsors')
           .select(`
             name,
@@ -48,15 +34,15 @@ export const useInvestmentDetail = (slug: string | undefined) => {
             holding_period,
             slug
           `)
-          .eq('name', investment.sponsor_name)
+          .eq('name', investmentData.sponsor_name)
           .single();
 
-        if (!sponsorError && sponsorByName) {
-          investment.sponsors = sponsorByName;
+        if (!sponsorError && sponsorData) {
+          investmentData.sponsors = sponsorData;
         } else {
           // If no sponsor found, create a basic sponsor object from the name
-          investment.sponsors = {
-            name: investment.sponsor_name,
+          investmentData.sponsors = {
+            name: investmentData.sponsor_name,
             logo_url: null,
             year_founded: null,
             assets_under_management: null,
@@ -69,7 +55,7 @@ export const useInvestmentDetail = (slug: string | undefined) => {
         }
       }
       
-      return investment;
+      return investmentData;
     },
     enabled: !!slug
   });
