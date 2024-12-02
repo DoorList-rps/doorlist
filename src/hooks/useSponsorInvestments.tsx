@@ -9,6 +9,24 @@ export const useSponsorInvestments = (sponsorName: string | undefined) => {
       
       console.log('Fetching investments for sponsor:', sponsorName);
       
+      // First, let's verify the sponsor exists and get their exact name
+      const { data: sponsor, error: sponsorError } = await supabase
+        .from('sponsors')
+        .select('name')
+        .eq('name', sponsorName)
+        .single();
+
+      if (sponsorError) {
+        console.error('Error fetching sponsor:', sponsorError);
+        throw sponsorError;
+      }
+
+      if (!sponsor) {
+        console.error('Sponsor not found:', sponsorName);
+        throw new Error('Sponsor not found');
+      }
+
+      // Now fetch investments using the exact sponsor name
       const { data, error } = await supabase
         .from('investments')
         .select(`
@@ -25,7 +43,7 @@ export const useSponsorInvestments = (sponsorName: string | undefined) => {
             slug
           )
         `)
-        .eq('sponsor_name', sponsorName)
+        .eq('sponsor_name', sponsor.name)
         .eq('status', 'active');
 
       if (error) {
