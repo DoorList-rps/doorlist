@@ -33,7 +33,8 @@ export const useSponsorInvestments = (sponsorName: string | undefined) => {
         throw error;
       }
 
-      console.log('Found investments:', data);
+      // Add additional logging to help debug
+      console.log('Query result:', data);
       
       return data;
     },

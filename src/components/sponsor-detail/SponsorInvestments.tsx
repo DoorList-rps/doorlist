@@ -20,7 +20,12 @@ interface SponsorInvestmentsProps {
 }
 
 const SponsorInvestments = ({ investments, sponsorName }: SponsorInvestmentsProps) => {
-  if (!investments || investments.length === 0) return null;
+  if (!investments || investments.length === 0) {
+    console.log('No investments found for sponsor:', sponsorName);
+    return null;
+  }
+
+  console.log('Rendering investments:', investments);
 
   return (
     <div className="mt-12">
@@ -31,12 +36,12 @@ const SponsorInvestments = ({ investments, sponsorName }: SponsorInvestmentsProp
             <Card className="h-full hover:shadow-lg transition-shadow">
               <div className="aspect-video relative">
                 <img
-                  src={inv.hero_image_url || 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b'}
+                  src={inv.hero_image_url || '/placeholder.svg'}
                   alt={inv.name}
                   className="w-full h-full object-cover rounded-t-lg"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    target.src = 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b';
+                    target.src = '/placeholder.svg';
                   }}
                 />
               </div>
