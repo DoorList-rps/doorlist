@@ -28,7 +28,8 @@ const Investments = () => {
             name,
             logo_url
           )
-        `);
+        `)
+        .eq('approved', true);  // Only fetch approved investments
 
       if (error) {
         console.error('Supabase error:', error);
