@@ -93,6 +93,7 @@ export type Database = {
       investments: {
         Row: {
           accredited_only: boolean | null
+          approved: boolean | null
           closing_date: string | null
           created_at: string
           description: string | null
@@ -122,6 +123,7 @@ export type Database = {
         }
         Insert: {
           accredited_only?: boolean | null
+          approved?: boolean | null
           closing_date?: string | null
           created_at?: string
           description?: string | null
@@ -151,6 +153,7 @@ export type Database = {
         }
         Update: {
           accredited_only?: boolean | null
+          approved?: boolean | null
           closing_date?: string | null
           created_at?: string
           description?: string | null
@@ -332,6 +335,7 @@ export type Database = {
       sponsors: {
         Row: {
           advertised_returns: string | null
+          approved: boolean | null
           assets_under_management: string | null
           contact_email: string | null
           created_at: string
@@ -356,6 +360,7 @@ export type Database = {
         }
         Insert: {
           advertised_returns?: string | null
+          approved?: boolean | null
           assets_under_management?: string | null
           contact_email?: string | null
           created_at?: string
@@ -380,6 +385,7 @@ export type Database = {
         }
         Update: {
           advertised_returns?: string | null
+          approved?: boolean | null
           assets_under_management?: string | null
           contact_email?: string | null
           created_at?: string

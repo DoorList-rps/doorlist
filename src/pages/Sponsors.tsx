@@ -19,7 +19,8 @@ const Sponsors = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('sponsors')
-        .select('*');
+        .select('*')
+        .eq('approved', true);  // Only fetch approved sponsors
 
       if (error) throw error;
       return data as Tables<'sponsors'>[];
