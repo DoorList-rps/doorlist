@@ -21,7 +21,7 @@ const Hero = () => {
             Passively Invest in Real Estate
           </h1>
           <p className="text-xl md:text-2xl text-gray-300 mb-8">
-            DoorList connects investors with institutional-quality real estate deals from experienced sponsors
+          DoorList is the most comprehensive database of passive real estate investment opportunities, opening access to the world of private real estate investing.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
