@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "./ui/card";
-import { Building2, Users, BadgeDollarSign } from "lucide-react";
+import { Building2, Users, BadgeDollarSign, Handshake } from "lucide-react";
 
 const InvestmentHighlights = () => {
   const highlights = [
@@ -19,6 +19,11 @@ const InvestmentHighlights = () => {
       title: "Low Minimums",
       description: "Investment minimums starting as low as $100",
     },
+    {
+      icon: <Handshake className="w-12 h-12 text-doorlist-salmon mb-4" />,
+      title: "White Glove Service",
+      description: "Direct connections to real estate managers facilitated by DoorList",
+    },
   ];
 
   return (
@@ -33,7 +38,7 @@ const InvestmentHighlights = () => {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-6xl mx-auto">
           {highlights.map((highlight, index) => (
             <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow">
               <CardContent className="p-6 text-center flex flex-col items-center">
