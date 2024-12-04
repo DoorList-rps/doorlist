@@ -19,12 +19,9 @@ const About = () => {
               <img 
                 src="/lovable-uploads/57591e9e-a8d6-4180-b51a-6b8bdabb29fb.png" 
                 alt="DoorList Logo" 
-                className="h-24 mx-auto mb-6"
+                className="h-48 mx-auto mb-6" // Increased from h-24 to h-48
               />
-              <h1 className="text-4xl font-bold text-white mb-4">About DoorList</h1>
-              <p className="text-xl text-white/90">
-                Revolutionizing real estate investing through institutional-quality opportunities
-              </p>
+              <h1 className="text-4xl font-bold text-white">About DoorList</h1>
             </div>
           </div>
           
@@ -64,7 +61,7 @@ const About = () => {
             </div>
 
             <div className="grid md:grid-cols-2 gap-8 mb-16">
-              <div className="bg-gray-50 p-8 rounded-lg">
+              <div className="bg-white p-8 rounded-lg shadow-sm">
                 <div className="text-center mb-4">
                   <span className="text-5xl">🔍</span>
                 </div>
@@ -73,7 +70,7 @@ const About = () => {
                   We provide detailed information about each investment opportunity and sponsor, allowing investors to make informed decisions.
                 </p>
               </div>
-              <div className="bg-gray-50 p-8 rounded-lg">
+              <div className="bg-white p-8 rounded-lg shadow-sm">
                 <div className="text-center mb-4">
                   <span className="text-5xl">🚪</span>
                 </div>
@@ -82,16 +79,16 @@ const About = () => {
                   Our platform makes it easy for investors to access and invest in institutional-quality real estate deals with lower minimum investments.
                 </p>
               </div>
-              <div className="bg-gray-50 p-8 rounded-lg">
+              <div className="bg-white p-8 rounded-lg shadow-sm">
                 <div className="text-center mb-4">
                   <span className="text-5xl">👥</span>
                 </div>
                 <h3 className="text-xl font-semibold text-doorlist-navy mb-4">Expert Support</h3>
                 <p className="text-gray-600">
-                  Our team of real estate professionals is available to help investors understand opportunities and make informed decisions.
+                  Our team of real estate professionals provides comprehensive support, including educational content and guidance to help investors understand opportunities and make informed decisions.
                 </p>
               </div>
-              <div className="bg-gray-50 p-8 rounded-lg">
+              <div className="bg-white p-8 rounded-lg shadow-sm">
                 <div className="text-center mb-4">
                   <span className="text-5xl">📈</span>
                 </div>
