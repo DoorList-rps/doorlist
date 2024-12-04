@@ -1,7 +1,35 @@
 import { Link } from "react-router-dom";
 import { Search, Home } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const WhatIsDoorList = () => {
+  const { data: counts } = useQuery({
+    queryKey: ['counts'],
+    queryFn: async () => {
+      // Get count of approved investments
+      const { count: investmentCount, error: investmentError } = await supabase
+        .from('investments')
+        .select('*', { count: 'exact', head: true })
+        .eq('approved', true);
+
+      if (investmentError) throw investmentError;
+
+      // Get count of approved sponsors
+      const { count: sponsorCount, error: sponsorError } = await supabase
+        .from('sponsors')
+        .select('*', { count: 'exact', head: true })
+        .eq('approved', true);
+
+      if (sponsorError) throw sponsorError;
+
+      return {
+        investments: investmentCount || 0,
+        sponsors: sponsorCount || 0
+      };
+    }
+  });
+
   return (
     <div className="py-24 bg-white">
       <div className="container mx-auto px-4">
@@ -18,7 +46,9 @@ const WhatIsDoorList = () => {
                   <Search className="w-8 h-8 text-doorlist-navy" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-doorlist-navy mb-3">10+ Investment Opportunities</h3>
+                  <h3 className="text-xl font-semibold text-doorlist-navy mb-3">
+                    {counts?.investments || '0'}+ Investment Opportunities
+                  </h3>
                   <p className="text-gray-600">
                     Use our marketplace to compare different real estate investments, finding the right fit for you and your goals. We're always adding more.
                   </p>
@@ -30,7 +60,9 @@ const WhatIsDoorList = () => {
                   <Home className="w-8 h-8 text-doorlist-navy" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-doorlist-navy mb-3">220+ Sponsors</h3>
+                  <h3 className="text-xl font-semibold text-doorlist-navy mb-3">
+                    {counts?.sponsors || '0'}+ Sponsors
+                  </h3>
                   <p className="text-gray-600">
                     We have carefully researched, reviewed, and approved Sponsors who make passive investing in commercial real estate easy. Use DoorList to learn more about these companies.
                   </p>
