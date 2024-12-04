@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useSponsorDetail } from "@/hooks/useSponsorDetail";
@@ -7,14 +7,13 @@ import SponsorHeader from "@/components/sponsor-detail/SponsorHeader";
 import SponsorOverview from "@/components/sponsor-detail/SponsorOverview";
 import SponsorStats from "@/components/sponsor-detail/SponsorStats";
 import SponsorInvestments from "@/components/sponsor-detail/SponsorInvestments";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 const SponsorDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: sponsor, isLoading, error } = useSponsorDetail(slug);
   const { data: investments } = useSponsorInvestments(sponsor?.name);
-
-  console.log('Sponsor:', sponsor);
-  console.log('Investments:', investments);
 
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -39,6 +38,14 @@ const SponsorDetail = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8 mt-16">
+        <div className="mb-6">
+          <Link to="/sponsors">
+            <Button variant="ghost" className="text-doorlist-navy hover:text-doorlist-salmon">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Sponsors List
+            </Button>
+          </Link>
+        </div>
         <SponsorHeader sponsor={sponsor} />
         <SponsorOverview sponsor={sponsor} />
         <SponsorStats sponsor={sponsor} />

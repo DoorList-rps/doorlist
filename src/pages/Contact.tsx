@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const Contact = () => {
   const navigate = useNavigate();
@@ -17,7 +18,6 @@ const Contact = () => {
     message: "",
   });
 
-  // Get user profile data if logged in
   useEffect(() => {
     const getUserProfile = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -74,12 +74,17 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
-      <div className="container mx-auto px-4 pt-32 pb-16">
+      <div className="flex-grow container mx-auto px-4 py-24">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold text-doorlist-navy mb-6">Contact Us</h1>
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-doorlist-navy mb-4">Contact Us</h1>
+            <p className="text-xl text-gray-600">
+              Have questions? We're here to help you on your investment journey.
+            </p>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
@@ -119,13 +124,14 @@ const Contact = () => {
                   className="min-h-[150px]"
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full bg-doorlist-navy hover:bg-doorlist-navy/90" disabled={isLoading}>
                 {isLoading ? "Sending..." : "Send Message"}
               </Button>
             </form>
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

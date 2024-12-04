@@ -22,7 +22,14 @@ const Blog = () => {
     <div className="min-h-screen">
       <Navbar />
       <div className="container mx-auto px-4 py-24">
-        <h1 className="text-4xl font-bold text-doorlist-navy mb-12">Blog & Education</h1>
+        <div className="max-w-4xl mx-auto text-center mb-16">
+          <h1 className="text-4xl font-bold text-doorlist-navy mb-6">
+            Learn About Investing in Real Estate Through DoorList
+          </h1>
+          <p className="text-xl text-gray-600">
+            We believe informed investors are more likely to make sound investment decisions and have a better understanding of the real estate market. By providing educational resources, we aim to empower our users to make informed choices and become more knowledgeable about the world of passive real estate investing.
+          </p>
+        </div>
         
         {isLoading ? (
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
