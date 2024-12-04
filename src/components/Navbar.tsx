@@ -64,10 +64,10 @@ const Navbar = () => {
               Sponsors
             </Link>
             <Link 
-              to="/blog" 
+              to="/education" 
               className="text-doorlist-navy hover:text-doorlist-salmon transition-colors font-medium"
             >
-              Blog
+              Education
             </Link>
             <Link 
               to="/about" 

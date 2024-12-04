@@ -10,7 +10,7 @@ import Investments from "./pages/Investments";
 import InvestmentDetail from "./pages/InvestmentDetail";
 import Sponsors from "./pages/Sponsors";
 import SponsorDetail from "./pages/SponsorDetail";
-import Blog from "./pages/Blog";
+import Education from "./pages/Education";
 import BlogPost from "./pages/BlogPost";
 import About from "./pages/About";
 import FAQ from "./pages/FAQ";
@@ -35,8 +35,8 @@ const App = () => (
           <Route path="/investments/:slug" element={<InvestmentDetail />} />
           <Route path="/sponsors" element={<Sponsors />} />
           <Route path="/sponsors/:slug" element={<SponsorDetail />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:slug" element={<BlogPost />} />
+          <Route path="/education" element={<Education />} />
+          <Route path="/education/:slug" element={<BlogPost />} />
           <Route path="/about" element={<About />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/privacy" element={<Privacy />} />
