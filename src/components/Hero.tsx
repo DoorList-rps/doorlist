@@ -18,7 +18,7 @@ const Hero = () => {
             className="h-40 mx-auto mb-8"
           />
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-            Invest in Real Estate Deals from Top Sponsors
+            Passively Invest in Real Estate
           </h1>
           <p className="text-xl md:text-2xl text-gray-300 mb-8">
             DoorList connects investors with institutional-quality real estate deals from experienced sponsors
