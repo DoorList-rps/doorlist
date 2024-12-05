@@ -40,7 +40,7 @@ const SponsorDetail = () => {
           <Link to="/sponsors">
             <Button variant="ghost" className="text-doorlist-navy hover:text-doorlist-salmon">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Sponsors List
+              Back to Sponsors
             </Button>
           </Link>
         </div>
