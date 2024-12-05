@@ -13,7 +13,7 @@ export const useSponsorInvestments = (sponsorName: string | undefined) => {
         .from('investments')
         .select(`
           *,
-          sponsors!inner (
+          sponsors (
             name,
             logo_url,
             year_founded,
@@ -26,7 +26,7 @@ export const useSponsorInvestments = (sponsorName: string | undefined) => {
           )
         `)
         .eq('sponsor_name', sponsorName)
-        .eq('status', 'active');
+        .eq('approved', true);
 
       if (error) {
         console.error('Error fetching sponsor investments:', error);
