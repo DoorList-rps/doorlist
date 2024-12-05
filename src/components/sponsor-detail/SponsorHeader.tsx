@@ -4,6 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import type { Tables } from "@/integrations/supabase/types";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+} from "@/components/ui/table";
 
 interface SponsorHeaderProps {
   sponsor: Tables<'sponsors'>;
@@ -64,7 +70,7 @@ const SponsorHeader = ({ sponsor }: SponsorHeaderProps) => {
       ]);
 
     if (error) {
-      if (error.code === '23505') { // Unique violation
+      if (error.code === '23505') {
         toast({
           title: "Already Requested",
           description: "You have already requested an introduction to this sponsor.",
@@ -95,30 +101,23 @@ const SponsorHeader = ({ sponsor }: SponsorHeaderProps) => {
 
   return (
     <div className="grid md:grid-cols-2 gap-8 mb-12">
-      <div>
-        <img
-          src={sponsor.logo_url || '/placeholder.svg'}
-          alt={sponsor.name || 'Sponsor logo'}
-          className="w-full max-h-[300px] object-contain rounded-lg bg-gray-50 p-8 mb-6"
-        />
-      </div>
-      <div>
-        <h1 className="text-3xl font-bold text-doorlist-navy mb-4">{sponsor.name}</h1>
-        <p className="text-gray-600 mb-6">{sponsor.description}</p>
-        
-        {sponsor.property_types && sponsor.property_types.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-6">
-            {sponsor.property_types.map((type) => (
-              <span
-                key={type}
-                className="bg-doorlist-navy/10 text-doorlist-navy px-4 py-2 rounded-full"
-              >
-                {type.trim()}
-              </span>
-            ))}
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-doorlist-navy mb-2">{sponsor.name}</h1>
+          <div className="text-gray-600 space-y-1">
+            {sponsor.year_founded && (
+              <p>Founded in {sponsor.year_founded}</p>
+            )}
+            {sponsor.headquarters && (
+              <p>Headquarters: {sponsor.headquarters}</p>
+            )}
           </div>
-        )}
+        </div>
 
+        {sponsor.description && (
+          <p className="text-gray-600">{sponsor.description}</p>
+        )}
+        
         <div className="space-y-4">
           <Button
             onClick={handleContactClick}
@@ -138,6 +137,45 @@ const SponsorHeader = ({ sponsor }: SponsorHeaderProps) => {
               View Sponsor Website
             </Button>
           )}
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        <div className="bg-gray-50 p-8 rounded-lg">
+          <img
+            src={sponsor.logo_url || '/placeholder.svg'}
+            alt={`${sponsor.name} logo`}
+            className="w-full max-h-[200px] object-contain mb-6"
+          />
+          
+          <Table>
+            <TableBody>
+              <TableRow>
+                <TableCell className="font-medium">Sub-asset Class</TableCell>
+                <TableCell>{sponsor.property_types?.join(', ') || 'N/A'}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-medium">Investment Type</TableCell>
+                <TableCell>{sponsor.investment_types?.join(', ') || 'N/A'}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-medium">Minimum Investment</TableCell>
+                <TableCell>{sponsor.minimum_investment || 'N/A'}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-medium">Deal Volume</TableCell>
+                <TableCell>{sponsor.deal_volume || 'N/A'}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-medium">Assets Under Management</TableCell>
+                <TableCell>{sponsor.assets_under_management || 'N/A'}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-medium">Number of Deals</TableCell>
+                <TableCell>{sponsor.number_of_deals || 'N/A'}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
         </div>
       </div>
     </div>
