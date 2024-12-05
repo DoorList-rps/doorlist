@@ -4,7 +4,6 @@ import Footer from "@/components/Footer";
 import { useSponsorDetail } from "@/hooks/useSponsorDetail";
 import { useSponsorInvestments } from "@/hooks/useSponsorInvestments";
 import SponsorHeader from "@/components/sponsor-detail/SponsorHeader";
-import SponsorOverview from "@/components/sponsor-detail/SponsorOverview";
 import SponsorStats from "@/components/sponsor-detail/SponsorStats";
 import SponsorInvestments from "@/components/sponsor-detail/SponsorInvestments";
 import { Button } from "@/components/ui/button";
@@ -47,7 +46,6 @@ const SponsorDetail = () => {
           </Link>
         </div>
         <SponsorHeader sponsor={sponsor} />
-        <SponsorOverview sponsor={sponsor} />
         <SponsorStats sponsor={sponsor} />
         <SponsorInvestments 
           investments={investments || []} 
