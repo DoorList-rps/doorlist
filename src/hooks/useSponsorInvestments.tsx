@@ -9,7 +9,6 @@ export const useSponsorInvestments = (sponsorName: string | undefined) => {
       
       console.log('Fetching investments for sponsor:', sponsorName);
       
-      // Use a single query that matches the working SQL approach
       const { data, error } = await supabase
         .from('investments')
         .select(`
@@ -26,7 +25,7 @@ export const useSponsorInvestments = (sponsorName: string | undefined) => {
             slug
           )
         `)
-        .eq('sponsors.name', sponsorName)
+        .eq('sponsor_name', sponsorName)
         .eq('status', 'active');
 
       if (error) {
