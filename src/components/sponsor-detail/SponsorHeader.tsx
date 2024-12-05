@@ -4,12 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import type { Tables } from "@/integrations/supabase/types";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
 
 interface SponsorHeaderProps {
   sponsor: Tables<'sponsors'>;
@@ -140,42 +134,13 @@ const SponsorHeader = ({ sponsor }: SponsorHeaderProps) => {
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div>
         <div className="bg-gray-50 p-8 rounded-lg">
           <img
             src={sponsor.logo_url || '/placeholder.svg'}
             alt={`${sponsor.name} logo`}
-            className="w-full max-h-[200px] object-contain mb-6"
+            className="w-full max-h-[200px] object-contain"
           />
-          
-          <Table>
-            <TableBody>
-              <TableRow>
-                <TableCell className="font-medium">Sub-asset Class</TableCell>
-                <TableCell>{sponsor.property_types?.join(', ') || 'N/A'}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">Investment Type</TableCell>
-                <TableCell>{sponsor.investment_types?.join(', ') || 'N/A'}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">Minimum Investment</TableCell>
-                <TableCell>{sponsor.minimum_investment || 'N/A'}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">Deal Volume</TableCell>
-                <TableCell>{sponsor.deal_volume || 'N/A'}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">Assets Under Management</TableCell>
-                <TableCell>{sponsor.assets_under_management || 'N/A'}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">Number of Deals</TableCell>
-                <TableCell>{sponsor.number_of_deals || 'N/A'}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
         </div>
       </div>
     </div>
