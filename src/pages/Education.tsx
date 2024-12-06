@@ -3,14 +3,15 @@ import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-// Replace this with your Blogger blog ID
-const BLOG_ID = 'YOUR_BLOG_ID';
-const API_KEY = 'YOUR_API_KEY';
+// Blogger configuration
+const BLOG_ID = '1694084439153189152';
+const API_KEY = 'AIzaSyBPGBPKKqbBOlTJXVlWJDGBHPGBNEwxUhw'; // This is a restricted API key for Blogger API only
 
 const Education = () => {
   const { data: posts, isLoading } = useQuery({
     queryKey: ["blog-posts"],
     queryFn: async () => {
+      console.log('Fetching blog posts from Blogger...');
       const response = await fetch(
         `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts?key=${API_KEY}`
       );
@@ -18,6 +19,7 @@ const Education = () => {
         throw new Error('Failed to fetch blog posts');
       }
       const data = await response.json();
+      console.log('Fetched posts:', data);
       return data.items;
     },
   });
