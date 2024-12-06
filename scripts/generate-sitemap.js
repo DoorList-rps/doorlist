@@ -37,43 +37,59 @@ async function generateStaticSitemap() {
 }
 
 async function generateSponsorsSitemap() {
-  const { data: sponsors, error } = await supabase
-    .from('sponsors')
-    .select('slug')
-    .eq('approved', true);
+  try {
+    console.log('Fetching approved sponsors...');
+    const { data: sponsors, error } = await supabase
+      .from('sponsors')
+      .select('slug')
+      .eq('approved', true);
 
-  if (error) {
-    console.error('Error fetching sponsors:', error);
+    if (error) {
+      console.error('Error fetching sponsors:', error);
+      return null;
+    }
+
+    console.log(`Found ${sponsors?.length || 0} approved sponsors`);
+    
+    const sponsorUrls = sponsors?.map(sponsor => ({
+      loc: `https://doorlist.com/sponsors/${sponsor.slug}`,
+      changefreq: 'weekly',
+      priority: '0.8'
+    })) || [];
+
+    return generateSitemapXML(sponsorUrls);
+  } catch (error) {
+    console.error('Error generating sponsors sitemap:', error);
     return null;
   }
-
-  const sponsorUrls = sponsors?.map(sponsor => ({
-    loc: `https://doorlist.com/sponsors/${sponsor.slug}`,
-    changefreq: 'weekly',
-    priority: '0.8'
-  })) || [];
-
-  return generateSitemapXML(sponsorUrls);
 }
 
 async function generateInvestmentsSitemap() {
-  const { data: investments, error } = await supabase
-    .from('investments')
-    .select('slug')
-    .eq('approved', true);
+  try {
+    console.log('Fetching approved investments...');
+    const { data: investments, error } = await supabase
+      .from('investments')
+      .select('slug')
+      .eq('approved', true);
 
-  if (error) {
-    console.error('Error fetching investments:', error);
+    if (error) {
+      console.error('Error fetching investments:', error);
+      return null;
+    }
+
+    console.log(`Found ${investments?.length || 0} approved investments`);
+    
+    const investmentUrls = investments?.map(investment => ({
+      loc: `https://doorlist.com/investments/${investment.slug}`,
+      changefreq: 'weekly',
+      priority: '0.8'
+    })) || [];
+
+    return generateSitemapXML(investmentUrls);
+  } catch (error) {
+    console.error('Error generating investments sitemap:', error);
     return null;
   }
-
-  const investmentUrls = investments?.map(investment => ({
-    loc: `https://doorlist.com/investments/${investment.slug}`,
-    changefreq: 'weekly',
-    priority: '0.8'
-  })) || [];
-
-  return generateSitemapXML(investmentUrls);
 }
 
 async function generateSitemapIndex() {
@@ -91,6 +107,21 @@ async function generateSitemapIndex() {
 </sitemapindex>`;
 }
 
+async function writeSitemapFile(publicDir, filename, content) {
+  if (!content) {
+    console.error(`No content to write for ${filename}`);
+    return;
+  }
+  
+  try {
+    await fs.writeFile(path.join(publicDir, filename), content, 'utf8');
+    console.log(`Successfully wrote ${filename}`);
+  } catch (error) {
+    console.error(`Error writing ${filename}:`, error);
+    throw error;
+  }
+}
+
 async function generateSitemaps() {
   try {
     console.log('Starting sitemap generation...');
@@ -98,6 +129,9 @@ async function generateSitemaps() {
     // Get the directory of the current module
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
     const publicDir = path.join(__dirname, '..', 'public');
+    
+    // Ensure the public directory exists
+    await fs.mkdir(publicDir, { recursive: true });
     
     // Generate all sitemaps
     const [staticSitemap, sponsorsSitemap, investmentsSitemap, sitemapIndex] = await Promise.all([
@@ -107,18 +141,17 @@ async function generateSitemaps() {
       generateSitemapIndex()
     ]);
 
-    // Ensure the public directory exists
-    await fs.mkdir(publicDir, { recursive: true });
+    console.log('Generated all sitemap content');
     
     // Write all sitemap files
     await Promise.all([
-      fs.writeFile(path.join(publicDir, 'sitemap.xml'), sitemapIndex),
-      fs.writeFile(path.join(publicDir, 'sitemap-static.xml'), staticSitemap),
-      sponsorsSitemap && fs.writeFile(path.join(publicDir, 'sitemap-sponsors.xml'), sponsorsSitemap),
-      investmentsSitemap && fs.writeFile(path.join(publicDir, 'sitemap-investments.xml'), investmentsSitemap)
-    ].filter(Boolean));
+      writeSitemapFile(publicDir, 'sitemap.xml', sitemapIndex),
+      writeSitemapFile(publicDir, 'sitemap-static.xml', staticSitemap),
+      writeSitemapFile(publicDir, 'sitemap-sponsors.xml', sponsorsSitemap),
+      writeSitemapFile(publicDir, 'sitemap-investments.xml', investmentsSitemap)
+    ]);
 
-    console.log('All sitemaps generated successfully!');
+    console.log('All sitemaps generated and written successfully!');
   } catch (error) {
     console.error('Error generating sitemaps:', error);
     process.exit(1); // Exit with error to indicate failure
