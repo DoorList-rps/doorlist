@@ -8,118 +8,72 @@ const supabaseKey = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cC
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function generateStaticSitemap() {
+const generateSitemapXML = (urls) => {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://doorlist.com/</loc>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://doorlist.com/investments</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://doorlist.com/sponsors</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://doorlist.com/education</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://doorlist.com/about</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://doorlist.com/calculator</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://doorlist.com/contact</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://doorlist.com/faq</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://doorlist.com/privacy</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://doorlist.com/terms</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
+${urls.map(url => `  <url>
+    <loc>${url.loc}</loc>
+    <changefreq>${url.changefreq}</changefreq>
+    <priority>${url.priority}</priority>
+  </url>`).join('\n')}
 </urlset>`;
+};
+
+async function generateStaticSitemap() {
+  const staticUrls = [
+    { loc: 'https://doorlist.com/', changefreq: 'daily', priority: '1.0' },
+    { loc: 'https://doorlist.com/investments', changefreq: 'daily', priority: '0.9' },
+    { loc: 'https://doorlist.com/sponsors', changefreq: 'daily', priority: '0.9' },
+    { loc: 'https://doorlist.com/education', changefreq: 'weekly', priority: '0.8' },
+    { loc: 'https://doorlist.com/about', changefreq: 'monthly', priority: '0.7' },
+    { loc: 'https://doorlist.com/calculator', changefreq: 'monthly', priority: '0.7' },
+    { loc: 'https://doorlist.com/contact', changefreq: 'monthly', priority: '0.6' },
+    { loc: 'https://doorlist.com/faq', changefreq: 'monthly', priority: '0.6' },
+    { loc: 'https://doorlist.com/privacy', changefreq: 'yearly', priority: '0.3' },
+    { loc: 'https://doorlist.com/terms', changefreq: 'yearly', priority: '0.3' },
+  ];
+  
+  return generateSitemapXML(staticUrls);
 }
 
 async function generateSponsorsSitemap() {
-  const { data: sponsors, error: sponsorsError } = await supabase
+  const { data: sponsors, error } = await supabase
     .from('sponsors')
     .select('slug')
     .eq('approved', true);
 
-  if (sponsorsError) {
-    console.error('Error fetching sponsors:', sponsorsError);
+  if (error) {
+    console.error('Error fetching sponsors:', error);
     return null;
   }
 
-  let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
+  const sponsorUrls = sponsors?.map(sponsor => ({
+    loc: `https://doorlist.com/sponsors/${sponsor.slug}`,
+    changefreq: 'weekly',
+    priority: '0.8'
+  })) || [];
 
-  sponsors?.forEach(sponsor => {
-    if (sponsor.slug) {
-      sitemap += `
-  <url>
-    <loc>https://doorlist.com/sponsors/${sponsor.slug}</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>`;
-    }
-  });
-
-  sitemap += '\n</urlset>';
-  return sitemap;
+  return generateSitemapXML(sponsorUrls);
 }
 
 async function generateInvestmentsSitemap() {
-  const { data: investments, error: investmentsError } = await supabase
+  const { data: investments, error } = await supabase
     .from('investments')
     .select('slug')
     .eq('approved', true);
 
-  if (investmentsError) {
-    console.error('Error fetching investments:', investmentsError);
+  if (error) {
+    console.error('Error fetching investments:', error);
     return null;
   }
 
-  let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`;
+  const investmentUrls = investments?.map(investment => ({
+    loc: `https://doorlist.com/investments/${investment.slug}`,
+    changefreq: 'weekly',
+    priority: '0.8'
+  })) || [];
 
-  investments?.forEach(investment => {
-    if (investment.slug) {
-      sitemap += `
-  <url>
-    <loc>https://doorlist.com/investments/${investment.slug}</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>`;
-    }
-  });
-
-  sitemap += '\n</urlset>';
-  return sitemap;
+  return generateSitemapXML(investmentUrls);
 }
 
 async function generateSitemapIndex() {
@@ -141,6 +95,10 @@ async function generateSitemaps() {
   try {
     console.log('Starting sitemap generation...');
     
+    // Get the directory of the current module
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const publicDir = path.join(__dirname, '..', 'public');
+    
     // Generate all sitemaps
     const [staticSitemap, sponsorsSitemap, investmentsSitemap, sitemapIndex] = await Promise.all([
       generateStaticSitemap(),
@@ -149,9 +107,8 @@ async function generateSitemaps() {
       generateSitemapIndex()
     ]);
 
-    // Get the directory of the current module
-    const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const publicDir = path.join(__dirname, '..', 'public');
+    // Ensure the public directory exists
+    await fs.mkdir(publicDir, { recursive: true });
     
     // Write all sitemap files
     await Promise.all([
@@ -159,12 +116,14 @@ async function generateSitemaps() {
       fs.writeFile(path.join(publicDir, 'sitemap-static.xml'), staticSitemap),
       sponsorsSitemap && fs.writeFile(path.join(publicDir, 'sitemap-sponsors.xml'), sponsorsSitemap),
       investmentsSitemap && fs.writeFile(path.join(publicDir, 'sitemap-investments.xml'), investmentsSitemap)
-    ]);
+    ].filter(Boolean));
 
-    console.log('Sitemaps generated successfully!');
+    console.log('All sitemaps generated successfully!');
   } catch (error) {
     console.error('Error generating sitemaps:', error);
+    process.exit(1); // Exit with error to indicate failure
   }
 }
 
+// Run the sitemap generation
 generateSitemaps();

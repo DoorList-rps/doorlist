@@ -9,7 +9,6 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    // Add fallback configuration for development server
     historyApiFallback: true,
   },
   plugins: [
@@ -18,13 +17,13 @@ export default defineConfig(({ mode }) => ({
     {
       name: 'generate-sitemap',
       closeBundle: async () => {
-        console.log('Generating sitemap...');
+        console.log('Starting sitemap generation...');
         try {
           execSync('node scripts/generate-sitemap.js', { stdio: 'inherit' });
           console.log('Sitemap generated successfully!');
         } catch (error) {
           console.error('Error generating sitemap:', error);
-          // Don't throw error to allow build to complete
+          process.exit(1); // Exit with error to indicate build failure
         }
       }
     }
