@@ -9,23 +9,33 @@ const API_KEY = 'AIzaSyA1vMBgHX4iN8zs-PN7UDQfGp6AhIMq6G4';
 
 const BlogPost = () => {
   const { slug } = useParams();
-  const postUrl = `http://doorlist.blogspot.com/${slug}`;
 
   const { data: post, isLoading } = useQuery({
     queryKey: ["blog-post", slug],
     queryFn: async () => {
-      console.log('Fetching blog post from Blogger...');
+      console.log('Fetching blog posts from Blogger...');
       const response = await fetch(
-        `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts/byurl?url=${encodeURIComponent(postUrl)}&key=${API_KEY}`
+        `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts?key=${API_KEY}`
       );
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Error fetching blog post:', errorData);
-        throw new Error('Failed to fetch blog post');
+        console.error('Error fetching blog posts:', errorData);
+        throw new Error('Failed to fetch blog posts');
       }
       const data = await response.json();
-      console.log('Fetched post:', data);
-      return data;
+      console.log('Fetched posts:', data);
+      
+      // Find the post that matches our slug
+      const matchingPost = data.items?.find(post => {
+        const postSlug = post.url.split('/').pop();
+        return postSlug === slug;
+      });
+
+      if (!matchingPost) {
+        throw new Error('Blog post not found');
+      }
+
+      return matchingPost;
     },
   });
 
@@ -51,18 +61,32 @@ const BlogPost = () => {
     );
   }
 
+  if (!post) {
+    return (
+      <div className="min-h-screen">
+        <Navbar />
+        <div className="container mx-auto px-4 py-24">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-2xl font-bold text-gray-900">Blog post not found</h1>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen">
       <Navbar />
       <div className="container mx-auto px-4 py-24">
         <article className="max-w-4xl mx-auto prose lg:prose-xl">
-          <h1>{post?.title}</h1>
+          <h1>{post.title}</h1>
           <div className="text-sm text-gray-500 mb-8">
-            <span>{post?.author?.displayName}</span>
+            <span>{post.author?.displayName}</span>
             <span className="mx-2">•</span>
-            <span>{new Date(post?.published).toLocaleDateString()}</span>
+            <span>{new Date(post.published).toLocaleDateString()}</span>
           </div>
-          <div dangerouslySetInnerHTML={{ __html: post?.content }} />
+          <div dangerouslySetInnerHTML={{ __html: post.content }} />
         </article>
       </div>
       <Footer />
