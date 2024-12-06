@@ -50,35 +50,78 @@
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
-  <!-- Dynamic Investment Detail Pages -->
   <url>
-    <loc>https://doorlist.com/investments/multifamily-value-add</loc>
+    <loc>https://doorlist.com/sponsors/acretrader</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://doorlist.com/investments/self-storage-development</loc>
+    <loc>https://doorlist.com/sponsors/arrived-homes</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://doorlist.com/investments/retail-strip-center</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <!-- Dynamic Sponsor Detail Pages -->
-  <url>
-    <loc>https://doorlist.com/sponsors/capital-group</loc>
+    <loc>https://doorlist.com/sponsors/cadre</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://doorlist.com/sponsors/real-estate-ventures</loc>
+    <loc>https://doorlist.com/sponsors/crowdstreet</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://doorlist.com/sponsors/property-partners</loc>
+    <loc>https://doorlist.com/sponsors/equity-multiple</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doorlist.com/sponsors/fundrise</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doorlist.com/sponsors/groundfloor</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doorlist.com/sponsors/jamestown-invest</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doorlist.com/sponsors/realty-mogul</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doorlist.com/sponsors/streitwise</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doorlist.com/investments/multifamily-value-add-atlanta</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doorlist.com/investments/self-storage-development-dallas</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doorlist.com/investments/retail-strip-center-phoenix</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doorlist.com/investments/industrial-warehouse-miami</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://doorlist.com/investments/office-building-chicago</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
