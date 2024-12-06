@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const FooterLegal = () => {
   return (
@@ -17,7 +18,7 @@ const FooterLegal = () => {
           By accessing this site and any pages thereof, you agree to be bound by the Terms of Use and Privacy Policy. The fact that the Company or its affiliates may participate in or have an interest in any particular offering does not constitute and should not be considered a recommendation or endorsement of such Securities, as the Company's investment criteria may differ materially from yours.
         </p>
         <p>
-          For further details, please refer to the full <a href="/terms" className="text-gray-400 hover:text-white transition-colors">Terms of Use</a> and <a href="/privacy" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a>.
+          For further details, please refer to the full <Link to="/terms" className="text-gray-400 hover:text-white transition-colors">Terms of Use</Link> and <Link to="/privacy" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</Link>.
         </p>
       </div>
     </>
