@@ -8,21 +8,26 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function generateSitemap() {
   try {
-    // Fetch approved investments and sponsors
+    console.log('Starting sitemap generation...');
+    
+    // Fetch ALL approved investments
     const { data: investments, error: investmentsError } = await supabase
       .from('investments')
       .select('slug')
-      .eq('approved', true);
+      .eq('approved', true)
+      .order('created_at', { ascending: false });
 
     if (investmentsError) {
       console.error('Error fetching investments:', investmentsError);
       return;
     }
 
+    // Fetch ALL approved sponsors
     const { data: sponsors, error: sponsorsError } = await supabase
       .from('sponsors')
       .select('slug')
-      .eq('approved', true);
+      .eq('approved', true)
+      .order('created_at', { ascending: false });
 
     if (sponsorsError) {
       console.error('Error fetching sponsors:', sponsorsError);
@@ -32,7 +37,7 @@ async function generateSitemap() {
     console.log(`Found ${investments?.length || 0} approved investments`);
     console.log(`Found ${sponsors?.length || 0} approved sponsors`);
 
-    // Start building the sitemap XML
+    // Start building the sitemap XML with static routes
     let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
@@ -86,23 +91,8 @@ async function generateSitemap() {
     <priority>0.3</priority>
   </url>`;
 
-    // Add investment detail pages
-    if (investments) {
-      console.log('Adding investment detail pages to sitemap...');
-      investments.forEach(investment => {
-        if (investment.slug) {
-          sitemap += `
-  <url>
-    <loc>https://doorlist.com/investments/${investment.slug}</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>`;
-        }
-      });
-    }
-
-    // Add sponsor detail pages
-    if (sponsors) {
+    // Add ALL sponsor detail pages
+    if (sponsors && sponsors.length > 0) {
       console.log('Adding sponsor detail pages to sitemap...');
       sponsors.forEach(sponsor => {
         if (sponsor.slug) {
@@ -116,16 +106,34 @@ async function generateSitemap() {
       });
     }
 
+    // Add ALL investment detail pages
+    if (investments && investments.length > 0) {
+      console.log('Adding investment detail pages to sitemap...');
+      investments.forEach(investment => {
+        if (investment.slug) {
+          sitemap += `
+  <url>
+    <loc>https://doorlist.com/investments/${investment.slug}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>`;
+        }
+      });
+    }
+
     // Close the sitemap
     sitemap += '\n</urlset>';
 
     // Write the sitemap to the public directory
-    await fs.writeFile(
-      path.join(process.cwd(), 'public', 'sitemap.xml'),
-      sitemap
-    );
+    const sitemapPath = path.join(process.cwd(), 'public', 'sitemap.xml');
+    await fs.writeFile(sitemapPath, sitemap);
 
-    console.log('Sitemap generated successfully!');
+    console.log('Sitemap generated successfully at:', sitemapPath);
+    console.log('Total URLs in sitemap:', 
+      10 + // Static routes
+      (sponsors?.length || 0) + // Sponsor detail pages
+      (investments?.length || 0) // Investment detail pages
+    );
   } catch (error) {
     console.error('Error generating sitemap:', error);
   }
