@@ -13,7 +13,7 @@ async function generateSitemap() {
   try {
     console.log('Starting sitemap generation...');
     
-    // Fetch ALL approved investments
+    // Fetch ALL approved investments without limit
     const { data: investments, error: investmentsError } = await supabase
       .from('investments')
       .select('slug')
@@ -24,7 +24,7 @@ async function generateSitemap() {
       return;
     }
 
-    // Fetch ALL approved sponsors
+    // Fetch ALL approved sponsors without limit
     const { data: sponsors, error: sponsorsError } = await supabase
       .from('sponsors')
       .select('slug')
