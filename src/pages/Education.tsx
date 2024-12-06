@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 
 // Blogger configuration
 const BLOG_ID = '1694084439153189152';
-const API_KEY = 'AIzaSyBPGBPKKqbBOlTJXVlWJDGBHPGBNEwxUhw'; // This is a restricted API key for Blogger API only
+const API_KEY = 'AIzaSyA1vMBgHX4iN8zs-PN7UDQfGp6AhIMq6G4'; // Updated API key
 
 const Education = () => {
   const { data: posts, isLoading } = useQuery({
@@ -16,6 +16,8 @@ const Education = () => {
         `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts?key=${API_KEY}`
       );
       if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error fetching blog posts:', errorData);
         throw new Error('Failed to fetch blog posts');
       }
       const data = await response.json();
