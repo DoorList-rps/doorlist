@@ -17,8 +17,7 @@ async function generateSitemap() {
     const { data: investments, error: investmentsError } = await supabase
       .from('investments')
       .select('slug')
-      .eq('approved', true)
-      .order('created_at', { ascending: false });
+      .eq('approved', true);
 
     if (investmentsError) {
       console.error('Error fetching investments:', investmentsError);
@@ -29,8 +28,7 @@ async function generateSitemap() {
     const { data: sponsors, error: sponsorsError } = await supabase
       .from('sponsors')
       .select('slug')
-      .eq('approved', true)
-      .order('created_at', { ascending: false });
+      .eq('approved', true);
 
     if (sponsorsError) {
       console.error('Error fetching sponsors:', sponsorsError);
