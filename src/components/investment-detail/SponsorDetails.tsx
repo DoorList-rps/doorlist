@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import type { Tables } from "@/integrations/supabase/types";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 interface SponsorDetailsProps {
   sponsor: Pick<Tables<'sponsors'>, 
@@ -13,26 +14,6 @@ interface SponsorDetailsProps {
     'holding_period'
   > | null;
 }
-
-const formatCurrency = (value: string | null) => {
-  if (!value) return 'N/A';
-  
-  // Remove any existing formatting and convert to number
-  const numericValue = parseFloat(value.replace(/[^0-9.]/g, ''));
-  
-  if (isNaN(numericValue)) return value;
-  
-  // Format based on size
-  if (numericValue >= 1e9) {
-    return `$${(numericValue / 1e9).toFixed(1)}B`;
-  } else if (numericValue >= 1e6) {
-    return `$${(numericValue / 1e6).toFixed(1)}M`;
-  } else if (numericValue >= 1e3) {
-    return `$${(numericValue / 1e3).toFixed(1)}K`;
-  }
-  
-  return `$${numericValue.toLocaleString()}`;
-};
 
 const SponsorDetails = ({ sponsor }: SponsorDetailsProps) => {
   if (!sponsor) return null;

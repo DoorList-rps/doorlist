@@ -1,43 +1,14 @@
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
+import SponsorIntroduction from "./SponsorIntroduction";
+import SponsorInfo from "./SponsorInfo";
 
 interface SponsorHeaderProps {
   sponsor: Tables<'sponsors'>;
 }
 
-const formatCurrency = (value: string | null) => {
-  if (!value) return 'N/A';
-  
-  // Remove any existing formatting and convert to number
-  const numericValue = parseFloat(value.replace(/[^0-9.]/g, ''));
-  
-  if (isNaN(numericValue)) return value;
-  
-  // Format based on size
-  if (numericValue >= 1e9) {
-    return `$${(numericValue / 1e9).toFixed(1)}B`;
-  } else if (numericValue >= 1e6) {
-    return `$${(numericValue / 1e6).toFixed(1)}M`;
-  } else if (numericValue >= 1e3) {
-    return `$${(numericValue / 1e3).toFixed(1)}K`;
-  }
-  
-  return `$${numericValue.toLocaleString()}`;
-};
-
 const SponsorHeader = ({ sponsor }: SponsorHeaderProps) => {
-  const { toast } = useToast();
-  const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [introductionStatus, setIntroductionStatus] = useState<string | null>(null);
@@ -71,54 +42,6 @@ const SponsorHeader = ({ sponsor }: SponsorHeaderProps) => {
     return () => subscription.unsubscribe();
   }, [sponsor.id]);
 
-  const handleContactClick = async () => {
-    if (!isLoggedIn) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to request an introduction.",
-      });
-      navigate("/login");
-      return;
-    }
-
-    if (!userId || !sponsor.id) return;
-
-    const { error } = await supabase
-      .from('sponsor_introductions')
-      .insert([
-        { user_id: userId, sponsor_id: sponsor.id }
-      ]);
-
-    if (error) {
-      if (error.code === '23505') {
-        toast({
-          title: "Already Requested",
-          description: "You have already requested an introduction to this sponsor.",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to request introduction. Please try again.",
-          variant: "destructive",
-        });
-      }
-      return;
-    }
-
-    setIntroductionStatus('pending');
-    toast({
-      title: "Introduction Requested",
-      description: "We'll connect you with " + sponsor.name + " shortly.",
-    });
-  };
-
-  const getButtonText = () => {
-    if (introductionStatus === 'pending') {
-      return `Connecting you with ${sponsor.name}...`;
-    }
-    return `I'd Like a Personal Introduction to ${sponsor.name}`;
-  };
-
   return (
     <div className="grid md:grid-cols-2 gap-8 mb-12">
       <div className="space-y-6">
@@ -138,65 +61,16 @@ const SponsorHeader = ({ sponsor }: SponsorHeaderProps) => {
           <p className="text-gray-600">{sponsor.description}</p>
         )}
         
-        <div className="space-y-4">
-          <Button
-            onClick={handleContactClick}
-            size="lg"
-            className="w-full bg-doorlist-salmon hover:bg-doorlist-salmon/90 disabled:bg-gray-300"
-            disabled={introductionStatus === 'pending'}
-          >
-            {getButtonText()}
-          </Button>
-
-          {sponsor.website_url && (
-            <Button
-              onClick={() => window.open(sponsor.website_url, '_blank')}
-              size="lg"
-              className="w-full bg-doorlist-salmon/20 hover:bg-doorlist-salmon/30 text-doorlist-salmon"
-            >
-              View Sponsor Website
-            </Button>
-          )}
-        </div>
+        <SponsorIntroduction
+          sponsor={sponsor}
+          isLoggedIn={isLoggedIn}
+          userId={userId}
+          introductionStatus={introductionStatus}
+        />
       </div>
 
       <div className="space-y-6">
-        <div className="bg-gray-50 p-8 rounded-lg">
-          <img
-            src={sponsor.logo_url || '/placeholder.svg'}
-            alt={`${sponsor.name} logo`}
-            className="w-full max-h-[200px] object-contain mb-6"
-          />
-          
-          <Table>
-            <TableBody>
-              <TableRow>
-                <TableCell className="font-medium">Sub-asset Class</TableCell>
-                <TableCell>{sponsor.property_types?.join(', ') || 'N/A'}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">Investment Type</TableCell>
-                <TableCell>{sponsor.investment_types?.join(', ') || 'N/A'}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">Minimum Investment</TableCell>
-                <TableCell>{sponsor.minimum_investment || 'N/A'}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">Deal Volume</TableCell>
-                <TableCell>{formatCurrency(sponsor.deal_volume)}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">Assets Under Management</TableCell>
-                <TableCell>{formatCurrency(sponsor.assets_under_management)}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">Number of Deals</TableCell>
-                <TableCell>{sponsor.number_of_deals || 'N/A'}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </div>
+        <SponsorInfo sponsor={sponsor} />
       </div>
     </div>
   );
