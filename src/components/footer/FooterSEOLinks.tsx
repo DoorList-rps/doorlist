@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronUp } from "lucide-react";
 import {
   Collapsible,
@@ -35,13 +36,13 @@ const FooterSEOLinks = ({ groupedLinks, openCategories, toggleCategory, handleLi
               <CollapsibleContent>
                 <div className="grid md:grid-cols-3 gap-4 mt-4">
                   {links?.map((link) => (
-                    <a
+                    <Link
                       key={link.id}
-                      href={handleLinkClick(link)}
+                      to={handleLinkClick(link)}
                       className="text-gray-400 hover:text-white transition-colors"
                     >
                       {link.title}
-                    </a>
+                    </Link>
                   ))}
                 </div>
               </CollapsibleContent>
