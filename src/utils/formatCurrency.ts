@@ -8,11 +8,11 @@ export const formatCurrency = (value: string | null) => {
   
   // Format based on size
   if (numericValue >= 1e9) {
-    return `$${Math.floor(numericValue / 1e9)}B`;
+    return `$${(numericValue / 1e9).toFixed(0)} Billion`;
   } else if (numericValue >= 1e6) {
-    return `$${Math.floor(numericValue / 1e6)}M`;
+    return `$${(numericValue / 1e6).toFixed(0)} Million`;
   } else if (numericValue >= 1e3) {
-    return `$${Math.floor(numericValue / 1e3)}K`;
+    return `$${(numericValue / 1e3).toFixed(0)} Thousand`;
   }
   
   return `$${numericValue.toLocaleString()}`;
