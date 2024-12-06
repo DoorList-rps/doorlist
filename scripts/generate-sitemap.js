@@ -13,7 +13,8 @@ async function fetchApprovedSponsors() {
   const { data: sponsors, error } = await supabase
     .from('sponsors')
     .select('slug')
-    .eq('approved', true);
+    .eq('approved', true)
+    .order('name');
 
   if (error) {
     console.error('Error fetching sponsors:', error);
@@ -29,7 +30,8 @@ async function fetchApprovedInvestments() {
   const { data: investments, error } = await supabase
     .from('investments')
     .select('slug')
-    .eq('approved', true);
+    .eq('approved', true)
+    .order('name');
 
   if (error) {
     console.error('Error fetching investments:', error);
@@ -58,11 +60,21 @@ async function generateSitemap() {
       { url: '/terms', changefreq: 'yearly', priority: '0.3' },
     ];
 
-    // Fetch dynamic data
-    const [sponsors, investments] = await Promise.all([
-      fetchApprovedSponsors(),
-      fetchApprovedInvestments()
-    ]);
+    console.log('Fetching dynamic data...');
+    
+    // Fetch dynamic data with better error handling
+    let sponsors = [];
+    let investments = [];
+    
+    try {
+      [sponsors, investments] = await Promise.all([
+        fetchApprovedSponsors(),
+        fetchApprovedInvestments()
+      ]);
+    } catch (error) {
+      console.error('Error fetching dynamic data:', error);
+      // Continue with static URLs if dynamic data fetch fails
+    }
 
     // Generate sponsor URLs
     const sponsorUrls = sponsors.map(sponsor => ({
@@ -81,7 +93,14 @@ async function generateSitemap() {
     // Combine all URLs
     const allUrls = [...staticUrls, ...sponsorUrls, ...investmentUrls];
 
-    // Generate sitemap XML
+    console.log('Generating sitemap with URLs:', {
+      total: allUrls.length,
+      static: staticUrls.length,
+      sponsors: sponsorUrls.length,
+      investments: investmentUrls.length
+    });
+
+    // Generate sitemap XML with proper formatting
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${allUrls.map(entry => `  <url>
