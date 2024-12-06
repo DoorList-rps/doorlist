@@ -1,9 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 import fs from 'fs/promises';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
+// Get environment variables from process.env or use default values
+const supabaseUrl = process.env.SUPABASE_URL || "https://iavmizyezxogctfrbvxh.supabase.co";
+const supabaseKey = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlhdm1penllenhvZ2N0ZnJidnhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI5OTEwNzgsImV4cCI6MjA0ODU2NzA3OH0.Mk825aTDa3FSlUPkKXPk0pOsr7xaYEloFAF5Rd9wdAw";
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function generateSitemap() {
@@ -124,8 +127,11 @@ async function generateSitemap() {
     // Close the sitemap
     sitemap += '\n</urlset>';
 
+    // Get the directory of the current module
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    
     // Write the sitemap to the public directory
-    const sitemapPath = path.join(process.cwd(), 'public', 'sitemap.xml');
+    const sitemapPath = path.join(__dirname, '..', 'public', 'sitemap.xml');
     await fs.writeFile(sitemapPath, sitemap);
 
     console.log('Sitemap generated successfully at:', sitemapPath);
@@ -136,6 +142,7 @@ async function generateSitemap() {
     );
   } catch (error) {
     console.error('Error generating sitemap:', error);
+    // Don't throw error to allow build to complete
   }
 }
 
