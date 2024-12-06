@@ -12,16 +12,15 @@ async function fetchApprovedSponsors() {
   console.log('Fetching approved sponsors...');
   const { data: sponsors, error } = await supabase
     .from('sponsors')
-    .select('slug')
-    .eq('approved', true)
-    .order('name');
+    .select('*')
+    .eq('approved', true);
 
   if (error) {
     console.error('Error fetching sponsors:', error);
     throw error;
   }
 
-  console.log(`Found ${sponsors?.length || 0} approved sponsors`);
+  console.log(`Found ${sponsors?.length || 0} approved sponsors:`, sponsors?.map(s => s.slug));
   return sponsors || [];
 }
 
@@ -29,16 +28,15 @@ async function fetchApprovedInvestments() {
   console.log('Fetching approved investments...');
   const { data: investments, error } = await supabase
     .from('investments')
-    .select('slug')
-    .eq('approved', true)
-    .order('name');
+    .select('*')
+    .eq('approved', true);
 
   if (error) {
     console.error('Error fetching investments:', error);
     throw error;
   }
 
-  console.log(`Found ${investments?.length || 0} approved investments`);
+  console.log(`Found ${investments?.length || 0} approved investments:`, investments?.map(i => i.slug));
   return investments || [];
 }
 
@@ -60,21 +58,12 @@ async function generateSitemap() {
       { url: '/terms', changefreq: 'yearly', priority: '0.3' },
     ];
 
+    // Fetch all dynamic data
     console.log('Fetching dynamic data...');
-    
-    // Fetch dynamic data with better error handling
-    let sponsors = [];
-    let investments = [];
-    
-    try {
-      [sponsors, investments] = await Promise.all([
-        fetchApprovedSponsors(),
-        fetchApprovedInvestments()
-      ]);
-    } catch (error) {
-      console.error('Error fetching dynamic data:', error);
-      // Continue with static URLs if dynamic data fetch fails
-    }
+    const [sponsors, investments] = await Promise.all([
+      fetchApprovedSponsors(),
+      fetchApprovedInvestments()
+    ]);
 
     // Generate sponsor URLs
     const sponsorUrls = sponsors.map(sponsor => ({
@@ -93,14 +82,15 @@ async function generateSitemap() {
     // Combine all URLs
     const allUrls = [...staticUrls, ...sponsorUrls, ...investmentUrls];
 
-    console.log('Generating sitemap with URLs:', {
+    console.log('URL Summary:', {
       total: allUrls.length,
       static: staticUrls.length,
       sponsors: sponsorUrls.length,
-      investments: investmentUrls.length
+      investments: investmentUrls.length,
+      urls: allUrls.map(u => u.url)
     });
 
-    // Generate sitemap XML with proper formatting
+    // Generate sitemap XML
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${allUrls.map(entry => `  <url>
@@ -122,9 +112,7 @@ ${allUrls.map(entry => `  <url>
     await fs.writeFile(sitemapPath, sitemap, 'utf8');
     
     console.log(`Successfully wrote sitemap.xml with ${allUrls.length} URLs`);
-    console.log(`Static URLs: ${staticUrls.length}`);
-    console.log(`Sponsor URLs: ${sponsorUrls.length}`);
-    console.log(`Investment URLs: ${investmentUrls.length}`);
+    console.log('All URLs included:', allUrls.map(u => `https://doorlist.com${u.url}`).join('\n'));
   } catch (error) {
     console.error('Error generating sitemap:', error);
     process.exit(1);
