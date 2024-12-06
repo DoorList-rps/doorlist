@@ -8,155 +8,109 @@ const supabaseKey = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cC
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const generateSitemapXML = (urls) => {
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map(url => `  <url>
-    <loc>${url.loc}</loc>
-    <changefreq>${url.changefreq}</changefreq>
-    <priority>${url.priority}</priority>
-  </url>`).join('\n')}
-</urlset>`;
-};
+async function fetchApprovedSponsors() {
+  console.log('Fetching approved sponsors...');
+  const { data: sponsors, error } = await supabase
+    .from('sponsors')
+    .select('slug')
+    .eq('approved', true);
 
-async function generateStaticSitemap() {
-  const staticUrls = [
-    { loc: 'https://doorlist.com/', changefreq: 'daily', priority: '1.0' },
-    { loc: 'https://doorlist.com/investments', changefreq: 'daily', priority: '0.9' },
-    { loc: 'https://doorlist.com/sponsors', changefreq: 'daily', priority: '0.9' },
-    { loc: 'https://doorlist.com/education', changefreq: 'weekly', priority: '0.8' },
-    { loc: 'https://doorlist.com/about', changefreq: 'monthly', priority: '0.7' },
-    { loc: 'https://doorlist.com/calculator', changefreq: 'monthly', priority: '0.7' },
-    { loc: 'https://doorlist.com/contact', changefreq: 'monthly', priority: '0.6' },
-    { loc: 'https://doorlist.com/faq', changefreq: 'monthly', priority: '0.6' },
-    { loc: 'https://doorlist.com/privacy', changefreq: 'yearly', priority: '0.3' },
-    { loc: 'https://doorlist.com/terms', changefreq: 'yearly', priority: '0.3' },
-  ];
-  
-  return generateSitemapXML(staticUrls);
-}
-
-async function generateSponsorsSitemap() {
-  try {
-    console.log('Fetching approved sponsors...');
-    const { data: sponsors, error } = await supabase
-      .from('sponsors')
-      .select('slug')
-      .eq('approved', true);
-
-    if (error) {
-      console.error('Error fetching sponsors:', error);
-      return null;
-    }
-
-    console.log(`Found ${sponsors?.length || 0} approved sponsors`);
-    
-    const sponsorUrls = sponsors?.map(sponsor => ({
-      loc: `https://doorlist.com/sponsors/${sponsor.slug}`,
-      changefreq: 'weekly',
-      priority: '0.8'
-    })) || [];
-
-    return generateSitemapXML(sponsorUrls);
-  } catch (error) {
-    console.error('Error generating sponsors sitemap:', error);
-    return null;
-  }
-}
-
-async function generateInvestmentsSitemap() {
-  try {
-    console.log('Fetching approved investments...');
-    const { data: investments, error } = await supabase
-      .from('investments')
-      .select('slug')
-      .eq('approved', true);
-
-    if (error) {
-      console.error('Error fetching investments:', error);
-      return null;
-    }
-
-    console.log(`Found ${investments?.length || 0} approved investments`);
-    
-    const investmentUrls = investments?.map(investment => ({
-      loc: `https://doorlist.com/investments/${investment.slug}`,
-      changefreq: 'weekly',
-      priority: '0.8'
-    })) || [];
-
-    return generateSitemapXML(investmentUrls);
-  } catch (error) {
-    console.error('Error generating investments sitemap:', error);
-    return null;
-  }
-}
-
-async function generateSitemapIndex() {
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <sitemap>
-    <loc>https://doorlist.com/sitemap-static.xml</loc>
-  </sitemap>
-  <sitemap>
-    <loc>https://doorlist.com/sitemap-sponsors.xml</loc>
-  </sitemap>
-  <sitemap>
-    <loc>https://doorlist.com/sitemap-investments.xml</loc>
-  </sitemap>
-</sitemapindex>`;
-}
-
-async function writeSitemapFile(publicDir, filename, content) {
-  if (!content) {
-    console.error(`No content to write for ${filename}`);
-    return;
-  }
-  
-  try {
-    await fs.writeFile(path.join(publicDir, filename), content, 'utf8');
-    console.log(`Successfully wrote ${filename}`);
-  } catch (error) {
-    console.error(`Error writing ${filename}:`, error);
+  if (error) {
+    console.error('Error fetching sponsors:', error);
     throw error;
   }
+
+  console.log(`Found ${sponsors?.length || 0} approved sponsors`);
+  return sponsors || [];
 }
 
-async function generateSitemaps() {
+async function fetchApprovedInvestments() {
+  console.log('Fetching approved investments...');
+  const { data: investments, error } = await supabase
+    .from('investments')
+    .select('slug')
+    .eq('approved', true);
+
+  if (error) {
+    console.error('Error fetching investments:', error);
+    throw error;
+  }
+
+  console.log(`Found ${investments?.length || 0} approved investments`);
+  return investments || [];
+}
+
+async function generateSitemap() {
   try {
     console.log('Starting sitemap generation...');
-    
+
+    // Get static URLs
+    const staticUrls = [
+      { url: '/', changefreq: 'daily', priority: '1.0' },
+      { url: '/investments', changefreq: 'daily', priority: '0.9' },
+      { url: '/sponsors', changefreq: 'daily', priority: '0.9' },
+      { url: '/education', changefreq: 'weekly', priority: '0.8' },
+      { url: '/about', changefreq: 'monthly', priority: '0.7' },
+      { url: '/calculator', changefreq: 'monthly', priority: '0.7' },
+      { url: '/contact', changefreq: 'monthly', priority: '0.6' },
+      { url: '/faq', changefreq: 'monthly', priority: '0.6' },
+      { url: '/privacy', changefreq: 'yearly', priority: '0.3' },
+      { url: '/terms', changefreq: 'yearly', priority: '0.3' },
+    ];
+
+    // Fetch dynamic data
+    const [sponsors, investments] = await Promise.all([
+      fetchApprovedSponsors(),
+      fetchApprovedInvestments()
+    ]);
+
+    // Generate sponsor URLs
+    const sponsorUrls = sponsors.map(sponsor => ({
+      url: `/sponsors/${sponsor.slug}`,
+      changefreq: 'weekly',
+      priority: '0.8'
+    }));
+
+    // Generate investment URLs
+    const investmentUrls = investments.map(investment => ({
+      url: `/investments/${investment.slug}`,
+      changefreq: 'weekly',
+      priority: '0.8'
+    }));
+
+    // Combine all URLs
+    const allUrls = [...staticUrls, ...sponsorUrls, ...investmentUrls];
+
+    // Generate sitemap XML
+    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${allUrls.map(entry => `  <url>
+    <loc>https://doorlist.com${entry.url}</loc>
+    <changefreq>${entry.changefreq}</changefreq>
+    <priority>${entry.priority}</priority>
+  </url>`).join('\n')}
+</urlset>`;
+
     // Get the directory of the current module
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
     const publicDir = path.join(__dirname, '..', 'public');
     
     // Ensure the public directory exists
     await fs.mkdir(publicDir, { recursive: true });
-    
-    // Generate all sitemaps
-    const [staticSitemap, sponsorsSitemap, investmentsSitemap, sitemapIndex] = await Promise.all([
-      generateStaticSitemap(),
-      generateSponsorsSitemap(),
-      generateInvestmentsSitemap(),
-      generateSitemapIndex()
-    ]);
 
-    console.log('Generated all sitemap content');
+    // Write sitemap file
+    const sitemapPath = path.join(publicDir, 'sitemap.xml');
+    await fs.writeFile(sitemapPath, sitemap, 'utf8');
     
-    // Write all sitemap files
-    await Promise.all([
-      writeSitemapFile(publicDir, 'sitemap.xml', sitemapIndex),
-      writeSitemapFile(publicDir, 'sitemap-static.xml', staticSitemap),
-      writeSitemapFile(publicDir, 'sitemap-sponsors.xml', sponsorsSitemap),
-      writeSitemapFile(publicDir, 'sitemap-investments.xml', investmentsSitemap)
-    ]);
-
-    console.log('All sitemaps generated and written successfully!');
+    console.log(`Successfully wrote sitemap.xml with ${allUrls.length} URLs`);
+    console.log(`Static URLs: ${staticUrls.length}`);
+    console.log(`Sponsor URLs: ${sponsorUrls.length}`);
+    console.log(`Investment URLs: ${investmentUrls.length}`);
   } catch (error) {
-    console.error('Error generating sitemaps:', error);
-    process.exit(1); // Exit with error to indicate failure
+    console.error('Error generating sitemap:', error);
+    process.exit(1);
   }
 }
 
 // Run the sitemap generation
-generateSitemaps();
+generateSitemap();
