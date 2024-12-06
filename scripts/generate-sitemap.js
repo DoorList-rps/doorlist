@@ -9,15 +9,28 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 async function generateSitemap() {
   try {
     // Fetch approved investments and sponsors
-    const { data: investments } = await supabase
+    const { data: investments, error: investmentsError } = await supabase
       .from('investments')
       .select('slug')
       .eq('approved', true);
 
-    const { data: sponsors } = await supabase
+    if (investmentsError) {
+      console.error('Error fetching investments:', investmentsError);
+      return;
+    }
+
+    const { data: sponsors, error: sponsorsError } = await supabase
       .from('sponsors')
       .select('slug')
       .eq('approved', true);
+
+    if (sponsorsError) {
+      console.error('Error fetching sponsors:', sponsorsError);
+      return;
+    }
+
+    console.log(`Found ${investments?.length || 0} approved investments`);
+    console.log(`Found ${sponsors?.length || 0} approved sponsors`);
 
     // Start building the sitemap XML
     let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -74,24 +87,34 @@ async function generateSitemap() {
   </url>`;
 
     // Add investment detail pages
-    investments?.forEach(investment => {
-      sitemap += `
+    if (investments) {
+      console.log('Adding investment detail pages to sitemap...');
+      investments.forEach(investment => {
+        if (investment.slug) {
+          sitemap += `
   <url>
     <loc>https://doorlist.com/investments/${investment.slug}</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>`;
-    });
+        }
+      });
+    }
 
     // Add sponsor detail pages
-    sponsors?.forEach(sponsor => {
-      sitemap += `
+    if (sponsors) {
+      console.log('Adding sponsor detail pages to sitemap...');
+      sponsors.forEach(sponsor => {
+        if (sponsor.slug) {
+          sitemap += `
   <url>
     <loc>https://doorlist.com/sponsors/${sponsor.slug}</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>`;
-    });
+        }
+      });
+    }
 
     // Close the sitemap
     sitemap += '\n</urlset>';
