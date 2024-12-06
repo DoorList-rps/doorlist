@@ -5,7 +5,22 @@ import Footer from "@/components/Footer";
 
 // Blogger configuration
 const BLOG_ID = '1694084439153189152';
-const API_KEY = 'AIzaSyA1vMBgHX4iN8zs-PN7UDQfGp6AhIMq6G4'; // Updated API key
+const API_KEY = 'AIzaSyA1vMBgHX4iN8zs-PN7UDQfGp6AhIMq6G4';
+
+// Helper function to extract text content from HTML
+const extractTextFromHtml = (html: string) => {
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+  return tempDiv.textContent || tempDiv.innerText || '';
+};
+
+// Helper function to extract first image URL from HTML content
+const extractFirstImageUrl = (html: string) => {
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+  const firstImg = tempDiv.querySelector('img');
+  return firstImg?.src || '/placeholder.svg';
+};
 
 const Education = () => {
   const { data: posts, isLoading } = useQuery({
@@ -51,35 +66,39 @@ const Education = () => {
           </div>
         ) : (
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {posts?.map((post) => (
-              <Link 
-                key={post.id} 
-                to={`/education/${post.url.split('/').pop()}`}
-                className="group"
-              >
-                <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 group-hover:-translate-y-1">
-                  <img
-                    src={post.images?.[0]?.url || "/placeholder.svg"}
-                    alt={post.title}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-6">
-                    <h2 className="text-xl font-semibold text-doorlist-navy mb-2 group-hover:text-doorlist-salmon transition-colors">
-                      {post.title}
-                    </h2>
-                    <p className="text-gray-600 text-sm mb-4">
-                      {post.content.substring(0, 150)}...
-                    </p>
-                    <div className="flex items-center justify-between text-sm text-gray-500">
-                      <span>{post.author.displayName}</span>
-                      <span>
-                        {new Date(post.published).toLocaleDateString()}
-                      </span>
+            {posts?.map((post) => {
+              const textContent = extractTextFromHtml(post.content);
+              const imageUrl = extractFirstImageUrl(post.content);
+              return (
+                <Link 
+                  key={post.id} 
+                  to={`/education/${post.url.split('/').pop()}`}
+                  className="group"
+                >
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 group-hover:-translate-y-1">
+                    <img
+                      src={imageUrl}
+                      alt={post.title}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="p-6">
+                      <h2 className="text-xl font-semibold text-doorlist-navy mb-2 group-hover:text-doorlist-salmon transition-colors">
+                        {post.title}
+                      </h2>
+                      <p className="text-gray-600 text-sm mb-4">
+                        {textContent.substring(0, 150)}...
+                      </p>
+                      <div className="flex items-center justify-between text-sm text-gray-500">
+                        <span>{post.author.displayName}</span>
+                        <span>
+                          {new Date(post.published).toLocaleDateString()}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
