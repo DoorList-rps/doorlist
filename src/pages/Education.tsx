@@ -1,20 +1,24 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-const Blog = () => {
+// Replace this with your Blogger blog ID
+const BLOG_ID = 'YOUR_BLOG_ID';
+const API_KEY = 'YOUR_API_KEY';
+
+const Education = () => {
   const { data: posts, isLoading } = useQuery({
     queryKey: ["blog-posts"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .select("*")
-        .order("published_at", { ascending: false });
-      
-      if (error) throw error;
-      return data;
+      const response = await fetch(
+        `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts?key=${API_KEY}`
+      );
+      if (!response.ok) {
+        throw new Error('Failed to fetch blog posts');
+      }
+      const data = await response.json();
+      return data.items;
     },
   });
 
@@ -46,12 +50,12 @@ const Blog = () => {
             {posts?.map((post) => (
               <Link 
                 key={post.id} 
-                to={`/blog/${post.slug}`}
+                to={`/education/${post.url.split('/').pop()}`}
                 className="group"
               >
                 <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 group-hover:-translate-y-1">
                   <img
-                    src={post.image_url || "/placeholder.svg"}
+                    src={post.images?.[0]?.url || "/placeholder.svg"}
                     alt={post.title}
                     className="w-full h-48 object-cover"
                   />
@@ -60,12 +64,12 @@ const Blog = () => {
                       {post.title}
                     </h2>
                     <p className="text-gray-600 text-sm mb-4">
-                      {post.excerpt}
+                      {post.content.substring(0, 150)}...
                     </p>
                     <div className="flex items-center justify-between text-sm text-gray-500">
-                      <span>{post.author}</span>
+                      <span>{post.author.displayName}</span>
                       <span>
-                        {new Date(post.published_at).toLocaleDateString()}
+                        {new Date(post.published).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
@@ -80,4 +84,4 @@ const Blog = () => {
   );
 };
 
-export default Blog;
+export default Education;
