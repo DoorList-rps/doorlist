@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
+import { Helmet } from 'react-helmet-async';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -30,6 +31,9 @@ const BlogPost = () => {
   if (isLoading) {
     return (
       <div>
+        <Helmet>
+          <title>Loading Article | DoorList Education</title>
+        </Helmet>
         <Navbar />
         <div className="container mx-auto px-4 py-24">
           <div className="max-w-4xl mx-auto">
@@ -57,6 +61,10 @@ const BlogPost = () => {
   if (!post) {
     return (
       <div>
+        <Helmet>
+          <title>Article Not Found | DoorList Education</title>
+          <meta name="description" content="The article you're looking for could not be found." />
+        </Helmet>
         <Navbar />
         <div className="container mx-auto px-4 py-24">
           <div className="max-w-4xl mx-auto">
@@ -71,6 +79,10 @@ const BlogPost = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>{`${post.title} | DoorList Education`}</title>
+        <meta name="description" content={post.content.substring(0, 160).replace(/<[^>]*>/g, '')} />
+      </Helmet>
       <Navbar />
       <main className="container mx-auto px-4 py-24">
         <article className="max-w-4xl mx-auto prose lg:prose-xl">

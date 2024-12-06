@@ -1,9 +1,14 @@
+import { Helmet } from 'react-helmet-async';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const Privacy = () => {
   return (
     <div className="min-h-screen">
+      <Helmet>
+        <title>Privacy Policy | DoorList</title>
+        <meta name="description" content="Learn about DoorList's commitment to protecting your privacy and how we handle your personal information." />
+      </Helmet>
       <Navbar />
       <main className="container mx-auto px-4 py-24">
         <div className="max-w-4xl mx-auto prose">

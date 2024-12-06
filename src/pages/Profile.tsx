@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import ProfileInformation from "@/components/profile/ProfileInformation";
 import SavedInvestments from "@/components/profile/SavedInvestments";
 import ConnectionsInProgress from "@/components/profile/ConnectionsInProgress";
+import { Helmet } from 'react-helmet-async';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -69,6 +70,10 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>My Profile | DoorList</title>
+        <meta name="description" content="Manage your DoorList profile, view saved investments, and track your investment inquiries." />
+      </Helmet>
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8 mt-16">
         <h2 className="text-2xl font-bold text-doorlist-navy mb-6">Profile</h2>

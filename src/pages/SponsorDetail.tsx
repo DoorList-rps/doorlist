@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom";
+import { Helmet } from 'react-helmet-async';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useSponsorDetail } from "@/hooks/useSponsorDetail";
@@ -14,26 +15,34 @@ const SponsorDetail = () => {
   const { data: investments } = useSponsorInvestments(sponsor?.name);
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
-
-  if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-2">Error</h2>
-          <p className="text-gray-600">{error instanceof Error ? error.message : 'Failed to load sponsor'}</p>
-        </div>
+        <Helmet>
+          <title>Loading Sponsor | DoorList</title>
+        </Helmet>
+        Loading...
       </div>
     );
   }
 
   if (!sponsor) {
-    return <div className="min-h-screen flex items-center justify-center">Sponsor not found</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Helmet>
+          <title>Sponsor Not Found | DoorList</title>
+          <meta name="description" content="The sponsor you're looking for could not be found." />
+        </Helmet>
+        Sponsor not found
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>{`${sponsor.name} | Investment Sponsor | DoorList`}</title>
+        <meta name="description" content={sponsor.short_description || `Learn about ${sponsor.name}, a trusted real estate investment sponsor on DoorList.`} />
+      </Helmet>
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8 mt-16">
         <div className="mb-6">

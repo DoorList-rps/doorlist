@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { useInvestmentDetail } from "@/hooks/useInvestmentDetail";
 import { useRelatedInvestments } from "@/hooks/useRelatedInvestments";
 import { useSavedInvestment } from "@/hooks/useSavedInvestment";
+import { Helmet } from 'react-helmet-async';
 
 const InvestmentDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -49,26 +50,34 @@ const InvestmentDetail = () => {
   };
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
-
-  if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-2">Error</h2>
-          <p className="text-gray-600">{error instanceof Error ? error.message : 'Failed to load investment'}</p>
-        </div>
+      <div>
+        <Helmet>
+          <title>Loading Investment | DoorList</title>
+        </Helmet>
+        <div className="min-h-screen flex items-center justify-center">Loading...</div>
       </div>
     );
   }
 
   if (!investment) {
-    return <div className="min-h-screen flex items-center justify-center">Investment not found</div>;
+    return (
+      <div>
+        <Helmet>
+          <title>Investment Not Found | DoorList</title>
+          <meta name="description" content="The investment opportunity you're looking for could not be found." />
+        </Helmet>
+        <div className="min-h-screen flex items-center justify-center">Investment not found</div>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>{`${investment.name} | Investment Opportunity | DoorList`}</title>
+        <meta name="description" content={investment.short_description || `Learn about ${investment.name}, a real estate investment opportunity by ${investment.sponsor_name}.`} />
+      </Helmet>
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8 mt-16">
         <InvestmentHeader 

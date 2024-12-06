@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Helmet } from 'react-helmet-async';
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -88,6 +89,10 @@ const Sponsors = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Helmet>
+        <title>Real Estate Investment Sponsors | DoorList</title>
+        <meta name="description" content="Discover top-tier real estate investment sponsors and their track records. Find trusted partners for your investment journey." />
+      </Helmet>
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8 mt-16">
         <h1 className="text-4xl font-bold text-doorlist-navy mb-8">Our Sponsors</h1>

@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -75,6 +76,10 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
+      <Helmet>
+        <title>Contact DoorList | Get in Touch</title>
+        <meta name="description" content="Have questions about real estate investing? Contact DoorList's team for expert guidance and support." />
+      </Helmet>
       <Navbar />
       <div className="flex-grow container mx-auto px-4 py-24">
         <div className="max-w-2xl mx-auto">

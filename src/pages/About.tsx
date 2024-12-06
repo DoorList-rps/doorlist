@@ -1,9 +1,14 @@
+import { Helmet } from 'react-helmet-async';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const About = () => {
   return (
     <div className="min-h-screen">
+      <Helmet>
+        <title>About DoorList | Our Mission and Vision</title>
+        <meta name="description" content="Learn about DoorList's mission to democratize access to institutional-quality real estate investments and our commitment to transparency." />
+      </Helmet>
       <Navbar />
       <main className="container mx-auto px-4 py-24">
         <div className="max-w-4xl mx-auto">

@@ -1,100 +1,90 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { Auth } from "@supabase/auth-ui-react";
-import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { useEffect } from "react";
+import { Helmet } from 'react-helmet-async';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [searchParams] = useSearchParams();
-  const redirect = searchParams.get('redirect');
-  const action = searchParams.get('action');
-  const investmentId = searchParams.get('investment_id');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const handlePostLoginAction = async (userId: string) => {
-      if (action === 'request_details' && investmentId) {
-        try {
-          const { error } = await supabase
-            .from('investment_inquiries')
-            .insert([
-              { 
-                investment_id: investmentId,
-                user_id: userId,
-              }
-            ]);
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
 
-          if (error) throw error;
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-          toast({
-            title: "Request Submitted",
-            description: "We'll connect you with the sponsor shortly.",
-          });
-        } catch (error) {
-          console.error('Error submitting inquiry:', error);
-          toast({
-            title: "Request Failed",
-            description: "Unable to submit your request. Please try again.",
-            variant: "destructive",
-          });
-        }
-      }
-    };
+      if (error) throw error;
 
-    supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN") {
-        if (session?.user?.id) {
-          handlePostLoginAction(session.user.id);
-        }
-        toast({
-          title: "Success",
-          description: "You have successfully signed in.",
-        });
-        navigate(redirect || "/");
-      }
-      if (event === "SIGNED_OUT") {
-        navigate("/login");
-      }
-    });
-  }, [navigate, toast, redirect, action, investmentId]);
+      toast({
+        title: "Login Successful",
+        description: "Welcome back! Redirecting you to your profile.",
+      });
+
+      navigate("/profile");
+    } catch (error) {
+      toast({
+        title: "Login Failed",
+        description: error instanceof Error ? error.message : "An error occurred during login.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen">
+      <Helmet>
+        <title>Sign In | DoorList</title>
+        <meta name="description" content="Sign in to your DoorList account to access exclusive real estate investment opportunities and manage your portfolio." />
+      </Helmet>
       <Navbar />
-      <div className="flex-grow flex items-center justify-center px-4 py-24">
-        <div className="max-w-md w-full p-8 bg-white rounded-lg shadow-lg">
-          <div className="text-center mb-8">
-            <img 
-              src="/lovable-uploads/57591e9e-a8d6-4180-b51a-6b8bdabb29fb.png" 
-              alt="DoorList Logo" 
-              className="h-16 mx-auto mb-6"
-            />
-            <h1 className="text-3xl font-bold text-doorlist-navy">Welcome to DoorList</h1>
-            <p className="text-gray-600 mt-2">
-              Sign in to access exclusive investment opportunities
-            </p>
-          </div>
-
-          <Auth
-            supabaseClient={supabase}
-            appearance={{
-              theme: ThemeSupa,
-              variables: {
-                default: {
-                  colors: {
-                    brand: '#1e3a8a',
-                    brandAccent: '#152454',
-                  }
-                }
-              }
-            }}
-            providers={["google"]}
-            redirectTo={`${window.location.origin}/`}
-          />
+      <div className="flex-grow container mx-auto px-4 py-24">
+        <div className="max-w-md mx-auto">
+          <h1 className="text-4xl font-bold text-doorlist-navy mb-4">Sign In</h1>
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="your.email@example.com"
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                placeholder="Your password"
+              />
+            </div>
+            <Button type="submit" className="w-full bg-doorlist-navy hover:bg-doorlist-navy/90" disabled={isLoading}>
+              {isLoading ? "Signing In..." : "Sign In"}
+            </Button>
+          </form>
         </div>
       </div>
       <Footer />

@@ -1,9 +1,14 @@
+import { Helmet } from 'react-helmet-async';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const Terms = () => {
   return (
     <div className="min-h-screen">
+      <Helmet>
+        <title>Terms of Service | DoorList</title>
+        <meta name="description" content="Review DoorList's terms of service and understand our platform's rules and guidelines." />
+      </Helmet>
       <Navbar />
       <main className="container mx-auto px-4 py-24">
         <div className="max-w-4xl mx-auto prose">
