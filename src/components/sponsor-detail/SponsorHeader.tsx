@@ -15,6 +15,26 @@ interface SponsorHeaderProps {
   sponsor: Tables<'sponsors'>;
 }
 
+const formatCurrency = (value: string | null) => {
+  if (!value) return 'N/A';
+  
+  // Remove any existing formatting and convert to number
+  const numericValue = parseFloat(value.replace(/[^0-9.]/g, ''));
+  
+  if (isNaN(numericValue)) return value;
+  
+  // Format based on size
+  if (numericValue >= 1e9) {
+    return `$${(numericValue / 1e9).toFixed(1)}B`;
+  } else if (numericValue >= 1e6) {
+    return `$${(numericValue / 1e6).toFixed(1)}M`;
+  } else if (numericValue >= 1e3) {
+    return `$${(numericValue / 1e3).toFixed(1)}K`;
+  }
+  
+  return `$${numericValue.toLocaleString()}`;
+};
+
 const SponsorHeader = ({ sponsor }: SponsorHeaderProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -164,11 +184,11 @@ const SponsorHeader = ({ sponsor }: SponsorHeaderProps) => {
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Deal Volume</TableCell>
-                <TableCell>{sponsor.deal_volume || 'N/A'}</TableCell>
+                <TableCell>{formatCurrency(sponsor.deal_volume)}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Assets Under Management</TableCell>
-                <TableCell>{sponsor.assets_under_management || 'N/A'}</TableCell>
+                <TableCell>{formatCurrency(sponsor.assets_under_management)}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Number of Deals</TableCell>
