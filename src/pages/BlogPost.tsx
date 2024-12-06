@@ -1,73 +1,69 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
+// Blogger configuration
+const BLOG_ID = '1694084439153189152';
+const API_KEY = 'AIzaSyA1vMBgHX4iN8zs-PN7UDQfGp6AhIMq6G4';
+
 const BlogPost = () => {
   const { slug } = useParams();
+  const postUrl = `http://doorlist.blogspot.com/${slug}`;
 
   const { data: post, isLoading } = useQuery({
     queryKey: ["blog-post", slug],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .select("*")
-        .eq("slug", slug)
-        .single();
-      
-      if (error) throw error;
+      console.log('Fetching blog post from Blogger...');
+      const response = await fetch(
+        `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts/byurl?url=${encodeURIComponent(postUrl)}&key=${API_KEY}`
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error fetching blog post:', errorData);
+        throw new Error('Failed to fetch blog post');
+      }
+      const data = await response.json();
+      console.log('Fetched post:', data);
       return data;
     },
   });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen">
+        <Navbar />
+        <div className="container mx-auto px-4 py-24">
+          <div className="max-w-4xl mx-auto">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
+              <div className="space-y-4">
+                <div className="h-4 bg-gray-200 rounded"></div>
+                <div className="h-4 bg-gray-200 rounded"></div>
+                <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
       <Navbar />
       <div className="container mx-auto px-4 py-24">
-        {isLoading ? (
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/4 mb-8"></div>
-            <div className="h-64 bg-gray-200 rounded mb-8"></div>
-            <div className="space-y-4">
-              <div className="h-4 bg-gray-200 rounded w-full"></div>
-              <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-              <div className="h-4 bg-gray-200 rounded w-4/6"></div>
-            </div>
+        <article className="max-w-4xl mx-auto prose lg:prose-xl">
+          <h1>{post?.title}</h1>
+          <div className="text-sm text-gray-500 mb-8">
+            <span>{post?.author?.displayName}</span>
+            <span className="mx-2">•</span>
+            <span>{new Date(post?.published).toLocaleDateString()}</span>
           </div>
-        ) : post ? (
-          <article className="max-w-3xl mx-auto">
-            <h1 className="text-4xl font-bold text-doorlist-navy mb-4">
-              {post.title}
-            </h1>
-            <div className="flex items-center text-gray-500 mb-8">
-              <span>{post.author}</span>
-              <span className="mx-2">•</span>
-              <span>{new Date(post.published_at).toLocaleDateString()}</span>
-            </div>
-            {post.image_url && (
-              <img
-                src={post.image_url}
-                alt={post.title}
-                className="w-full h-64 object-cover rounded-lg mb-8"
-              />
-            )}
-            <div className="prose prose-lg max-w-none">
-              {post.content.split('\n').map((paragraph, index) => (
-                <p key={index} className="mb-4 text-gray-700">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
-          </article>
-        ) : (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-semibold text-gray-700">
-              Blog post not found
-            </h2>
-          </div>
-        )}
+          <div dangerouslySetInnerHTML={{ __html: post?.content }} />
+        </article>
       </div>
       <Footer />
     </div>
