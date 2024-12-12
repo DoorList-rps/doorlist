@@ -34,7 +34,7 @@ const InvestmentInquiryButton = ({ investmentId, isLoggedIn, userId }: Investmen
       console.error('No user ID available');
       toast({
         title: "Error",
-        description: "Unable to verify user credentials. Please try logging in again.",
+        description: "Unable to verify user credentials. Please try again.",
         variant: "destructive",
       });
       return;

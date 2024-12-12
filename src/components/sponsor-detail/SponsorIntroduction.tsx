@@ -54,7 +54,7 @@ const SponsorIntroduction = ({
       // Check if request already exists
       const { data: existingRequest } = await supabase
         .from('sponsor_introductions')
-        .select('id, status')
+        .select('id')
         .eq('sponsor_id', sponsor.id)
         .eq('user_id', userId)
         .single();
@@ -74,7 +74,7 @@ const SponsorIntroduction = ({
         .from('sponsor_introductions')
         .insert([
           { 
-            sponsor_id: sponsor.id, 
+            sponsor_id: sponsor.id,
             user_id: userId,
             status: 'pending'
           }
