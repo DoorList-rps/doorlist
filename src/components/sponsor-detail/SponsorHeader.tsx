@@ -11,26 +11,12 @@ interface SponsorHeaderProps {
 const SponsorHeader = ({ sponsor }: SponsorHeaderProps) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-  const [introductionStatus, setIntroductionStatus] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsLoggedIn(!!session);
       setUserId(session?.user?.id || null);
-
-      if (session?.user?.id && sponsor.id) {
-        const { data } = await supabase
-          .from('sponsor_introductions')
-          .select('status')
-          .eq('user_id', session.user.id)
-          .eq('sponsor_id', sponsor.id)
-          .maybeSingle();
-        
-        if (data) {
-          setIntroductionStatus(data.status);
-        }
-      }
     };
     checkAuth();
 
@@ -65,7 +51,6 @@ const SponsorHeader = ({ sponsor }: SponsorHeaderProps) => {
           sponsor={sponsor}
           isLoggedIn={isLoggedIn}
           userId={userId}
-          introductionStatus={introductionStatus}
         />
       </div>
 
