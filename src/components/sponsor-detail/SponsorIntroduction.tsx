@@ -1,8 +1,8 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 import type { Tables } from "@/integrations/supabase/types";
 
 interface SponsorIntroductionProps {
@@ -21,6 +21,8 @@ const SponsorIntroduction = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleContactClick = async () => {
+    console.log('Starting sponsor introduction request...', { isLoggedIn, userId, sponsorId: sponsor.id });
+
     if (!isLoggedIn) {
       toast({
         title: "Authentication Required",
@@ -36,12 +38,38 @@ const SponsorIntroduction = ({
       return;
     }
 
-    if (!userId || !sponsor.id) return;
+    if (!userId || !sponsor.id) {
+      console.error('Missing required data:', { userId, sponsorId: sponsor.id });
+      toast({
+        title: "Error",
+        description: "Unable to process request. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsSubmitting(true);
 
     try {
-      console.log('Submitting sponsor introduction:', { sponsorId: sponsor.id, userId });
+      // Check if request already exists
+      const { data: existingRequest } = await supabase
+        .from('sponsor_introductions')
+        .select('id, status')
+        .eq('sponsor_id', sponsor.id)
+        .eq('user_id', userId)
+        .single();
+
+      if (existingRequest) {
+        console.log('Introduction request already exists');
+        toast({
+          title: "Request Already Submitted",
+          description: `You have already requested an introduction to ${sponsor.name}.`,
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      console.log('Submitting new sponsor introduction:', { sponsorId: sponsor.id, userId });
       const { error } = await supabase
         .from('sponsor_introductions')
         .insert([
@@ -52,8 +80,12 @@ const SponsorIntroduction = ({
           }
         ]);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
+      console.log('Sponsor introduction submitted successfully');
       toast({
         title: "Introduction Requested",
         description: "We'll connect you with " + sponsor.name + " shortly.",

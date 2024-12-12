@@ -17,6 +17,8 @@ const InvestmentInquiryButton = ({ investmentId, isLoggedIn, userId }: Investmen
   const location = useLocation();
 
   const handleInquiry = async () => {
+    console.log('Starting inquiry submission...', { isLoggedIn, userId, investmentId });
+    
     if (!isLoggedIn) {
       const returnPath = location.pathname;
       const searchParams = new URLSearchParams();
@@ -29,9 +31,10 @@ const InvestmentInquiryButton = ({ investmentId, isLoggedIn, userId }: Investmen
     }
 
     if (!userId) {
+      console.error('No user ID available');
       toast({
         title: "Error",
-        description: "Unable to verify user credentials. Please try again.",
+        description: "Unable to verify user credentials. Please try logging in again.",
         variant: "destructive",
       });
       return;
@@ -40,7 +43,25 @@ const InvestmentInquiryButton = ({ investmentId, isLoggedIn, userId }: Investmen
     setIsSubmitting(true);
 
     try {
-      console.log('Submitting investment inquiry:', { investmentId, userId });
+      // Check if request already exists
+      const { data: existingRequest } = await supabase
+        .from('investment_inquiries')
+        .select('id')
+        .eq('investment_id', investmentId)
+        .eq('user_id', userId)
+        .single();
+
+      if (existingRequest) {
+        console.log('Request already exists');
+        toast({
+          title: "Request Already Submitted",
+          description: "You have already requested details for this investment.",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      console.log('Submitting new investment inquiry:', { investmentId, userId });
       const { error } = await supabase
         .from('investment_inquiries')
         .insert([
@@ -51,8 +72,12 @@ const InvestmentInquiryButton = ({ investmentId, isLoggedIn, userId }: Investmen
           }
         ]);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
+      console.log('Investment inquiry submitted successfully');
       toast({
         title: "Request Submitted",
         description: "We'll connect you with the sponsor shortly.",
