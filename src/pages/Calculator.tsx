@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import { CalculatorProvider } from "@/components/calculator/CalculatorContext";
 import CalculatorForm from "@/components/calculator/CalculatorForm";
 import InvestmentValueChart from "@/components/calculator/InvestmentValueChart";
+import DividendsChart from "@/components/calculator/DividendsChart";
 
 const Calculator = () => {
   return (
@@ -23,6 +24,7 @@ const Calculator = () => {
               </div>
               <div className="space-y-8">
                 <InvestmentValueChart />
+                <DividendsChart />
               </div>
             </CalculatorProvider>
           </div>

@@ -21,24 +21,30 @@ const DividendsChart = () => {
   }, [state.investmentAmount, state.holdingPeriod, state.cashYield, state.annualAppreciation]);
 
   return (
-    <div className="h-[300px] w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey="year"
-            tickFormatter={(value) => `Year ${value}`}
-          />
-          <YAxis
-            tickFormatter={(value) => `$${(value / 1000).toFixed(1)}k`}
-          />
-          <Tooltip
-            formatter={(value: number) => [`$${value.toFixed(2)}`, "Dividends"]}
-            labelFormatter={(label) => `Year ${label}`}
-          />
-          <Bar dataKey="dividends" fill="#82ca9d" />
-        </BarChart>
-      </ResponsiveContainer>
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold text-doorlist-navy">Annual Dividends</h3>
+      <div className="h-[300px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="year"
+              tickFormatter={(value) => `Year ${value}`}
+            />
+            <YAxis
+              tickFormatter={(value) => `$${(value / 1000).toFixed(1)}k`}
+            />
+            <Tooltip
+              formatter={(value: number) => [`$${value.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}`, "Dividends"]}
+              labelFormatter={(label) => `Year ${label}`}
+            />
+            <Bar dataKey="dividends" fill="#82ca9d" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 };
