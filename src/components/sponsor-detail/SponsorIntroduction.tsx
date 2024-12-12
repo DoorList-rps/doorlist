@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import type { Tables } from "@/integrations/supabase/types";
 
 interface SponsorIntroductionProps {
@@ -19,6 +20,7 @@ const SponsorIntroduction = ({
 }: SponsorIntroductionProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleContactClick = async () => {
     if (!isLoggedIn) {
@@ -26,38 +28,51 @@ const SponsorIntroduction = ({
         title: "Authentication Required",
         description: "Please sign in to request an introduction.",
       });
-      navigate("/login");
+      navigate("/login", { 
+        state: { 
+          returnTo: `/sponsors/${sponsor.slug}`,
+          action: 'request_introduction',
+          sponsor_id: sponsor.id
+        } 
+      });
       return;
     }
 
     if (!userId || !sponsor.id) return;
 
-    const { error } = await supabase
-      .from('sponsor_introductions')
-      .insert([
-        { user_id: userId, sponsor_id: sponsor.id }
-      ]);
+    setIsSubmitting(true);
 
-    if (error) {
-      if (error.code === '23505') {
-        toast({
-          title: "Already Requested",
-          description: "You have already requested an introduction to this sponsor.",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to request introduction. Please try again.",
-          variant: "destructive",
-        });
+    try {
+      console.log('Submitting sponsor introduction:', { sponsorId: sponsor.id, userId });
+      const { error } = await supabase
+        .from('sponsor_introductions')
+        .insert([
+          { 
+            sponsor_id: sponsor.id, 
+            user_id: userId,
+            status: 'pending'
+          }
+        ]);
+
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
       }
-      return;
-    }
 
-    toast({
-      title: "Introduction Requested",
-      description: "We'll connect you with " + sponsor.name + " shortly.",
-    });
+      toast({
+        title: "Introduction Requested",
+        description: "We'll connect you with " + sponsor.name + " shortly.",
+      });
+    } catch (error) {
+      console.error('Error requesting introduction:', error);
+      toast({
+        title: "Error",
+        description: "Failed to request introduction. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const getButtonText = () => {
@@ -73,9 +88,9 @@ const SponsorIntroduction = ({
         onClick={handleContactClick}
         size="lg"
         className="w-full bg-doorlist-salmon hover:bg-doorlist-salmon/90 disabled:bg-gray-300"
-        disabled={introductionStatus === 'pending'}
+        disabled={introductionStatus === 'pending' || isSubmitting}
       >
-        {getButtonText()}
+        {isSubmitting ? "Submitting..." : getButtonText()}
       </Button>
 
       {sponsor.website_url && (

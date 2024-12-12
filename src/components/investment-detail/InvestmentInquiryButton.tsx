@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +16,7 @@ const InvestmentInquiryButton = ({ investmentId, isLoggedIn, userId }: Investmen
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
 
   // Query to check if user has already requested details
   const { data: existingInquiry } = useQuery({
@@ -65,16 +66,24 @@ const InvestmentInquiryButton = ({ investmentId, isLoggedIn, userId }: Investmen
     setIsSubmitting(true);
 
     try {
+      console.log('Submitting investment inquiry:', { investmentId, userId });
       const { error } = await supabase
         .from('investment_inquiries')
         .insert([
           { 
             investment_id: investmentId,
             user_id: userId,
+            status: 'pending'
           }
         ]);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      // Invalidate the query to refresh the data
+      await queryClient.invalidateQueries({ queryKey: ['investment-inquiry', investmentId, userId] });
 
       toast({
         title: "Request Submitted",
