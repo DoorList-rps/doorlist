@@ -9,14 +9,12 @@ interface SponsorIntroductionProps {
   sponsor: Tables<'sponsors'>;
   isLoggedIn: boolean;
   userId: string | null;
-  introductionStatus: string | null;
 }
 
 const SponsorIntroduction = ({ 
   sponsor, 
   isLoggedIn, 
-  userId, 
-  introductionStatus 
+  userId 
 }: SponsorIntroductionProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -54,10 +52,7 @@ const SponsorIntroduction = ({
           }
         ]);
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       toast({
         title: "Introduction Requested",
@@ -75,22 +70,15 @@ const SponsorIntroduction = ({
     }
   };
 
-  const getButtonText = () => {
-    if (introductionStatus === 'pending') {
-      return `Connecting you with ${sponsor.name}...`;
-    }
-    return `I'd Like a Personal Introduction to ${sponsor.name}`;
-  };
-
   return (
     <div className="space-y-4">
       <Button
         onClick={handleContactClick}
         size="lg"
-        className="w-full bg-doorlist-salmon hover:bg-doorlist-salmon/90 disabled:bg-gray-300"
-        disabled={introductionStatus === 'pending' || isSubmitting}
+        className="w-full bg-doorlist-salmon hover:bg-doorlist-salmon/90"
+        disabled={isSubmitting}
       >
-        {isSubmitting ? "Submitting..." : getButtonText()}
+        {isSubmitting ? "Submitting..." : `I'd Like a Personal Introduction to ${sponsor.name}`}
       </Button>
 
       {sponsor.website_url && (
