@@ -20,11 +20,15 @@ const InvestmentInquiryButton = ({ investmentId, isLoggedIn, userId }: Investmen
     console.log('Starting inquiry submission...', { isLoggedIn, userId, investmentId });
     
     if (!isLoggedIn) {
-      const returnPath = location.pathname;
       const searchParams = new URLSearchParams();
-      searchParams.set('redirect', returnPath);
+      searchParams.set('redirect', location.pathname);
       searchParams.set('action', 'request_details');
       searchParams.set('investment_id', investmentId);
+      
+      toast({
+        title: "Sign in Required",
+        description: "Please sign in to request investment details. We'll redirect you back here afterward.",
+      });
       
       navigate(`/login?${searchParams.toString()}`);
       return;

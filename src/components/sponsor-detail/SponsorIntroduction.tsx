@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import type { Tables } from "@/integrations/supabase/types";
 
 interface SponsorIntroductionProps {
@@ -18,33 +18,24 @@ const SponsorIntroduction = ({
 }: SponsorIntroductionProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleContactClick = async () => {
     console.log('Starting sponsor introduction request...', { isLoggedIn, userId, sponsorId: sponsor.id });
 
     if (!isLoggedIn) {
+      const searchParams = new URLSearchParams();
+      searchParams.set('redirect', location.pathname);
+      searchParams.set('action', 'request_introduction');
+      searchParams.set('sponsor_id', sponsor.id);
+      
       toast({
-        title: "Authentication Required",
-        description: "Please sign in to request an introduction.",
+        title: "Sign in Required",
+        description: "Please sign in to request an introduction to " + sponsor.name,
       });
-      navigate("/login", { 
-        state: { 
-          returnTo: `/sponsors/${sponsor.slug}`,
-          action: 'request_introduction',
-          sponsor_id: sponsor.id
-        } 
-      });
-      return;
-    }
-
-    if (!userId || !sponsor.id) {
-      console.error('Missing required data:', { userId, sponsorId: sponsor.id });
-      toast({
-        title: "Error",
-        description: "Unable to process request. Please try again.",
-        variant: "destructive",
-      });
+      
+      navigate(`/login?${searchParams.toString()}`);
       return;
     }
 
