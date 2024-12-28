@@ -1,22 +1,26 @@
+import { useQuery } from "@tanstack/react-query";
 import { Helmet } from 'react-helmet-async';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
+
+// Blogger configuration
+const BLOG_ID = '1694084439153189152';
+const API_KEY = 'AIzaSyA1vMBgHX4iN8zs-PN7UDQfGp6AhIMq6G4';
 
 const Education = () => {
   const { data: posts, isLoading } = useQuery({
     queryKey: ['blog-posts'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('blog_posts')
-        .select('*')
-        .order('published_at', { ascending: false });
-      
-      if (error) throw error;
-      return data;
+      const response = await fetch(
+        `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts?key=${API_KEY}`
+      );
+      if (!response.ok) {
+        throw new Error('Failed to fetch blog posts');
+      }
+      const data = await response.json();
+      return data.items || [];
     },
   });
 
@@ -53,13 +57,13 @@ const Education = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
               {posts?.map((post) => (
-                <Link key={post.id} to={`/education/${post.slug}`}>
+                <Link key={post.id} to={`/education/${post.url.split('/').pop()}`}>
                   <Card className="h-full hover:shadow-lg transition-shadow duration-200">
-                    {post.image_url && (
+                    {post.images?.[0] && (
                       <div 
                         className="h-48 bg-cover bg-center rounded-t-lg"
                         style={{ 
-                          backgroundImage: `url(${post.image_url})`,
+                          backgroundImage: `url(${post.images[0].url})`,
                           backgroundSize: 'cover',
                           backgroundPosition: 'center'
                         }}
@@ -70,16 +74,16 @@ const Education = () => {
                         {post.title}
                       </h2>
                       <div className="flex items-center text-gray-600 text-sm mb-2">
-                        {post.author && <span>{post.author}</span>}
-                        {post.published_at && (
+                        {post.author?.displayName && <span>{post.author.displayName}</span>}
+                        {post.published && (
                           <>
-                            {post.author && <span className="mx-2">•</span>}
-                            <span>{new Date(post.published_at).toLocaleDateString()}</span>
+                            {post.author?.displayName && <span className="mx-2">•</span>}
+                            <span>{new Date(post.published).toLocaleDateString()}</span>
                           </>
                         )}
                       </div>
                       <p className="text-gray-600 line-clamp-3">
-                        {post.excerpt || post.content.substring(0, 150)}...
+                        {post.content.replace(/<[^>]*>/g, '').substring(0, 150)}...
                       </p>
                     </CardContent>
                   </Card>

@@ -3,7 +3,10 @@ import { useParams } from "react-router-dom";
 import { Helmet } from 'react-helmet-async';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { supabase } from "@/integrations/supabase/client";
+
+// Blogger configuration
+const BLOG_ID = '1694084439153189152';
+const API_KEY = 'AIzaSyA1vMBgHX4iN8zs-PN7UDQfGp6AhIMq6G4';
 
 const BlogPost = () => {
   const { slug = '' } = useParams();
@@ -11,13 +14,13 @@ const BlogPost = () => {
   const { data: post, isLoading } = useQuery({
     queryKey: ['blog-post', slug],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('blog_posts')
-        .select('*')
-        .eq('slug', slug)
-        .single();
-      
-      if (error) throw error;
+      const response = await fetch(
+        `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts/bypath?path=${slug}&key=${API_KEY}`
+      );
+      if (!response.ok) {
+        throw new Error('Failed to fetch blog post');
+      }
+      const data = await response.json();
       return data;
     },
   });
@@ -70,14 +73,14 @@ const BlogPost = () => {
     <div>
       <Helmet>
         <title>{`${post.title} | DoorList Education`}</title>
-        <meta name="description" content={post.excerpt || post.content.substring(0, 160)} />
+        <meta name="description" content={post.content.replace(/<[^>]*>/g, '').substring(0, 160)} />
       </Helmet>
       <Navbar />
       <main className="container mx-auto px-4 py-24">
-        {post.image_url && (
+        {post.images?.[0] && (
           <div className="max-w-6xl mx-auto mb-12">
             <img 
-              src={post.image_url} 
+              src={post.images[0].url} 
               alt={post.title}
               className="w-full h-[400px] object-cover rounded-lg shadow-lg"
             />
@@ -86,10 +89,10 @@ const BlogPost = () => {
         <article className="max-w-4xl mx-auto prose lg:prose-xl">
           <h1 className="text-4xl font-bold text-doorlist-navy mb-4">{post.title}</h1>
           <div className="flex items-center text-gray-600 mb-8">
-            {post.author && <span>{post.author}</span>}
-            {post.author && post.published_at && <span className="mx-2">•</span>}
-            {post.published_at && (
-              <span>{new Date(post.published_at).toLocaleDateString()}</span>
+            {post.author?.displayName && <span>{post.author.displayName}</span>}
+            {post.author?.displayName && post.published && <span className="mx-2">•</span>}
+            {post.published && (
+              <span>{new Date(post.published).toLocaleDateString()}</span>
             )}
           </div>
           <div 
