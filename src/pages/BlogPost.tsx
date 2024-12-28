@@ -3,21 +3,19 @@ import { useParams } from "react-router-dom";
 import { Helmet } from 'react-helmet-async';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BlogPostHeader from "@/components/blog/BlogPostHeader";
+import BlogPostContent from "@/components/blog/BlogPostContent";
 
-// Blogger configuration
 const BLOG_ID = '1694084439153189152';
 const API_KEY = 'AIzaSyA1vMBgHX4iN8zs-PN7UDQfGp6AhIMq6G4';
 
 const BlogPost = () => {
   const { slug = '' } = useParams();
-  
-  // Remove .html extension if present
   const cleanSlug = slug.replace('.html', '');
 
   const { data: post, isLoading } = useQuery({
     queryKey: ['blog-post', cleanSlug],
     queryFn: async () => {
-      // First try to search for the post by path
       const searchResponse = await fetch(
         `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts/search?q=${cleanSlug}&key=${API_KEY}`
       );
@@ -28,7 +26,6 @@ const BlogPost = () => {
       
       const searchData = await searchResponse.json();
       
-      // If we found a matching post, return it
       if (searchData.items && searchData.items.length > 0) {
         return searchData.items[0];
       }
@@ -89,28 +86,14 @@ const BlogPost = () => {
       </Helmet>
       <Navbar />
       <main className="container mx-auto px-4 py-24">
-        {post.images?.[0] && (
-          <div className="max-w-6xl mx-auto mb-12">
-            <img 
-              src={post.images[0].url} 
-              alt={post.title}
-              className="w-full h-[400px] object-cover rounded-lg shadow-lg"
-            />
-          </div>
-        )}
-        <article className="max-w-4xl mx-auto prose lg:prose-xl">
-          <h1 className="text-4xl font-bold text-doorlist-navy mb-4">{post.title}</h1>
-          <div className="flex items-center text-gray-600 mb-8">
-            {post.author?.displayName && <span>{post.author.displayName}</span>}
-            {post.author?.displayName && post.published && <span className="mx-2">•</span>}
-            {post.published && (
-              <span>{new Date(post.published).toLocaleDateString()}</span>
-            )}
-          </div>
-          <div 
-            className="prose prose-lg prose-slate max-w-none"
-            dangerouslySetInnerHTML={{ __html: post.content }} 
+        <article className="max-w-4xl mx-auto">
+          <BlogPostHeader
+            title={post.title}
+            author={post.author?.displayName}
+            published={post.published}
+            imageUrl={post.images?.[0]?.url}
           />
+          <BlogPostContent content={post.content} />
         </article>
       </main>
       <Footer />

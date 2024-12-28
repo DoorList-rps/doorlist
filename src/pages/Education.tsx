@@ -5,9 +5,17 @@ import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 
-// Blogger configuration
 const BLOG_ID = '1694084439153189152';
 const API_KEY = 'AIzaSyA1vMBgHX4iN8zs-PN7UDQfGp6AhIMq6G4';
+
+// Default images to use when blog post doesn't have an image
+const DEFAULT_IMAGES = [
+  'https://images.unsplash.com/photo-1649972904349-6e44c42644a7',
+  'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b',
+  'https://images.unsplash.com/photo-1518770660439-4636190af475',
+  'https://images.unsplash.com/photo-1461749280684-dccba630e2f6',
+  'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d'
+];
 
 const Education = () => {
   const { data: posts, isLoading } = useQuery({
@@ -56,19 +64,15 @@ const Education = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
-              {posts?.map((post) => (
+              {posts?.map((post, index) => (
                 <Link key={post.id} to={`/education/${post.url.split('/').pop()}`}>
                   <Card className="h-full hover:shadow-lg transition-shadow duration-200">
-                    {post.images?.[0] && (
-                      <div 
-                        className="h-48 bg-cover bg-center rounded-t-lg"
-                        style={{ 
-                          backgroundImage: `url(${post.images[0].url})`,
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center'
-                        }}
-                      />
-                    )}
+                    <div 
+                      className="h-48 bg-cover bg-center rounded-t-lg"
+                      style={{ 
+                        backgroundImage: `url(${post.images?.[0]?.url || DEFAULT_IMAGES[index % DEFAULT_IMAGES.length]})`,
+                      }}
+                    />
                     <CardContent className="p-4">
                       <h2 className="text-xl font-semibold text-doorlist-navy mb-2 line-clamp-2">
                         {post.title}
