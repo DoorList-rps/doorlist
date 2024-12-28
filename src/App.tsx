@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { HelmetProvider } from 'react-helmet-async';
 import { useEffect } from "react";
+import { SessionContextProvider } from '@supabase/auth-helpers-react';
+import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
@@ -38,31 +40,33 @@ const ScrollToTop = () => {
 const App = () => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <TooltipProvider>
-          <ScrollToTop />
-          <Toaster />
-          <Sonner />
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={<Index />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/investments" element={<Investments />} />
-            <Route path="/investments/:slug" element={<InvestmentDetail />} />
-            <Route path="/sponsors" element={<Sponsors />} />
-            <Route path="/sponsors/:slug" element={<SponsorDetail />} />
-            <Route path="/education" element={<Education />} />
-            <Route path="/education/:slug" element={<BlogPost />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/calculator" element={<Calculator />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </TooltipProvider>
-      </BrowserRouter>
+      <SessionContextProvider supabaseClient={supabase}>
+        <BrowserRouter>
+          <TooltipProvider>
+            <ScrollToTop />
+            <Toaster />
+            <Sonner />
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/" element={<Index />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/investments" element={<Investments />} />
+              <Route path="/investments/:slug" element={<InvestmentDetail />} />
+              <Route path="/sponsors" element={<Sponsors />} />
+              <Route path="/sponsors/:slug" element={<SponsorDetail />} />
+              <Route path="/education" element={<Education />} />
+              <Route path="/education/:slug" element={<BlogPost />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/calculator" element={<Calculator />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </TooltipProvider>
+        </BrowserRouter>
+      </SessionContextProvider>
     </QueryClientProvider>
   </HelmetProvider>
 );
