@@ -5,6 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import BlogPostImportForm from "@/components/education/BlogPostImportForm";
+import { useAuth } from "@supabase/auth-helpers-react";
 
 const Education = () => {
   const { data: posts, isLoading } = useQuery({
@@ -19,6 +21,8 @@ const Education = () => {
       return data;
     },
   });
+
+  const auth = useAuth();
 
   return (
     <div className="min-h-screen">
@@ -37,8 +41,10 @@ const Education = () => {
             Learn about real estate investing through our comprehensive guides and articles.
           </p>
 
+          {auth?.user && <BlogPostImportForm />}
+
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
               {[1, 2, 3].map((i) => (
                 <Card key={i} className="animate-pulse">
                   <div className="h-48 bg-gray-200 rounded-t-lg" />
@@ -51,7 +57,7 @@ const Education = () => {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
               {posts?.map((post) => (
                 <Link key={post.id} to={`/education/${post.slug}`}>
                   <Card className="h-full hover:shadow-lg transition-shadow duration-200">
@@ -70,9 +76,13 @@ const Education = () => {
                         {post.title}
                       </h2>
                       <div className="flex items-center text-gray-600 text-sm mb-2">
-                        <span>{post.author}</span>
-                        <span className="mx-2">•</span>
-                        <span>{new Date(post.published_at).toLocaleDateString()}</span>
+                        {post.author && <span>{post.author}</span>}
+                        {post.published_at && (
+                          <>
+                            {post.author && <span className="mx-2">•</span>}
+                            <span>{new Date(post.published_at).toLocaleDateString()}</span>
+                          </>
+                        )}
                       </div>
                       <p className="text-gray-600 line-clamp-3">
                         {post.excerpt || post.content.substring(0, 150)}...
