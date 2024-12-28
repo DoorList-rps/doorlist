@@ -8,14 +8,12 @@ import { Card, CardContent } from "@/components/ui/card";
 const BLOG_ID = '1694084439153189152';
 const API_KEY = 'AIzaSyA1vMBgHX4iN8zs-PN7UDQfGp6AhIMq6G4';
 
-// Default images to use when blog post doesn't have an image
-const DEFAULT_IMAGES = [
-  'https://images.unsplash.com/photo-1649972904349-6e44c42644a7',
-  'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b',
-  'https://images.unsplash.com/photo-1518770660439-4636190af475',
-  'https://images.unsplash.com/photo-1461749280684-dccba630e2f6',
-  'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d'
-];
+// Function to extract the first image URL from HTML content
+const extractFirstImage = (content: string): string | undefined => {
+  const imgRegex = /<img[^>]+src="([^">]+)"/;
+  const match = content.match(imgRegex);
+  return match ? match[1] : undefined;
+};
 
 const Education = () => {
   const { data: posts, isLoading } = useQuery({
@@ -64,35 +62,38 @@ const Education = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
-              {posts?.map((post, index) => (
-                <Link key={post.id} to={`/education/${post.url.split('/').pop()}`}>
-                  <Card className="h-full hover:shadow-lg transition-shadow duration-200">
-                    <div 
-                      className="h-48 bg-cover bg-center rounded-t-lg"
-                      style={{ 
-                        backgroundImage: `url(${post.images?.[0]?.url || DEFAULT_IMAGES[index % DEFAULT_IMAGES.length]})`,
-                      }}
-                    />
-                    <CardContent className="p-4">
-                      <h2 className="text-xl font-semibold text-doorlist-navy mb-2 line-clamp-2">
-                        {post.title}
-                      </h2>
-                      <div className="flex items-center text-gray-600 text-sm mb-2">
-                        {post.author?.displayName && <span>{post.author.displayName}</span>}
-                        {post.published && (
-                          <>
-                            {post.author?.displayName && <span className="mx-2">•</span>}
-                            <span>{new Date(post.published).toLocaleDateString()}</span>
-                          </>
-                        )}
-                      </div>
-                      <p className="text-gray-600 line-clamp-3">
-                        {post.content.replace(/<[^>]*>/g, '').substring(0, 150)}...
-                      </p>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
+              {posts?.map((post) => {
+                const imageUrl = extractFirstImage(post.content);
+                return (
+                  <Link key={post.id} to={`/education/${post.url.split('/').pop()}`}>
+                    <Card className="h-full hover:shadow-lg transition-shadow duration-200">
+                      <div 
+                        className="h-48 bg-cover bg-center rounded-t-lg"
+                        style={{ 
+                          backgroundImage: `url(${imageUrl})`,
+                        }}
+                      />
+                      <CardContent className="p-4">
+                        <h2 className="text-xl font-semibold text-doorlist-navy mb-2 line-clamp-2">
+                          {post.title}
+                        </h2>
+                        <div className="flex items-center text-gray-600 text-sm mb-2">
+                          {post.author?.displayName && <span>{post.author.displayName}</span>}
+                          {post.published && (
+                            <>
+                              {post.author?.displayName && <span className="mx-2">•</span>}
+                              <span>{new Date(post.published).toLocaleDateString()}</span>
+                            </>
+                          )}
+                        </div>
+                        <p className="text-gray-600 line-clamp-3">
+                          {post.content.replace(/<[^>]*>/g, '').substring(0, 150)}...
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>
