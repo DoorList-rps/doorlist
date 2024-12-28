@@ -6,6 +6,10 @@ import { fileURLToPath } from 'url';
 const supabaseUrl = process.env.SUPABASE_URL || "https://iavmizyezxogctfrbvxh.supabase.co";
 const supabaseKey = process.env.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlhdm1penllenhvZ2N0ZnJidnhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI5OTEwNzgsImV4cCI6MjA0ODU2NzA3OH0.Mk825aTDa3FSlUPkKXPk0pOsr7xaYEloFAF5Rd9wdAw";
 
+// Blogger configuration
+const BLOG_ID = '1694084439153189152';
+const API_KEY = 'AIzaSyA1vMBgHX4iN8zs-PN7UDQfGp6AhIMq6G4';
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function fetchApprovedSponsors() {
@@ -40,6 +44,32 @@ async function fetchApprovedInvestments() {
   return investments || [];
 }
 
+async function fetchBlogPosts() {
+  console.log('Fetching blog posts from Blogger...');
+  try {
+    const response = await fetch(
+      `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts?key=${API_KEY}`
+    );
+    if (!response.ok) {
+      throw new Error('Failed to fetch blog posts');
+    }
+    const data = await response.json();
+    const posts = data.items || [];
+    
+    // Transform posts to get slugs from URLs
+    const processedPosts = posts.map(post => ({
+      ...post,
+      slug: post.url.split('/').pop()
+    }));
+
+    console.log(`Found ${processedPosts.length} blog posts:`, processedPosts.map(p => p.slug));
+    return processedPosts;
+  } catch (error) {
+    console.error('Error fetching blog posts:', error);
+    return [];
+  }
+}
+
 async function generateSitemap() {
   try {
     console.log('Starting sitemap generation...');
@@ -56,13 +86,16 @@ async function generateSitemap() {
       { url: '/faq', changefreq: 'monthly', priority: '0.6' },
       { url: '/privacy', changefreq: 'yearly', priority: '0.3' },
       { url: '/terms', changefreq: 'yearly', priority: '0.3' },
+      { url: '/login', changefreq: 'monthly', priority: '0.5' },
+      { url: '/profile', changefreq: 'monthly', priority: '0.5' },
     ];
 
     // Fetch all dynamic data
     console.log('Fetching dynamic data...');
-    const [sponsors, investments] = await Promise.all([
+    const [sponsors, investments, blogPosts] = await Promise.all([
       fetchApprovedSponsors(),
-      fetchApprovedInvestments()
+      fetchApprovedInvestments(),
+      fetchBlogPosts()
     ]);
 
     // Generate sponsor URLs
@@ -79,14 +112,22 @@ async function generateSitemap() {
       priority: '0.8'
     }));
 
+    // Generate blog post URLs
+    const blogUrls = blogPosts.map(post => ({
+      url: `/education/${post.slug}`,
+      changefreq: 'monthly',
+      priority: '0.7'
+    }));
+
     // Combine all URLs
-    const allUrls = [...staticUrls, ...sponsorUrls, ...investmentUrls];
+    const allUrls = [...staticUrls, ...sponsorUrls, ...investmentUrls, ...blogUrls];
 
     console.log('URL Summary:', {
       total: allUrls.length,
       static: staticUrls.length,
       sponsors: sponsorUrls.length,
       investments: investmentUrls.length,
+      blog: blogUrls.length,
       urls: allUrls.map(u => u.url)
     });
 
