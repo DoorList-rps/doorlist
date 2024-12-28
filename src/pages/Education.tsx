@@ -7,9 +7,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import BlogPostImportForm from "@/components/education/BlogPostImportForm";
 import { useSession } from "@supabase/auth-helpers-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 
 const Education = () => {
-  const { data: posts, isLoading } = useQuery({
+  const { data: posts, isLoading, refetch } = useQuery({
     queryKey: ['blog-posts'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -23,7 +25,48 @@ const Education = () => {
   });
 
   const session = useSession();
+  const { toast } = useToast();
   const isAuthorizedUser = session?.user?.email === 'ryan.sudeck@gmail.com';
+
+  const fetchAllContent = async () => {
+    const urls = [
+      'https://static.semrush.com/contentshake/articles/5acfd47b-2d2d-40f2-9d30-bbc69fb1daff',
+      'https://static.semrush.com/contentshake/articles/bb5d3b46-195c-4b66-a337-81a519852892',
+      'https://static.semrush.com/contentshake/articles/90be6bbd-9706-49a9-9041-61b083d6d61f'
+    ];
+
+    try {
+      for (const url of urls) {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Failed to fetch content from ${url}`);
+        
+        const content = await response.text();
+        const urlParts = url.split('/');
+        const slug = urlParts[urlParts.length - 1];
+        
+        const { error } = await supabase
+          .from('blog_posts')
+          .update({ content })
+          .eq('slug', slug);
+
+        if (error) throw error;
+      }
+
+      toast({
+        title: "Success",
+        description: "All blog posts have been updated successfully",
+      });
+
+      refetch();
+    } catch (error) {
+      console.error('Batch import error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update some blog posts. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -42,7 +85,16 @@ const Education = () => {
             Learn about real estate investing through our comprehensive guides and articles.
           </p>
 
-          {isAuthorizedUser && <BlogPostImportForm />}
+          {isAuthorizedUser && (
+            <div className="mb-8">
+              <BlogPostImportForm />
+              <div className="mt-4 text-center">
+                <Button onClick={fetchAllContent}>
+                  Fetch All ContentShake Articles
+                </Button>
+              </div>
+            </div>
+          )}
 
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">

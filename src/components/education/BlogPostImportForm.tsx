@@ -19,25 +19,21 @@ const BlogPostImportForm = () => {
       
       const content = await response.text();
       
-      // Extract title from the URL (you might want to adjust this based on your URL structure)
+      // Extract title and slug from the URL
       const urlParts = url.split('/');
       const slug = urlParts[urlParts.length - 1];
       
-      // Insert into Supabase
+      // Update the existing blog post with the fetched content
       const { error } = await supabase
         .from('blog_posts')
-        .insert({
-          title: `Imported Post ${new Date().toLocaleDateString()}`, // You can update this later
-          slug: slug,
-          content: content,
-          published_at: new Date().toISOString(),
-        });
+        .update({ content })
+        .eq('slug', slug);
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: "Blog post imported successfully",
+        description: "Blog post content updated successfully",
       });
       
       setUrl("");
@@ -45,7 +41,7 @@ const BlogPostImportForm = () => {
       console.error('Import error:', error);
       toast({
         title: "Error",
-        description: "Failed to import blog post. Please try again.",
+        description: "Failed to update blog post content. Please try again.",
         variant: "destructive",
       });
     } finally {
