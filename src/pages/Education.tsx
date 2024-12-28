@@ -4,32 +4,21 @@ import Footer from "@/components/Footer";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-
-// Blogger configuration
-const BLOG_ID = '1694084439153189152';
-const API_KEY = 'AIzaSyA1vMBgHX4iN8zs-PN7UDQfGp6AhIMq6G4';
+import { supabase } from "@/integrations/supabase/client";
 
 const Education = () => {
   const { data: posts, isLoading } = useQuery({
     queryKey: ['blog-posts'],
     queryFn: async () => {
-      const response = await fetch(
-        `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts?key=${API_KEY}`
-      );
-      if (!response.ok) {
-        throw new Error('Failed to fetch blog posts');
-      }
-      const data = await response.json();
-      return data.items;
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .order('published_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
     },
   });
-
-  // Function to extract first image URL from post content
-  const getFirstImageUrl = (content: string) => {
-    const imgRegex = /<img[^>]+src="([^">]+)"/;
-    const match = content.match(imgRegex);
-    return match ? match[1] : '/placeholder.svg';
-  };
 
   return (
     <div className="min-h-screen">
@@ -63,38 +52,35 @@ const Education = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {posts?.map((post) => {
-                const postSlug = post.url.split('/').pop();
-                const imageUrl = getFirstImageUrl(post.content);
-                
-                return (
-                  <Link key={post.id} to={`/education/${postSlug}`}>
-                    <Card className="h-full hover:shadow-lg transition-shadow duration-200">
+              {posts?.map((post) => (
+                <Link key={post.id} to={`/education/${post.slug}`}>
+                  <Card className="h-full hover:shadow-lg transition-shadow duration-200">
+                    {post.image_url && (
                       <div 
                         className="h-48 bg-cover bg-center rounded-t-lg"
                         style={{ 
-                          backgroundImage: `url(${imageUrl})`,
+                          backgroundImage: `url(${post.image_url})`,
                           backgroundSize: 'cover',
                           backgroundPosition: 'center'
                         }}
                       />
-                      <CardContent className="p-4">
-                        <h2 className="text-xl font-semibold text-doorlist-navy mb-2 line-clamp-2">
-                          {post.title}
-                        </h2>
-                        <div className="flex items-center text-gray-600 text-sm mb-2">
-                          <span>{post.author.displayName}</span>
-                          <span className="mx-2">•</span>
-                          <span>{new Date(post.published).toLocaleDateString()}</span>
-                        </div>
-                        <p className="text-gray-600 line-clamp-3">
-                          {post.content.replace(/<[^>]*>/g, '').substring(0, 150)}...
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                );
-              })}
+                    )}
+                    <CardContent className="p-4">
+                      <h2 className="text-xl font-semibold text-doorlist-navy mb-2 line-clamp-2">
+                        {post.title}
+                      </h2>
+                      <div className="flex items-center text-gray-600 text-sm mb-2">
+                        <span>{post.author}</span>
+                        <span className="mx-2">•</span>
+                        <span>{new Date(post.published_at).toLocaleDateString()}</span>
+                      </div>
+                      <p className="text-gray-600 line-clamp-3">
+                        {post.excerpt || post.content.substring(0, 150)}...
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
             </div>
           )}
         </div>
