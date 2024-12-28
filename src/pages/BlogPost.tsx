@@ -10,18 +10,30 @@ const API_KEY = 'AIzaSyA1vMBgHX4iN8zs-PN7UDQfGp6AhIMq6G4';
 
 const BlogPost = () => {
   const { slug = '' } = useParams();
+  
+  // Remove .html extension if present
+  const cleanSlug = slug.replace('.html', '');
 
   const { data: post, isLoading } = useQuery({
-    queryKey: ['blog-post', slug],
+    queryKey: ['blog-post', cleanSlug],
     queryFn: async () => {
-      const response = await fetch(
-        `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts/bypath?path=${slug}&key=${API_KEY}`
+      // First try to search for the post by path
+      const searchResponse = await fetch(
+        `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts/search?q=${cleanSlug}&key=${API_KEY}`
       );
-      if (!response.ok) {
+      
+      if (!searchResponse.ok) {
         throw new Error('Failed to fetch blog post');
       }
-      const data = await response.json();
-      return data;
+      
+      const searchData = await searchResponse.json();
+      
+      // If we found a matching post, return it
+      if (searchData.items && searchData.items.length > 0) {
+        return searchData.items[0];
+      }
+      
+      throw new Error('Blog post not found');
     },
   });
 
