@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import BlogPostImportForm from "@/components/education/BlogPostImportForm";
-import { useAuth } from "@supabase/auth-helpers-react";
+import { useSession } from "@supabase/auth-helpers-react";
 
 const Education = () => {
   const { data: posts, isLoading } = useQuery({
@@ -22,7 +22,8 @@ const Education = () => {
     },
   });
 
-  const auth = useAuth();
+  const session = useSession();
+  const isAuthorizedUser = session?.user?.email === 'ryan.sudeck@gmail.com';
 
   return (
     <div className="min-h-screen">
@@ -41,7 +42,7 @@ const Education = () => {
             Learn about real estate investing through our comprehensive guides and articles.
           </p>
 
-          {auth?.user && <BlogPostImportForm />}
+          {isAuthorizedUser && <BlogPostImportForm />}
 
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
