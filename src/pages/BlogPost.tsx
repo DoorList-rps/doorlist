@@ -12,22 +12,43 @@ const API_KEY = 'AIzaSyA1vMBgHX4iN8zs-PN7UDQfGp6AhIMq6G4';
 const BlogPost = () => {
   const { slug = '' } = useParams();
   const cleanSlug = slug.replace('.html', '');
+  
+  // Convert slug to a more search-friendly format
+  const searchTerms = cleanSlug
+    .split('-')
+    .filter(term => term.length > 3) // Only search for words longer than 3 characters
+    .join(' OR '); // Use OR to make search more flexible
 
   const { data: post, isLoading } = useQuery({
     queryKey: ['blog-post', cleanSlug],
     queryFn: async () => {
+      console.log('Searching for post with terms:', searchTerms);
+      
       const searchResponse = await fetch(
-        `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts/search?q=${cleanSlug}&key=${API_KEY}`
+        `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts/search?q=${searchTerms}&key=${API_KEY}`
       );
       
       if (!searchResponse.ok) {
+        console.error('Search response not OK:', await searchResponse.text());
         throw new Error('Failed to fetch blog post');
       }
       
       const searchData = await searchResponse.json();
+      console.log('Search results:', searchData);
       
       if (searchData.items && searchData.items.length > 0) {
-        return searchData.items[0];
+        // Find the post that best matches our slug
+        const matchingPost = searchData.items.find(post => {
+          const postSlug = post.url.split('/').pop()?.replace('.html', '') || '';
+          // Check for exact match first
+          if (postSlug === cleanSlug) return true;
+          // Then check for partial matches
+          const postWords = postSlug.split('-');
+          const slugWords = cleanSlug.split('-');
+          return slugWords.every(word => postWords.some(pw => pw.includes(word)));
+        });
+        
+        return matchingPost || searchData.items[0];
       }
       
       throw new Error('Blog post not found');
