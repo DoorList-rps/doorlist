@@ -17,8 +17,8 @@ export default defineConfig({
             const env = { 
               ...process.env, 
               VITE_SITE_URL: process.env.VITE_SITE_URL || 'http://localhost:8080',
-              SUPABASE_URL: process.env.SUPABASE_URL,
-              SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY
+              SUPABASE_URL: "https://iavmizyezxogctfrbvxh.supabase.co",
+              SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlhdm1penllenhvZ2N0ZnJidnhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI5OTEwNzgsImV4cCI6MjA0ODU2NzA3OH0.Mk825aTDa3FSlUPkKXPk0pOsr7xaYEloFAF5Rd9wdAw"
             };
             execSync('node scripts/generate-sitemap.js', { stdio: 'inherit', env });
             console.log('Sitemap generated successfully!');
@@ -35,4 +35,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    port: 8080
+  }
 });

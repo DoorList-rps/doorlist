@@ -9,9 +9,15 @@ const __dirname = dirname(__filename);
 // Use environment variable for domain or fallback to localhost for development
 const DOMAIN = process.env.VITE_SITE_URL || 'http://localhost:8080';
 
-// Initialize Supabase client
+// Initialize Supabase client with required configuration
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error('Missing Supabase configuration');
+  process.exit(1);
+}
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Blogger API configuration
