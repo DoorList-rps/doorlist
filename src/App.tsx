@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import Investments from "./pages/Investments";
 import InvestmentDetail from "./pages/InvestmentDetail";
+import SubmitInvestment from "./pages/SubmitInvestment";
 import Sponsors from "./pages/Sponsors";
 import SponsorDetail from "./pages/SponsorDetail";
 import Education from "./pages/Education";
@@ -52,6 +53,7 @@ const App = () => (
               <Route path="/profile" element={<Profile />} />
               <Route path="/investments" element={<Investments />} />
               <Route path="/investments/:slug" element={<InvestmentDetail />} />
+              <Route path="/submit-investment" element={<SubmitInvestment />} />
               <Route path="/sponsors" element={<Sponsors />} />
               <Route path="/sponsors/:slug" element={<SponsorDetail />} />
               <Route path="/education" element={<Education />} />
