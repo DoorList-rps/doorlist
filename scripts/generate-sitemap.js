@@ -14,43 +14,64 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 const DOMAIN = 'https://doorlist.com';
 
-async function fetchAllBlogPosts(pageToken = null, allPosts = []) {
-  try {
-    const url = `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts`;
-    const params = new URLSearchParams({
-      key: API_KEY,
-      maxResults: '500',
-      status: 'live',
-      ...(pageToken && { pageToken })
-    });
+async function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
-    console.log(`Fetching blog posts${pageToken ? ' (page token: ' + pageToken + ')' : ''}...`);
-    
-    const response = await fetch(`${url}?${params}`);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch blog posts: ${response.statusText}`);
-    }
-    
-    const data = await response.json();
-    console.log(`Fetched ${data.items?.length || 0} posts in this batch`);
-    
-    if (data.items) {
-      allPosts.push(...data.items);
-    }
-    
-    if (data.nextPageToken) {
-      // Add a small delay to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return fetchAllBlogPosts(data.nextPageToken, allPosts);
-    }
-    
+async function fetchAllBlogPosts() {
+  const allPosts = [];
+  let pageToken = null;
+  let totalAttempts = 0;
+  const maxAttempts = 10; // Prevent infinite loops
+
+  try {
+    do {
+      if (totalAttempts >= maxAttempts) {
+        console.warn(`Reached maximum attempts (${maxAttempts}) while fetching blog posts`);
+        break;
+      }
+
+      const url = new URL(`https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts`);
+      url.searchParams.append('key', API_KEY);
+      url.searchParams.append('maxResults', '500');
+      url.searchParams.append('status', 'live');
+      if (pageToken) {
+        url.searchParams.append('pageToken', pageToken);
+      }
+
+      console.log(`Fetching blog posts (attempt ${totalAttempts + 1})${pageToken ? ' with page token' : ''}`);
+      
+      const response = await fetch(url.toString());
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch blog posts: ${response.status} ${errorText}`);
+      }
+      
+      const data = await response.json();
+      console.log(`Fetched ${data.items?.length || 0} posts in this batch`);
+      
+      if (data.items && data.items.length > 0) {
+        allPosts.push(...data.items);
+      }
+      
+      pageToken = data.nextPageToken;
+      totalAttempts++;
+
+      // Add a delay between requests to avoid rate limiting
+      if (pageToken) {
+        await delay(1000);
+      }
+    } while (pageToken);
+
+    console.log(`Total blog posts fetched: ${allPosts.length}`);
     return allPosts.map(post => ({
-      url: post.url,
-      slug: post.url.split('/').pop()
+      url: `/education/${post.url.split('/').pop()}`,
+      changefreq: 'monthly',
+      priority: '0.7'
     }));
   } catch (error) {
     console.error('Error fetching blog posts:', error);
-    return allPosts;
+    return [];
   }
 }
 
@@ -60,15 +81,20 @@ async function fetchAllApprovedSponsors() {
     const { data: sponsors, error } = await supabase
       .from('sponsors')
       .select('slug')
-      .eq('approved', true);
+      .eq('approved', true)
+      .not('slug', 'is', null);
 
     if (error) throw error;
     
     console.log(`Found ${sponsors?.length || 0} approved sponsors`);
-    return sponsors || [];
+    return sponsors?.map(sponsor => ({
+      url: `/sponsors/${sponsor.slug}`,
+      changefreq: 'weekly',
+      priority: '0.8'
+    })) || [];
   } catch (error) {
     console.error('Error fetching sponsors:', error);
-    throw error;
+    return [];
   }
 }
 
@@ -78,15 +104,20 @@ async function fetchAllApprovedInvestments() {
     const { data: investments, error } = await supabase
       .from('investments')
       .select('slug')
-      .eq('approved', true);
+      .eq('approved', true)
+      .not('slug', 'is', null);
 
     if (error) throw error;
     
     console.log(`Found ${investments?.length || 0} approved investments`);
-    return investments || [];
+    return investments?.map(investment => ({
+      url: `/investments/${investment.slug}`,
+      changefreq: 'weekly',
+      priority: '0.8'
+    })) || [];
   } catch (error) {
     console.error('Error fetching investments:', error);
-    throw error;
+    return [];
   }
 }
 
@@ -109,41 +140,13 @@ async function generateSitemap() {
       { url: '/submit-investment', changefreq: 'monthly', priority: '0.5' },
     ];
 
-    // Fetch all dynamic data concurrently with proper error handling
+    // Fetch all dynamic data concurrently
     console.log('Fetching all dynamic data...');
-    const [sponsors, investments, blogPosts] = await Promise.all([
-      fetchAllApprovedSponsors().catch(error => {
-        console.error('Error fetching sponsors:', error);
-        return [];
-      }),
-      fetchAllApprovedInvestments().catch(error => {
-        console.error('Error fetching investments:', error);
-        return [];
-      }),
-      fetchAllBlogPosts().catch(error => {
-        console.error('Error fetching blog posts:', error);
-        return [];
-      })
+    const [sponsorUrls, investmentUrls, blogUrls] = await Promise.all([
+      fetchAllApprovedSponsors(),
+      fetchAllApprovedInvestments(),
+      fetchAllBlogPosts()
     ]);
-
-    // Generate URLs for each content type
-    const sponsorUrls = sponsors.map(sponsor => ({
-      url: `/sponsors/${sponsor.slug}`,
-      changefreq: 'weekly',
-      priority: '0.8'
-    }));
-
-    const investmentUrls = investments.map(investment => ({
-      url: `/investments/${investment.slug}`,
-      changefreq: 'weekly',
-      priority: '0.8'
-    }));
-
-    const blogUrls = blogPosts.map(post => ({
-      url: `/education/${post.slug}`,
-      changefreq: 'monthly',
-      priority: '0.7'
-    }));
 
     // Combine all URLs
     const allUrls = [...staticUrls, ...sponsorUrls, ...investmentUrls, ...blogUrls];
