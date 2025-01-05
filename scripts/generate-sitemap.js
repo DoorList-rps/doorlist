@@ -1,7 +1,6 @@
 import { promises as fs } from 'fs';
-import { join, resolve } from 'path';
+import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -23,6 +22,13 @@ const urls = [
   { url: '/terms', changefreq: 'yearly', priority: '0.3' },
   { url: '/submit-investment', changefreq: 'monthly', priority: '0.5' },
   
+  // Education pages (blog posts)
+  { url: '/education/real-estate-investing-basics', changefreq: 'monthly', priority: '0.7' },
+  { url: '/education/understanding-reits', changefreq: 'monthly', priority: '0.7' },
+  { url: '/education/commercial-real-estate-101', changefreq: 'monthly', priority: '0.7' },
+  { url: '/education/passive-income-through-real-estate', changefreq: 'monthly', priority: '0.7' },
+  { url: '/education/accredited-investor-guide', changefreq: 'monthly', priority: '0.7' },
+  
   // Sponsor pages
   { url: '/sponsors/acretrader', changefreq: 'weekly', priority: '0.8' },
   { url: '/sponsors/arrived-homes', changefreq: 'weekly', priority: '0.8' },
@@ -40,14 +46,7 @@ const urls = [
   { url: '/investments/self-storage-development-dallas', changefreq: 'weekly', priority: '0.8' },
   { url: '/investments/retail-strip-center-phoenix', changefreq: 'weekly', priority: '0.8' },
   { url: '/investments/industrial-warehouse-miami', changefreq: 'weekly', priority: '0.8' },
-  { url: '/investments/office-building-chicago', changefreq: 'weekly', priority: '0.8' },
-  
-  // Education pages (blog posts)
-  { url: '/education/real-estate-investing-basics', changefreq: 'monthly', priority: '0.7' },
-  { url: '/education/understanding-reits', changefreq: 'monthly', priority: '0.7' },
-  { url: '/education/commercial-real-estate-101', changefreq: 'monthly', priority: '0.7' },
-  { url: '/education/passive-income-through-real-estate', changefreq: 'monthly', priority: '0.7' },
-  { url: '/education/accredited-investor-guide', changefreq: 'monthly', priority: '0.7' }
+  { url: '/investments/office-building-chicago', changefreq: 'weekly', priority: '0.8' }
 ];
 
 async function generateSitemap() {
