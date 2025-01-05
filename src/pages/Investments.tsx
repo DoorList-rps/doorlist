@@ -65,8 +65,8 @@ const Investments = () => {
       </Helmet>
       <Navbar />
       <main className="container mx-auto px-4 py-24">
-        <h1 className="text-4xl font-bold text-doorlist-navy mb-4">Investment Opportunities</h1>
         <div className="mb-8">
+          <h1 className="text-4xl font-bold text-doorlist-navy mb-4">Investment Opportunities</h1>
           <p className="text-gray-600 mb-4">
             Explore our curated selection of institutional-quality real estate investment opportunities. Each listing has been carefully vetted to ensure it meets our high standards for quality and potential returns.
           </p>
@@ -75,13 +75,15 @@ const Investments = () => {
           </p>
         </div>
         
-        <InvestmentFilters
-          types={propertyTypes}
-          onSearchChange={setSearchTerm}
-          onTypeChange={setSelectedType}
-          selectedType={selectedType}
-          onReset={handleReset}
-        />
+        <div className="md:sticky md:top-20 bg-white z-10 py-4">
+          <InvestmentFilters
+            types={propertyTypes}
+            onSearchChange={setSearchTerm}
+            onTypeChange={setSelectedType}
+            selectedType={selectedType}
+            onReset={handleReset}
+          />
+        </div>
 
         {isLoading && (
           <div className="flex justify-center items-center min-h-[200px]">
