@@ -1,13 +1,12 @@
 import { useState } from "react";
 import { Helmet } from 'react-helmet-async';
-import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import InvestmentCard from "@/components/investments/InvestmentCard";
 import InvestmentFilters from "@/components/investments/InvestmentFilters";
-import type { Tables } from "@/integrations/supabase/types";
+import InvestmentHeader from "@/components/investments/InvestmentHeader";
+import InvestmentList from "@/components/investments/InvestmentList";
 
 const Investments = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -65,15 +64,7 @@ const Investments = () => {
       </Helmet>
       <Navbar />
       <main className="container mx-auto px-4 py-24">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-doorlist-navy mb-4">Investment Opportunities</h1>
-          <p className="text-gray-600 mb-4">
-            Explore our curated selection of institutional-quality real estate investment opportunities. Each listing has been carefully vetted to ensure it meets our high standards for quality and potential returns.
-          </p>
-          <p className="text-gray-600">
-            Have an investment opportunity to share? <Link to="/submit-investment" className="text-doorlist-salmon hover:underline">Submit it here</Link> for our team to review.
-          </p>
-        </div>
+        <InvestmentHeader />
         
         <div className="md:sticky md:top-20 bg-white z-10 py-4">
           <InvestmentFilters
@@ -85,38 +76,11 @@ const Investments = () => {
           />
         </div>
 
-        {isLoading && (
-          <div className="flex justify-center items-center min-h-[200px]">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-doorlist-navy"></div>
-          </div>
-        )}
-
-        {error && (
-          <div className="text-center py-12">
-            <h3 className="text-xl font-semibold text-red-600">Error loading investments</h3>
-            <p className="text-gray-500 mt-2">{error instanceof Error ? error.message : 'Unknown error occurred'}</p>
-          </div>
-        )}
-
-        {!isLoading && !error && (!filteredInvestments || filteredInvestments.length === 0) && (
-          <div className="text-center py-12">
-            <h3 className="text-xl font-semibold text-gray-600">No investments found</h3>
-            <p className="text-gray-500 mt-2">Try adjusting your search criteria</p>
-          </div>
-        )}
-
-        {filteredInvestments && filteredInvestments.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredInvestments.map((investment) => (
-              <InvestmentCard 
-                key={investment.id} 
-                investment={investment as Tables<'investments'> & { 
-                  sponsors: Pick<Tables<'sponsors'>, 'name' | 'logo_url'> 
-                }}
-              />
-            ))}
-          </div>
-        )}
+        <InvestmentList 
+          investments={filteredInvestments || []}
+          isLoading={isLoading}
+          error={error instanceof Error ? error : null}
+        />
       </main>
       <Footer />
     </div>
