@@ -17,7 +17,7 @@ export default defineConfig({
               stdio: 'inherit',
               env: { 
                 ...process.env,
-                VITE_SITE_URL: process.env.VITE_SITE_URL || 'http://localhost:8080'
+                VITE_SITE_URL: 'https://doorlist.com'  // Explicitly set for production
               }
             });
             console.log('Sitemap generated successfully!');
