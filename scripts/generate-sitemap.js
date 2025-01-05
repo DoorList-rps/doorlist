@@ -12,8 +12,48 @@ const API_KEY = 'AIzaSyA1vMBgHX4iN8zs-PN7UDQfGp6AhIMq6G4';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function fetchApprovedSponsors() {
-  console.log('Fetching approved sponsors...');
+const DOMAIN = 'https://doorlist.com';
+
+async function fetchAllBlogPosts(pageToken = null, allPosts = []) {
+  console.log(`Fetching blog posts${pageToken ? ' (continued)' : ''}...`);
+  try {
+    const url = new URL('https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts');
+    url.searchParams.append('key', API_KEY);
+    url.searchParams.append('maxResults', '500');
+    if (pageToken) {
+      url.searchParams.append('pageToken', pageToken);
+    }
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error('Failed to fetch blog posts');
+    }
+    const data = await response.json();
+    
+    // Add current batch of posts to our collection
+    allPosts.push(...(data.items || []));
+    
+    // If there are more posts, fetch them recursively
+    if (data.nextPageToken) {
+      return fetchAllBlogPosts(data.nextPageToken, allPosts);
+    }
+    
+    // Process all collected posts
+    const processedPosts = allPosts.map(post => ({
+      ...post,
+      slug: post.url.split('/').pop()
+    }));
+
+    console.log(`Found ${processedPosts.length} total blog posts`);
+    return processedPosts;
+  } catch (error) {
+    console.error('Error fetching blog posts:', error);
+    return allPosts; // Return what we have so far
+  }
+}
+
+async function fetchAllApprovedSponsors() {
+  console.log('Fetching all approved sponsors...');
   const { data: sponsors, error } = await supabase
     .from('sponsors')
     .select('*')
@@ -28,8 +68,8 @@ async function fetchApprovedSponsors() {
   return sponsors || [];
 }
 
-async function fetchApprovedInvestments() {
-  console.log('Fetching approved investments...');
+async function fetchAllApprovedInvestments() {
+  console.log('Fetching all approved investments...');
   const { data: investments, error } = await supabase
     .from('investments')
     .select('*')
@@ -44,36 +84,11 @@ async function fetchApprovedInvestments() {
   return investments || [];
 }
 
-async function fetchBlogPosts() {
-  console.log('Fetching blog posts from Blogger...');
-  try {
-    const response = await fetch(
-      `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts?key=${API_KEY}&maxResults=500`
-    );
-    if (!response.ok) {
-      throw new Error('Failed to fetch blog posts');
-    }
-    const data = await response.json();
-    const posts = data.items || [];
-    
-    const processedPosts = posts.map(post => ({
-      ...post,
-      slug: post.url.split('/').pop()
-    }));
-
-    console.log(`Found ${processedPosts.length} blog posts`);
-    return processedPosts;
-  } catch (error) {
-    console.error('Error fetching blog posts:', error);
-    return [];
-  }
-}
-
 async function generateSitemap() {
   try {
     console.log('Starting sitemap generation...');
 
-    // Get static URLs
+    // Define static URLs with their properties
     const staticUrls = [
       { url: '/', changefreq: 'daily', priority: '1.0' },
       { url: '/investments', changefreq: 'daily', priority: '0.9' },
@@ -89,28 +104,26 @@ async function generateSitemap() {
     ];
 
     // Fetch all dynamic data concurrently
-    console.log('Fetching dynamic data...');
+    console.log('Fetching all dynamic data...');
     const [sponsors, investments, blogPosts] = await Promise.all([
-      fetchApprovedSponsors(),
-      fetchApprovedInvestments(),
-      fetchBlogPosts()
+      fetchAllApprovedSponsors(),
+      fetchAllApprovedInvestments(),
+      fetchAllBlogPosts()
     ]);
 
-    // Generate sponsor URLs
+    // Generate URLs for each content type
     const sponsorUrls = sponsors.map(sponsor => ({
       url: `/sponsors/${sponsor.slug}`,
       changefreq: 'weekly',
       priority: '0.8'
     }));
 
-    // Generate investment URLs
     const investmentUrls = investments.map(investment => ({
       url: `/investments/${investment.slug}`,
       changefreq: 'weekly',
       priority: '0.8'
     }));
 
-    // Generate blog post URLs
     const blogUrls = blogPosts.map(post => ({
       url: `/education/${post.slug}`,
       changefreq: 'monthly',
@@ -120,6 +133,7 @@ async function generateSitemap() {
     // Combine all URLs
     const allUrls = [...staticUrls, ...sponsorUrls, ...investmentUrls, ...blogUrls];
 
+    // Log detailed URL counts
     console.log('URL Summary:', {
       total: allUrls.length,
       static: staticUrls.length,
@@ -132,7 +146,7 @@ async function generateSitemap() {
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${allUrls.map(entry => `  <url>
-    <loc>https://doorlist.com${entry.url}</loc>
+    <loc>${DOMAIN}${entry.url}</loc>
     <changefreq>${entry.changefreq}</changefreq>
     <priority>${entry.priority}</priority>
   </url>`).join('\n')}
@@ -149,8 +163,17 @@ ${allUrls.map(entry => `  <url>
     const sitemapPath = path.join(publicDir, 'sitemap.xml');
     await fs.writeFile(sitemapPath, sitemap, 'utf8');
     
-    console.log(`Successfully wrote sitemap.xml with ${allUrls.length} URLs`);
-    console.log('All URLs included:', allUrls.map(u => `https://doorlist.com${u.url}`).join('\n'));
+    // Log success with detailed counts
+    console.log(`Successfully generated sitemap.xml with ${allUrls.length} URLs:`);
+    console.log('- Static pages:', staticUrls.length);
+    console.log('- Sponsor pages:', sponsorUrls.length);
+    console.log('- Investment pages:', investmentUrls.length);
+    console.log('- Blog posts:', blogUrls.length);
+    
+    // Log all URLs for verification
+    console.log('\nAll URLs included:');
+    allUrls.forEach(entry => console.log(`${DOMAIN}${entry.url}`));
+    
   } catch (error) {
     console.error('Error generating sitemap:', error);
     process.exit(1);
