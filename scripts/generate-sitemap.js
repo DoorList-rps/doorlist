@@ -1,5 +1,10 @@
-const fs = require('fs/promises');
-const path = require('path');
+import { promises as fs } from 'fs';
+import { join, resolve } from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const DOMAIN = 'https://doorlist.com';
 
@@ -60,10 +65,10 @@ ${urls.map(entry => `  <url>
 </urlset>`;
 
     // Write sitemap file
-    const publicDir = path.join(__dirname, '..', 'public');
+    const publicDir = join(dirname(dirname(__filename)), 'public');
     await fs.mkdir(publicDir, { recursive: true });
     
-    const sitemapPath = path.join(publicDir, 'sitemap.xml');
+    const sitemapPath = join(publicDir, 'sitemap.xml');
     await fs.writeFile(sitemapPath, sitemap, 'utf8');
     
     console.log(`Sitemap generated successfully with ${urls.length} URLs`);
