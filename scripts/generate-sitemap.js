@@ -24,7 +24,7 @@ async function fetchApprovedSponsors() {
     throw error;
   }
 
-  console.log(`Found ${sponsors?.length || 0} approved sponsors:`, sponsors?.map(s => s.slug));
+  console.log(`Found ${sponsors?.length || 0} approved sponsors`);
   return sponsors || [];
 }
 
@@ -40,7 +40,7 @@ async function fetchApprovedInvestments() {
     throw error;
   }
 
-  console.log(`Found ${investments?.length || 0} approved investments:`, investments?.map(i => i.slug));
+  console.log(`Found ${investments?.length || 0} approved investments`);
   return investments || [];
 }
 
@@ -48,7 +48,7 @@ async function fetchBlogPosts() {
   console.log('Fetching blog posts from Blogger...');
   try {
     const response = await fetch(
-      `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts?key=${API_KEY}`
+      `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts?key=${API_KEY}&maxResults=500`
     );
     if (!response.ok) {
       throw new Error('Failed to fetch blog posts');
@@ -56,13 +56,12 @@ async function fetchBlogPosts() {
     const data = await response.json();
     const posts = data.items || [];
     
-    // Transform posts to get slugs from URLs
     const processedPosts = posts.map(post => ({
       ...post,
       slug: post.url.split('/').pop()
     }));
 
-    console.log(`Found ${processedPosts.length} blog posts:`, processedPosts.map(p => p.slug));
+    console.log(`Found ${processedPosts.length} blog posts`);
     return processedPosts;
   } catch (error) {
     console.error('Error fetching blog posts:', error);
@@ -86,11 +85,10 @@ async function generateSitemap() {
       { url: '/faq', changefreq: 'monthly', priority: '0.6' },
       { url: '/privacy', changefreq: 'yearly', priority: '0.3' },
       { url: '/terms', changefreq: 'yearly', priority: '0.3' },
-      { url: '/login', changefreq: 'monthly', priority: '0.5' },
-      { url: '/profile', changefreq: 'monthly', priority: '0.5' },
+      { url: '/submit-investment', changefreq: 'monthly', priority: '0.5' },
     ];
 
-    // Fetch all dynamic data
+    // Fetch all dynamic data concurrently
     console.log('Fetching dynamic data...');
     const [sponsors, investments, blogPosts] = await Promise.all([
       fetchApprovedSponsors(),
@@ -127,8 +125,7 @@ async function generateSitemap() {
       static: staticUrls.length,
       sponsors: sponsorUrls.length,
       investments: investmentUrls.length,
-      blog: blogUrls.length,
-      urls: allUrls.map(u => u.url)
+      blog: blogUrls.length
     });
 
     // Generate sitemap XML
