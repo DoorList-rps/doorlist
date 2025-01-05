@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import type { TablesInsert } from "@/integrations/supabase/types";
 
 const SubmitInvestment = () => {
   const { toast } = useToast();
@@ -33,22 +34,22 @@ const SubmitInvestment = () => {
     const formData = new FormData(e.currentTarget);
     
     try {
+      const investmentData: TablesInsert<'investments'> = {
+        name: formData.get('name')?.toString() || '',
+        description: formData.get('description')?.toString(),
+        short_description: formData.get('shortDescription')?.toString(),
+        minimum_investment: Number(formData.get('minimumInvestment')) || null,
+        target_return: formData.get('targetReturn')?.toString(),
+        property_type: formData.get('propertyType')?.toString(),
+        location_city: formData.get('city')?.toString(),
+        location_state: formData.get('state')?.toString(),
+        approved: false,
+        slug: formData.get('name')?.toString().toLowerCase().replace(/[^a-z0-9]+/g, '-') || '',
+      };
+
       const { error } = await supabase
         .from('investments')
-        .insert([
-          {
-            name: formData.get('name'),
-            description: formData.get('description'),
-            short_description: formData.get('shortDescription'),
-            minimum_investment: formData.get('minimumInvestment'),
-            target_return: formData.get('targetReturn'),
-            property_type: formData.get('propertyType'),
-            location_city: formData.get('city'),
-            location_state: formData.get('state'),
-            approved: false,
-            slug: formData.get('name')?.toString().toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-          }
-        ]);
+        .insert(investmentData);
 
       if (error) throw error;
 
