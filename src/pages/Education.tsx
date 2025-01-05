@@ -17,7 +17,19 @@ import {
 
 const BLOG_ID = '1694084439153189152';
 const API_KEY = 'AIzaSyA1vMBgHX4iN8zs-PN7UDQfGp6AhIMq6G4';
-const POSTS_PER_PAGE = 50; // Maximum allowed by Blogger API
+const POSTS_PER_PAGE = 50;
+
+interface BlogPost {
+  id: string;
+  title: string;
+  content: string;
+  url: string;
+  labels?: string[];
+  author?: {
+    displayName?: string;
+  };
+  published?: string;
+}
 
 // Function to extract the first image URL from HTML content
 const extractFirstImage = (content: string): string | undefined => {
@@ -27,7 +39,7 @@ const extractFirstImage = (content: string): string | undefined => {
 };
 
 // Function to extract categories from content
-const extractCategories = (posts: any[]): string[] => {
+const extractCategories = (posts: BlogPost[]): string[] => {
   const categoriesSet = new Set<string>();
   posts?.forEach(post => {
     const labels = post.labels || [];
@@ -40,20 +52,24 @@ const Education = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  const { data: posts, isLoading } = useQuery({
+  const { data: posts, isLoading, error } = useQuery({
     queryKey: ['blog-posts'],
     queryFn: async () => {
       console.log('Fetching blog posts...');
-      const response = await fetch(
-        `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts?maxResults=${POSTS_PER_PAGE}&key=${API_KEY}`
-      );
-      if (!response.ok) {
-        console.error('Failed to fetch blog posts:', await response.text());
-        throw new Error('Failed to fetch blog posts');
+      try {
+        const response = await fetch(
+          `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts?maxResults=${POSTS_PER_PAGE}&key=${API_KEY}`
+        );
+        if (!response.ok) {
+          throw new Error(`Failed to fetch blog posts: ${response.statusText}`);
+        }
+        const data = await response.json();
+        console.log(`Fetched ${data.items?.length || 0} posts`);
+        return (data.items || []) as BlogPost[];
+      } catch (error) {
+        console.error('Error fetching blog posts:', error);
+        throw error;
       }
-      const data = await response.json();
-      console.log(`Fetched ${data.items?.length || 0} posts`);
-      return data.items || [];
     },
   });
 
@@ -62,7 +78,9 @@ const Education = () => {
   }, [posts]);
 
   const filteredPosts = useMemo(() => {
-    return posts?.filter(post => {
+    if (!posts) return [];
+    
+    return posts.filter(post => {
       const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         post.content.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategory === 'all' || 
@@ -70,6 +88,22 @@ const Education = () => {
       return matchesSearch && matchesCategory;
     });
   }, [posts, searchTerm, selectedCategory]);
+
+  if (error) {
+    console.error('Error in Education component:', error);
+    return (
+      <div className="min-h-screen">
+        <Navbar />
+        <main className="container mx-auto px-4 py-24">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-red-600">Error Loading Education Content</h1>
+            <p className="text-gray-600 mt-2">Please try again later.</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
@@ -142,7 +176,7 @@ const Education = () => {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
-                {filteredPosts?.map((post) => {
+                {filteredPosts.map((post) => {
                   const imageUrl = extractFirstImage(post.content);
                   return (
                     <Link key={post.id} to={`/education/${post.url.split('/').pop()}`}>
@@ -150,7 +184,8 @@ const Education = () => {
                         <div 
                           className="h-48 bg-cover bg-center rounded-t-lg"
                           style={{ 
-                            backgroundImage: `url(${imageUrl})`,
+                            backgroundImage: imageUrl ? `url(${imageUrl})` : 'none',
+                            backgroundColor: !imageUrl ? 'rgb(243 244 246)' : undefined
                           }}
                         />
                         <CardContent className="p-4">
@@ -182,7 +217,7 @@ const Education = () => {
                   );
                 })}
               </div>
-              {filteredPosts?.length === 0 && (
+              {filteredPosts.length === 0 && (
                 <div className="text-center py-12">
                   <p className="text-lg text-gray-600">No articles found matching your criteria.</p>
                 </div>
