@@ -19,11 +19,13 @@ export default defineConfig(({ mode }) => ({
         console.log('Starting sitemap generation...');
         try {
           const { execSync } = await import('child_process');
-          execSync('node scripts/generate-sitemap.js', { stdio: 'inherit' });
+          // Pass the VITE_SITE_URL environment variable to the script
+          const env = { ...process.env, VITE_SITE_URL: process.env.VITE_SITE_URL || 'http://localhost:8080' };
+          execSync('node scripts/generate-sitemap.js', { stdio: 'inherit', env });
           console.log('Sitemap generated successfully!');
         } catch (error) {
           console.error('Error generating sitemap:', error);
-          process.exit(1); // Exit with error to indicate build failure
+          process.exit(1);
         }
       }
     }

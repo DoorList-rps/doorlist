@@ -5,7 +5,8 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const DOMAIN = 'https://doorlist.com';
+// Use environment variable for domain or fallback to localhost for development
+const DOMAIN = process.env.VITE_SITE_URL || 'http://localhost:8080';
 
 // Define all possible URLs
 const urls = [
@@ -52,6 +53,7 @@ const urls = [
 async function generateSitemap() {
   try {
     console.log('Starting sitemap generation...');
+    console.log('Using domain:', DOMAIN);
     
     // Generate sitemap XML
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -72,6 +74,7 @@ ${urls.map(entry => `  <url>
     
     console.log(`Sitemap generated successfully with ${urls.length} URLs`);
     console.log('Location:', sitemapPath);
+    console.log('Content:', sitemap);
     
   } catch (error) {
     console.error('Error generating sitemap:', error);
