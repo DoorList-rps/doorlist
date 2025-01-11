@@ -8,6 +8,11 @@ export interface CalculatorState {
   compoundingFrequency: "annually" | "monthly";
   inflationRate: number;
   showAdvanced: boolean;
+  // Adding the missing properties
+  holdingPeriod: number;
+  investmentAmount: number;
+  cashYield: number;
+  annualAppreciation: number;
 }
 
 interface CalculatorContextType {
@@ -34,6 +39,11 @@ export const CalculatorProvider = ({ children }: { children: ReactNode }) => {
     compoundingFrequency: "annually",
     inflationRate: 2.5,
     showAdvanced: false,
+    // Adding initial values for the new properties
+    holdingPeriod: 10,
+    investmentAmount: 10000,
+    cashYield: 5,
+    annualAppreciation: 2,
   });
 
   return (
