@@ -20,27 +20,27 @@ const DividendsChart = () => {
     return Array.from({ length: state.timeframe }, (_, i) => {
       const year = i + 1;
       
-      // Calculate base investment growth
-      currentPortfolioValue = currentPortfolioValue * (1 + yearlyRate);
-      
-      // Add this year's contributions (grown for the partial year)
-      const yearlyContribution = state.monthlyContribution * 12;
-      currentPortfolioValue += yearlyContribution * (1 + yearlyRate / 2); // Assuming contributions are made evenly throughout the year
-      
-      // Calculate dividends based on current portfolio value
+      // Calculate this year's dividend based on starting portfolio value
       const annualDividend = currentPortfolioValue * (state.dividendYield / 100);
       
+      // If reinvesting, add dividend to portfolio before growing it
       if (state.reinvestDividends) {
-        // If reinvesting, add dividends to portfolio value for next year
         currentPortfolioValue += annualDividend;
       }
+      
+      // Grow the portfolio value for next year (including reinvested dividends if applicable)
+      currentPortfolioValue = currentPortfolioValue * (1 + yearlyRate);
+      
+      // Add this year's monthly contributions (grown for half a year on average)
+      const yearlyContribution = state.monthlyContribution * 12;
+      currentPortfolioValue += yearlyContribution * (1 + yearlyRate / 2);
       
       return {
         year,
         dividends: annualDividend,
       };
     });
-  }, [state.initialInvestment, state.timeframe, state.dividendYield, state.expectedReturn, state.monthlyContribution, state.reinvestDividends]);
+  }, [state.initialInvestment, state.monthlyContribution, state.timeframe, state.expectedReturn, state.dividendYield, state.reinvestDividends]);
 
   return (
     <div className="space-y-4">

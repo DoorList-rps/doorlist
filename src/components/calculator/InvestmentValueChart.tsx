@@ -17,7 +17,6 @@ const InvestmentValueChart = () => {
     const yearlyRate = state.expectedReturn / 100;
     const monthlyRate = yearlyRate / 12;
     const periods = state.timeframe * 12;
-    let accumulatedDividends = 0;
     
     return Array.from({ length: periods + 1 }, (_, i) => {
       const month = i;
@@ -35,28 +34,35 @@ const InvestmentValueChart = () => {
         }
       }
 
-      const futureValue = baseInvestment + contributionsValue;
+      let portfolioValue = baseInvestment + contributionsValue;
 
-      // Calculate dividends based on the current portfolio value
-      const annualDividend = futureValue * (state.dividendYield / 100);
-      const monthlyDividend = annualDividend / 12;
-
-      // Handle dividend reinvestment
+      // Calculate and handle dividend reinvestment
       if (state.reinvestDividends && month > 0) {
-        accumulatedDividends = (accumulatedDividends + monthlyDividend) * (1 + monthlyRate);
-        return {
-          month,
-          year,
-          value: futureValue + accumulatedDividends,
-          dividend: annualDividend,
-        };
+        // Calculate accumulated dividends up to this point
+        let accumulatedValue = state.initialInvestment;
+        let accumulatedDividends = 0;
+        
+        for (let j = 1; j <= year; j++) {
+          // Calculate dividend for the year based on portfolio value
+          const yearStartValue = accumulatedValue;
+          const yearlyDividend = yearStartValue * (state.dividendYield / 100);
+          
+          // Add dividend to accumulated value (reinvestment)
+          accumulatedDividends += yearlyDividend;
+          
+          // Grow both the base value and the reinvested dividends
+          accumulatedValue = (yearStartValue + yearlyDividend) * (1 + yearlyRate);
+        }
+        
+        // Add the dividend growth to the portfolio value
+        portfolioValue += accumulatedDividends * Math.pow(1 + yearlyRate, month % 12 / 12);
       }
 
       return {
         month,
         year,
-        value: futureValue,
-        dividend: annualDividend,
+        value: portfolioValue,
+        dividend: portfolioValue * (state.dividendYield / 100),
       };
     }).filter((_, index) => index % 12 === 0); // Only show yearly data points
   }, [state.initialInvestment, state.monthlyContribution, state.timeframe, state.expectedReturn, state.dividendYield, state.reinvestDividends]);
