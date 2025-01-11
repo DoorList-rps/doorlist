@@ -6,6 +6,10 @@ export interface CalculatorState {
   timeframe: number;
   expectedReturn: number;
   dividendYield: number;
+  holdingPeriod: number;
+  investmentAmount: number;
+  cashYield: number;
+  annualAppreciation: number;
 }
 
 interface CalculatorContextType {
@@ -30,6 +34,10 @@ export const CalculatorProvider = ({ children }: { children: ReactNode }) => {
     timeframe: 10,
     expectedReturn: 7,
     dividendYield: 4,
+    holdingPeriod: 10,
+    investmentAmount: 10000,
+    cashYield: 4,
+    annualAppreciation: 3
   });
 
   return (
