@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { useCalculator } from "./CalculatorContext";
 
@@ -9,7 +10,7 @@ const CalculatorForm = () => {
   const { toast } = useToast();
   const { state, setState } = useCalculator();
 
-  const handleInputChange = (field: keyof typeof state, value: number) => {
+  const handleInputChange = (field: keyof typeof state, value: number | boolean) => {
     setState({ ...state, [field]: value });
   };
 
@@ -104,6 +105,15 @@ const CalculatorForm = () => {
           className="my-4"
         />
         <div className="text-sm text-muted-foreground">{state.dividendYield}%</div>
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          id="reinvestDividends"
+          checked={state.reinvestDividends}
+          onCheckedChange={(checked) => handleInputChange('reinvestDividends', checked === true)}
+        />
+        <Label htmlFor="reinvestDividends">Reinvest Dividends</Label>
       </div>
 
       <Button onClick={handleCalculate} className="w-full">
