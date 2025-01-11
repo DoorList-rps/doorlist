@@ -14,7 +14,8 @@ const InvestmentValueChart = () => {
   const { state } = useCalculator();
   
   const data = useMemo(() => {
-    const monthlyRate = state.expectedReturn / 100 / 12;
+    const yearlyRate = state.expectedReturn / 100;
+    const monthlyRate = yearlyRate / 12;
     const periods = state.timeframe * 12;
     let accumulatedDividends = 0;
     
@@ -22,20 +23,33 @@ const InvestmentValueChart = () => {
       const month = i;
       const year = Math.floor(i / 12);
       
-      // Calculate compound interest with monthly contributions
-      let futureValue = state.initialInvestment * Math.pow(1 + monthlyRate, month);
+      // Calculate base investment growth without monthly contributions
+      let baseInvestment = state.initialInvestment * Math.pow(1 + yearlyRate, year);
+      
+      // Calculate monthly contributions growth if any months have passed
+      let contributionsValue = 0;
       if (month > 0) {
-        futureValue += state.monthlyContribution * ((Math.pow(1 + monthlyRate, month) - 1) / monthlyRate);
+        // Sum up all monthly contributions with their respective growth
+        for (let j = 0; j < month; j++) {
+          contributionsValue += state.monthlyContribution * Math.pow(1 + yearlyRate, (month - j) / 12);
+        }
       }
 
-      // Calculate annual dividend based on the current portfolio value
+      const futureValue = baseInvestment + contributionsValue;
+
+      // Calculate dividends based on the current portfolio value
       const annualDividend = futureValue * (state.dividendYield / 100);
       const monthlyDividend = annualDividend / 12;
 
       // Handle dividend reinvestment
-      if (state.reinvestDividends) {
-        accumulatedDividends += monthlyDividend;
-        futureValue += accumulatedDividends;
+      if (state.reinvestDividends && month > 0) {
+        accumulatedDividends = (accumulatedDividends + monthlyDividend) * (1 + monthlyRate);
+        return {
+          month,
+          year,
+          value: futureValue + accumulatedDividends,
+          dividend: annualDividend,
+        };
       }
 
       return {

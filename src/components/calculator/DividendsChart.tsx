@@ -14,21 +14,36 @@ const DividendsChart = () => {
   const { state } = useCalculator();
   
   const data = useMemo(() => {
+    const yearlyRate = state.expectedReturn / 100;
     let accumulatedDividends = 0;
+    let currentPortfolioValue = state.initialInvestment;
+    
     return Array.from({ length: state.timeframe }, (_, i) => {
       const year = i + 1;
-      const portfolioValue = state.initialInvestment * Math.pow(1 + state.expectedReturn / 100, year) +
-        (state.monthlyContribution * 12 * ((Math.pow(1 + state.expectedReturn / 100, year) - 1) / (state.expectedReturn / 100)));
       
-      const annualDividend = portfolioValue * (state.dividendYield / 100);
+      // Calculate base investment growth
+      currentPortfolioValue = currentPortfolioValue * (1 + yearlyRate);
+      
+      // Add this year's contributions (grown for the partial year)
+      const yearlyContribution = state.monthlyContribution * 12;
+      currentPortfolioValue += yearlyContribution * (1 + yearlyRate / 2); // Assuming contributions are made evenly throughout the year
+      
+      // Calculate dividends based on current portfolio value
+      const annualDividend = currentPortfolioValue * (state.dividendYield / 100);
       
       if (state.reinvestDividends) {
-        accumulatedDividends = (accumulatedDividends + annualDividend) * (1 + state.expectedReturn / 100);
+        // If reinvesting, add dividends to portfolio value for next year
+        currentPortfolioValue += annualDividend;
+        accumulatedDividends = (accumulatedDividends + annualDividend) * (1 + yearlyRate);
+        return {
+          year,
+          dividends: accumulatedDividends,
+        };
       }
       
       return {
         year,
-        dividends: state.reinvestDividends ? accumulatedDividends : annualDividend,
+        dividends: annualDividend,
       };
     });
   }, [state.initialInvestment, state.timeframe, state.dividendYield, state.expectedReturn, state.monthlyContribution, state.reinvestDividends]);
