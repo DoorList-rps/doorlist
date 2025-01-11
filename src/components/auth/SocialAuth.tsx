@@ -1,19 +1,42 @@
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const SocialAuth = () => {
+  const { toast } = useToast();
+
   const handleGoogleLogin = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      console.log('Starting Google login process...');
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/profile`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Google login error:', error);
+        toast({
+          title: "Login Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        throw error;
+      }
+
+      console.log('Google OAuth response:', data);
     } catch (error) {
       console.error('Google login error:', error);
+      toast({
+        title: "Login Failed",
+        description: error instanceof Error ? error.message : "An error occurred during Google login.",
+        variant: "destructive",
+      });
     }
   };
 
