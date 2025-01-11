@@ -57,19 +57,29 @@ const InvestmentValueChart = () => {
   };
 
   const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-4 border rounded shadow-lg">
-          <p className="font-semibold">Year {label}</p>
-          <p className="text-sm">Portfolio Value: {formatCurrency(payload[0].value)}</p>
-          <p className="text-sm">Annual Dividend: {formatCurrency(payload[1].value)}</p>
-          <p className="text-sm text-gray-500">
-            {state.reinvestDividends ? "Dividends are being reinvested" : "Dividends are paid out"}
-          </p>
-        </div>
-      );
+    if (!active || !payload || !payload.length) {
+      return null;
     }
-    return null;
+
+    const portfolioValue = payload[0]?.value;
+    const annualDividend = payload[1]?.value;
+
+    if (typeof portfolioValue === 'undefined') {
+      return null;
+    }
+
+    return (
+      <div className="bg-white p-4 border rounded shadow-lg">
+        <p className="font-semibold">Year {label}</p>
+        <p className="text-sm">Portfolio Value: {formatCurrency(portfolioValue)}</p>
+        {typeof annualDividend !== 'undefined' && (
+          <p className="text-sm">Annual Dividend: {formatCurrency(annualDividend)}</p>
+        )}
+        <p className="text-sm text-gray-500">
+          {state.reinvestDividends ? "Dividends are being reinvested" : "Dividends are paid out"}
+        </p>
+      </div>
+    );
   };
 
   return (
