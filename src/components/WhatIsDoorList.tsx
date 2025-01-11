@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Search, Home } from "lucide-react";
+import { Search, Home, Calculator, GraduationCap } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -7,7 +7,6 @@ const WhatIsDoorList = () => {
   const { data: counts } = useQuery({
     queryKey: ['counts'],
     queryFn: async () => {
-      // Get count of approved investments
       const { count: investmentCount, error: investmentError } = await supabase
         .from('investments')
         .select('*', { count: 'exact', head: true })
@@ -15,7 +14,6 @@ const WhatIsDoorList = () => {
 
       if (investmentError) throw investmentError;
 
-      // Get count of approved sponsors
       const { count: sponsorCount, error: sponsorError } = await supabase
         .from('sponsors')
         .select('*', { count: 'exact', head: true })
@@ -37,7 +35,7 @@ const WhatIsDoorList = () => {
           <div>
             <h2 className="text-4xl font-bold text-doorlist-navy mb-8">What is DoorList?</h2>
             <p className="text-lg text-gray-700 mb-12">
-              DoorList's mission is to democratize passive real estate investing by connecting investors with opportunities that were previously hard to discover. We built this database from years of our own research.
+              DoorList's mission is to democratize passive real estate investing by connecting investors with opportunities that were previously hard to discover. Learn more about our story on our <Link to="/about" className="text-doorlist-salmon hover:underline">About page</Link>. We built this database from years of our own research.
             </p>
 
             <div className="space-y-12">
@@ -47,10 +45,12 @@ const WhatIsDoorList = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold text-doorlist-navy mb-3">
-                    {counts?.investments || '0'}+ Investment Opportunities
+                    <Link to="/investments" className="hover:text-doorlist-salmon transition-colors">
+                      {counts?.investments || '0'}+ Investment Opportunities
+                    </Link>
                   </h3>
                   <p className="text-gray-600">
-                    Use our marketplace to compare different real estate investments, finding the right fit for you and your goals. We're always adding more.
+                    Use our marketplace to compare different real estate investments, finding the right fit for you and your goals. We're always adding more. <Link to="/calculator" className="text-doorlist-salmon hover:underline">Try our investment calculator</Link> to analyze potential returns.
                   </p>
                 </div>
               </div>
@@ -61,10 +61,28 @@ const WhatIsDoorList = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold text-doorlist-navy mb-3">
-                    {counts?.sponsors || '0'}+ Sponsors
+                    <Link to="/sponsors" className="hover:text-doorlist-salmon transition-colors">
+                      {counts?.sponsors || '0'}+ Sponsors
+                    </Link>
                   </h3>
                   <p className="text-gray-600">
-                    We have carefully researched, reviewed, and approved Sponsors who make passive investing in commercial real estate easy. Use DoorList to learn more about these companies.
+                    We have carefully researched, reviewed, and approved Sponsors who make passive investing in commercial real estate easy. Use DoorList to learn more about these companies. Have questions? <Link to="/contact" className="text-doorlist-salmon hover:underline">Contact us</Link> for more information.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-6">
+                <div className="flex-shrink-0">
+                  <GraduationCap className="w-8 h-8 text-doorlist-navy" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-doorlist-navy mb-3">
+                    <Link to="/education" className="hover:text-doorlist-salmon transition-colors">
+                      Educational Resources
+                    </Link>
+                  </h3>
+                  <p className="text-gray-600">
+                    New to real estate investing? Check out our comprehensive <Link to="/education" className="text-doorlist-salmon hover:underline">education center</Link> and <Link to="/faq" className="text-doorlist-salmon hover:underline">FAQ page</Link> to learn more about passive real estate investing.
                   </p>
                 </div>
               </div>
