@@ -15,7 +15,6 @@ const DividendsChart = () => {
   
   const data = useMemo(() => {
     const yearlyRate = state.expectedReturn / 100;
-    let accumulatedDividends = 0;
     let currentPortfolioValue = state.initialInvestment;
     
     return Array.from({ length: state.timeframe }, (_, i) => {
@@ -34,11 +33,6 @@ const DividendsChart = () => {
       if (state.reinvestDividends) {
         // If reinvesting, add dividends to portfolio value for next year
         currentPortfolioValue += annualDividend;
-        accumulatedDividends = (accumulatedDividends + annualDividend) * (1 + yearlyRate);
-        return {
-          year,
-          dividends: accumulatedDividends,
-        };
       }
       
       return {
