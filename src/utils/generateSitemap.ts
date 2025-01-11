@@ -4,24 +4,43 @@ import path from 'path';
 
 const SITE_URL = 'https://doorlist.com';
 
-async function generateSitemap() {
+export async function generateSitemap() {
+  console.log('Starting sitemap generation...');
+  
   try {
     // Fetch approved sponsors
-    const { data: sponsors } = await supabase
+    const { data: sponsors, error: sponsorsError } = await supabase
       .from('sponsors')
       .select('slug')
       .eq('approved', true);
 
+    if (sponsorsError) {
+      console.error('Error fetching sponsors:', sponsorsError);
+      return;
+    }
+
     // Fetch approved investments
-    const { data: investments } = await supabase
+    const { data: investments, error: investmentsError } = await supabase
       .from('investments')
       .select('slug')
       .eq('approved', true);
 
-    // Fetch blog posts (assuming all blog posts in the table are approved)
-    const { data: blogPosts } = await supabase
+    if (investmentsError) {
+      console.error('Error fetching investments:', investmentsError);
+      return;
+    }
+
+    // Fetch blog posts
+    const { data: blogPosts, error: blogError } = await supabase
       .from('blog_posts')
       .select('slug');
+
+    if (blogError) {
+      console.error('Error fetching blog posts:', blogError);
+      return;
+    }
+
+    console.log(`Found: ${sponsors?.length || 0} sponsors, ${investments?.length || 0} investments, ${blogPosts?.length || 0} blog posts`);
 
     const staticUrls = [
       { url: '/', changefreq: 'daily', priority: '1.0' },
@@ -89,10 +108,12 @@ async function generateSitemap() {
     );
 
     console.log('Sitemap generated successfully!');
+    return sitemapContent;
   } catch (error) {
     console.error('Error generating sitemap:', error);
+    return null;
   }
 }
 
-// Execute the function
-generateSitemap();
+// Execute the function when this module is imported
+generateSitemap().catch(console.error);
