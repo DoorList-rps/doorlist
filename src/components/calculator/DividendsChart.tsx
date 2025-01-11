@@ -37,10 +37,20 @@ const DividendsChart = () => {
       
       return {
         year,
-        dividends: annualDividend,
+        dividends: Math.round(annualDividend), // Round to remove decimals
       };
     });
   }, [state.initialInvestment, state.monthlyContribution, state.timeframe, state.expectedReturn, state.dividendYield, state.reinvestDividends]);
+
+  const formatYAxis = (value: number) => {
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(1)}M`;
+    }
+    if (value >= 1000) {
+      return `$${(value / 1000).toFixed(0)}K`;
+    }
+    return `$${value}`;
+  };
 
   return (
     <div className="space-y-4">
@@ -54,13 +64,13 @@ const DividendsChart = () => {
               tickFormatter={(value) => `Year ${value}`}
             />
             <YAxis
-              tickFormatter={(value) => `$${(value / 1000).toFixed(1)}k`}
+              tickFormatter={formatYAxis}
             />
             <Tooltip
-              formatter={(value: number) => [`$${value.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}`, "Dividends"]}
+              formatter={(value: number) => [
+                `$${value.toLocaleString()}`,
+                "Dividends"
+              ]}
               labelFormatter={(label) => `Year ${label}`}
             />
             <Bar dataKey="dividends" fill="#82ca9d" />
