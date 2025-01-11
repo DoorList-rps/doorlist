@@ -1,15 +1,15 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 interface BlogPostContentProps {
   content: string;
 }
 
 const BlogPostContent: React.FC<BlogPostContentProps> = ({ content }) => {
-  // Process content to ensure proper heading tags
+  // Process content to ensure proper heading tags and add internal links
   const processContent = (htmlContent: string) => {
-    // Replace Blogger's style-based headings with proper heading tags
     let processed = htmlContent
-      // Convert h2 style headings (commonly used in Blogger)
+      // Convert h2 style headings
       .replace(
         /<h2 style="[^"]*">/g,
         '<h2 class="text-3xl font-bold text-doorlist-navy mb-6 mt-12">'
@@ -19,7 +19,32 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ content }) => {
         /<h3 style="[^"]*">/g,
         '<h3 class="text-2xl font-bold text-doorlist-navy mb-4 mt-8">'
       );
-    
+
+    // Add internal links for key terms
+    const internalLinks = {
+      'real estate investment': '/investments',
+      'investment opportunities': '/investments',
+      'property investments': '/investments',
+      'real estate sponsors': '/sponsors',
+      'investment sponsors': '/sponsors',
+      'property sponsors': '/sponsors',
+      'accredited investors': '/education/accredited-investor-guide',
+      'passive income': '/calculator',
+      'investment calculator': '/calculator',
+      'return calculator': '/calculator',
+      'learn more about investing': '/education',
+      'educational resources': '/education',
+      'investment guide': '/education',
+      'contact us': '/contact',
+      'about DoorList': '/about',
+    };
+
+    // Replace key terms with internal links
+    Object.entries(internalLinks).forEach(([term, url]) => {
+      const regex = new RegExp(`\\b${term}\\b(?![^<]*>|[^<>]*<\\/a>)`, 'gi');
+      processed = processed.replace(regex, `<a href="${url}" class="text-doorlist-salmon hover:underline">${term}</a>`);
+    });
+
     return processed;
   };
 
