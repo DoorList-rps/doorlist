@@ -83,8 +83,8 @@ const CalculatorForm = () => {
         <Label htmlFor="expectedReturn">Expected Annual Return (%)</Label>
         <Slider
           id="expectedReturn"
-          min={1}
-          max={15}
+          min={0}
+          max={35}
           step={0.5}
           value={[state.expectedReturn]}
           onValueChange={([value]) => handleInputChange('expectedReturn', value)}
@@ -98,7 +98,7 @@ const CalculatorForm = () => {
         <Slider
           id="dividendYield"
           min={0}
-          max={10}
+          max={20}
           step={0.5}
           value={[state.dividendYield]}
           onValueChange={([value]) => handleInputChange('dividendYield', value)}
