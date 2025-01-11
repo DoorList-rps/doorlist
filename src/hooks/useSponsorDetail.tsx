@@ -11,10 +11,17 @@ export const useSponsorDetail = (slug: string | undefined) => {
         .from('sponsors')
         .select('*')
         .eq('slug', slug)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
-      if (!data) throw new Error('Sponsor not found');
+      if (error) {
+        console.error('Error fetching sponsor:', error);
+        throw error;
+      }
+      
+      if (!data) {
+        console.log(`No sponsor found with slug: ${slug}`);
+        return null;
+      }
       
       return data;
     },

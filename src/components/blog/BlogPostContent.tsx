@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { supabase } from "@/integrations/supabase/client";
 
 interface BlogPostContentProps {
   content: string;
@@ -7,7 +8,7 @@ interface BlogPostContentProps {
 
 const BlogPostContent: React.FC<BlogPostContentProps> = ({ content }) => {
   // Process content to ensure proper heading tags and add internal links
-  const processContent = (htmlContent: string) => {
+  const processContent = async (htmlContent: string) => {
     let processed = htmlContent
       // Convert h2 style headings
       .replace(
@@ -78,21 +79,55 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ content }) => {
     // Add dynamic sponsor links if they exist in the content
     // This regex looks for company names followed by common sponsor identifiers
     const sponsorRegex = /([A-Z][A-Za-z0-9\s&.-]+)\s+(Investments|Capital|Properties|Real Estate|Group|Partners)(?!\s*<\/a>)/g;
-    processed = processed.replace(sponsorRegex, (match) => {
-      const sponsorSlug = match.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      return `<a href="/sponsors/${sponsorSlug}" class="text-doorlist-salmon hover:underline">${match}</a>`;
-    });
+    const sponsorMatches = [...htmlContent.matchAll(sponsorRegex)];
+    
+    for (const match of sponsorMatches) {
+      const companyName = match[0];
+      const sponsorSlug = companyName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      
+      // Check if sponsor exists in database
+      const { data: sponsor } = await supabase
+        .from('sponsors')
+        .select('slug')
+        .eq('slug', sponsorSlug)
+        .maybeSingle();
+      
+      if (sponsor) {
+        const link = `<a href="/sponsors/${sponsorSlug}" class="text-doorlist-salmon hover:underline">${companyName}</a>`;
+        processed = processed.replace(new RegExp(companyName + '(?![^<]*>|[^<>]*</a>)', 'g'), link);
+      }
+    }
 
     // Add dynamic investment property links
     // This regex looks for property names followed by common property types
     const propertyRegex = /([A-Z][A-Za-z0-9\s&.-]+)\s+(Apartments|Plaza|Tower|Center|Complex|Building|Development)(?!\s*<\/a>)/g;
-    processed = processed.replace(propertyRegex, (match) => {
-      const propertySlug = match.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      return `<a href="/investments/${propertySlug}" class="text-doorlist-salmon hover:underline">${match}</a>`;
-    });
+    const propertyMatches = [...htmlContent.matchAll(propertyRegex)];
+    
+    for (const match of propertyMatches) {
+      const propertyName = match[0];
+      const propertySlug = propertyName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      
+      // Check if investment exists in database
+      const { data: investment } = await supabase
+        .from('investments')
+        .select('slug')
+        .eq('slug', propertySlug)
+        .maybeSingle();
+      
+      if (investment) {
+        const link = `<a href="/investments/${propertySlug}" class="text-doorlist-salmon hover:underline">${propertyName}</a>`;
+        processed = processed.replace(new RegExp(propertyName + '(?![^<]*>|[^<>]*</a>)', 'g'), link);
+      }
+    }
 
     return processed;
   };
+
+  const [processedContent, setProcessedContent] = React.useState(content);
+
+  React.useEffect(() => {
+    processContent(content).then(setProcessedContent);
+  }, [content]);
 
   return (
     <div 
@@ -108,7 +143,7 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ content }) => {
         prose-ul:list-disc prose-ol:list-decimal
         prose-blockquote:border-l-4 prose-blockquote:border-doorlist-salmon
         prose-img:rounded-lg prose-img:shadow-lg"
-      dangerouslySetInnerHTML={{ __html: processContent(content) }} 
+      dangerouslySetInnerHTML={{ __html: processedContent }} 
     />
   );
 };
