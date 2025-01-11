@@ -13,45 +13,64 @@ const BlogPost = () => {
   const { slug = '' } = useParams();
   const cleanSlug = slug.replace('.html', '');
   
-  // Convert slug to a more search-friendly format
-  const searchTerms = cleanSlug
+  // Create a more precise search query from the slug
+  const searchQuery = cleanSlug
     .split('-')
-    .filter(term => term.length > 3) // Only search for words longer than 3 characters
-    .join(' OR '); // Use OR to make search more flexible
+    .join(' ');
 
   const { data: post, isLoading } = useQuery({
     queryKey: ['blog-post', cleanSlug],
     queryFn: async () => {
-      console.log('Searching for post with terms:', searchTerms);
+      console.log('Searching for post with query:', searchQuery);
       
-      const searchResponse = await fetch(
-        `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts/search?q=${searchTerms}&key=${API_KEY}`
-      );
-      
-      if (!searchResponse.ok) {
-        console.error('Search response not OK:', await searchResponse.text());
-        throw new Error('Failed to fetch blog post');
-      }
-      
-      const searchData = await searchResponse.json();
-      console.log('Search results:', searchData);
-      
-      if (searchData.items && searchData.items.length > 0) {
-        // Find the post that best matches our slug
-        const matchingPost = searchData.items.find(post => {
-          const postSlug = post.url.split('/').pop()?.replace('.html', '') || '';
-          // Check for exact match first
-          if (postSlug === cleanSlug) return true;
-          // Then check for partial matches
-          const postWords = postSlug.split('-');
-          const slugWords = cleanSlug.split('-');
-          return slugWords.every(word => postWords.some(pw => pw.includes(word)));
-        });
+      try {
+        // First try to get an exact URL match
+        const exactResponse = await fetch(
+          `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts/search?q="/${cleanSlug}.html"&key=${API_KEY}`
+        );
         
-        return matchingPost || searchData.items[0];
+        if (exactResponse.ok) {
+          const exactData = await exactResponse.json();
+          console.log('Exact URL search results:', exactData);
+          
+          if (exactData.items && exactData.items.length > 0) {
+            return exactData.items[0];
+          }
+        }
+
+        // If no exact match, try title search
+        const titleResponse = await fetch(
+          `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts/search?q="${searchQuery}"&key=${API_KEY}`
+        );
+        
+        if (!titleResponse.ok) {
+          console.error('Title search response not OK:', await titleResponse.text());
+          throw new Error('Failed to fetch blog post');
+        }
+        
+        const titleData = await titleResponse.json();
+        console.log('Title search results:', titleData);
+        
+        if (titleData.items && titleData.items.length > 0) {
+          // Find the post that best matches our slug
+          const matchingPost = titleData.items.find(post => {
+            const postSlug = post.url.split('/').pop()?.replace('.html', '') || '';
+            // Check for exact match first
+            if (postSlug === cleanSlug) return true;
+            // Then check if the title closely matches our search query
+            const postTitle = post.title.toLowerCase();
+            const searchTerms = searchQuery.toLowerCase().split(' ');
+            return searchTerms.every(term => postTitle.includes(term));
+          });
+          
+          return matchingPost || titleData.items[0];
+        }
+        
+        throw new Error('Blog post not found');
+      } catch (error) {
+        console.error('Error fetching blog post:', error);
+        throw error;
       }
-      
-      throw new Error('Blog post not found');
     },
   });
 
@@ -102,19 +121,19 @@ const BlogPost = () => {
   return (
     <div>
       <Helmet>
-        <title>{`${post.title} | DoorList Education`}</title>
-        <meta name="description" content={post.content.replace(/<[^>]*>/g, '').substring(0, 160)} />
+        <title>{`${post?.title || 'Article'} | DoorList Education`}</title>
+        <meta name="description" content={post?.content?.replace(/<[^>]*>/g, '').substring(0, 160)} />
       </Helmet>
       <Navbar />
       <main className="container mx-auto px-4 py-24">
         <article className="max-w-4xl mx-auto">
           <BlogPostHeader
-            title={post.title}
-            author={post.author?.displayName}
-            published={post.published}
-            imageUrl={post.images?.[0]?.url}
+            title={post?.title}
+            author={post?.author?.displayName}
+            published={post?.published}
+            imageUrl={post?.images?.[0]?.url}
           />
-          <BlogPostContent content={post.content} />
+          <BlogPostContent content={post?.content} />
         </article>
       </main>
       <Footer />
