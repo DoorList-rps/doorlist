@@ -5,14 +5,7 @@ export interface CalculatorState {
   monthlyContribution: number;
   timeframe: number;
   expectedReturn: number;
-  compoundingFrequency: "annually" | "monthly";
-  inflationRate: number;
-  showAdvanced: boolean;
-  // Adding the missing properties
-  holdingPeriod: number;
-  investmentAmount: number;
-  cashYield: number;
-  annualAppreciation: number;
+  dividendYield: number;
 }
 
 interface CalculatorContextType {
@@ -36,14 +29,7 @@ export const CalculatorProvider = ({ children }: { children: ReactNode }) => {
     monthlyContribution: 500,
     timeframe: 10,
     expectedReturn: 7,
-    compoundingFrequency: "annually",
-    inflationRate: 2.5,
-    showAdvanced: false,
-    // Adding initial values for the new properties
-    holdingPeriod: 10,
-    investmentAmount: 10000,
-    cashYield: 5,
-    annualAppreciation: 2,
+    dividendYield: 4,
   });
 
   return (

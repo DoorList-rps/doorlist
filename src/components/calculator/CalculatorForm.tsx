@@ -2,14 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Toggle } from "@/components/ui/toggle";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { useCalculator } from "./CalculatorContext";
 
@@ -17,17 +9,22 @@ const CalculatorForm = () => {
   const { toast } = useToast();
   const { state, setState } = useCalculator();
 
-  const handleInputChange = (field: keyof typeof state, value: number | string | boolean) => {
+  const handleInputChange = (field: keyof typeof state, value: number) => {
     setState({ ...state, [field]: value });
   };
 
-  const formatCurrency = (value: number) => {
+  const formatInputValue = (value: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(value);
+    }).format(value).replace('$', '');
+  };
+
+  const handleCurrencyInput = (field: 'initialInvestment' | 'monthlyContribution', value: string) => {
+    const numericValue = Number(value.replace(/[^0-9]/g, ''));
+    handleInputChange(field, numericValue);
   };
 
   const handleCalculate = () => {
@@ -41,37 +38,29 @@ const CalculatorForm = () => {
     <div className="space-y-6 bg-white p-6 rounded-lg shadow-sm">
       <div>
         <Label htmlFor="initialInvestment">Initial Investment</Label>
-        <div className="mt-1.5">
+        <div className="mt-1.5 relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
           <Input
             id="initialInvestment"
-            type="number"
-            value={state.initialInvestment}
-            onChange={(e) => handleInputChange('initialInvestment', Number(e.target.value))}
-            min={0}
-            step={1000}
-            className="text-lg"
+            type="text"
+            value={formatInputValue(state.initialInvestment)}
+            onChange={(e) => handleCurrencyInput('initialInvestment', e.target.value)}
+            className="pl-7 text-lg"
           />
-          <div className="text-sm text-muted-foreground mt-1">
-            {formatCurrency(state.initialInvestment)}
-          </div>
         </div>
       </div>
 
       <div>
         <Label htmlFor="monthlyContribution">Monthly Contribution</Label>
-        <div className="mt-1.5">
+        <div className="mt-1.5 relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
           <Input
             id="monthlyContribution"
-            type="number"
-            value={state.monthlyContribution}
-            onChange={(e) => handleInputChange('monthlyContribution', Number(e.target.value))}
-            min={0}
-            step={100}
-            className="text-lg"
+            type="text"
+            value={formatInputValue(state.monthlyContribution)}
+            onChange={(e) => handleCurrencyInput('monthlyContribution', e.target.value)}
+            className="pl-7 text-lg"
           />
-          <div className="text-sm text-muted-foreground mt-1">
-            {formatCurrency(state.monthlyContribution)}
-          </div>
         </div>
       </div>
 
@@ -103,50 +92,19 @@ const CalculatorForm = () => {
         <div className="text-sm text-muted-foreground">{state.expectedReturn}%</div>
       </div>
 
-      <div className="flex items-center gap-2 my-4">
-        <Toggle
-          pressed={state.showAdvanced}
-          onPressedChange={(pressed) => handleInputChange('showAdvanced', pressed)}
-        >
-          Advanced Options
-        </Toggle>
+      <div>
+        <Label htmlFor="dividendYield">Expected Dividend Yield (%)</Label>
+        <Slider
+          id="dividendYield"
+          min={0}
+          max={10}
+          step={0.5}
+          value={[state.dividendYield]}
+          onValueChange={([value]) => handleInputChange('dividendYield', value)}
+          className="my-4"
+        />
+        <div className="text-sm text-muted-foreground">{state.dividendYield}%</div>
       </div>
-
-      {state.showAdvanced && (
-        <>
-          <div>
-            <Label htmlFor="compoundingFrequency">Compounding Frequency</Label>
-            <Select
-              value={state.compoundingFrequency}
-              onValueChange={(value: "annually" | "monthly") => 
-                handleInputChange('compoundingFrequency', value)
-              }
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select frequency" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="annually">Annually</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="inflationRate">Inflation Rate (%)</Label>
-            <Slider
-              id="inflationRate"
-              min={0}
-              max={10}
-              step={0.5}
-              value={[state.inflationRate]}
-              onValueChange={([value]) => handleInputChange('inflationRate', value)}
-              className="my-4"
-            />
-            <div className="text-sm text-muted-foreground">{state.inflationRate}%</div>
-          </div>
-        </>
-      )}
 
       <Button onClick={handleCalculate} className="w-full">
         Calculate Returns
