@@ -14,11 +14,12 @@ const DividendsChart = () => {
   const { state } = useCalculator();
   
   const data = useMemo(() => {
-    return Array.from({ length: state.holdingPeriod }, (_, i) => ({
+    return Array.from({ length: state.timeframe }, (_, i) => ({
       year: i + 1,
-      dividends: state.investmentAmount * (state.cashYield / 100) * (1 + i * (state.annualAppreciation / 100)),
+      dividends: state.initialInvestment * (state.dividendYield / 100) * 
+        (1 + i * (state.expectedReturn / 100)),
     }));
-  }, [state.investmentAmount, state.holdingPeriod, state.cashYield, state.annualAppreciation]);
+  }, [state.initialInvestment, state.timeframe, state.dividendYield, state.expectedReturn]);
 
   return (
     <div className="space-y-4">
