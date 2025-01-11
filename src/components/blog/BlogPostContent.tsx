@@ -22,27 +22,73 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ content }) => {
 
     // Add internal links for key terms
     const internalLinks = {
+      // Investment-related terms
       'real estate investment': '/investments',
       'investment opportunities': '/investments',
       'property investments': '/investments',
+      'real estate investing': '/investments',
+      'investment property': '/investments',
+      'commercial real estate': '/investments',
+      'multifamily investments': '/investments',
+      'real estate deals': '/investments',
+      'investment portfolio': '/investments',
+      'real estate portfolio': '/investments',
+      'passive real estate': '/investments',
+      
+      // Sponsor-related terms
       'real estate sponsors': '/sponsors',
       'investment sponsors': '/sponsors',
       'property sponsors': '/sponsors',
+      'sponsor track record': '/sponsors',
+      'experienced sponsors': '/sponsors',
+      'institutional sponsors': '/sponsors',
+      'real estate operators': '/sponsors',
+      
+      // Education-related terms
       'accredited investors': '/education/accredited-investor-guide',
+      'qualified purchaser': '/education/qualified-purchaser-guide',
       'passive income': '/calculator',
       'investment calculator': '/calculator',
       'return calculator': '/calculator',
       'learn more about investing': '/education',
       'educational resources': '/education',
       'investment guide': '/education',
+      'real estate education': '/education',
+      'investment basics': '/education',
+      'investor guide': '/education',
+      '1031 exchange': '/education/1031-exchange-guide',
+      'real estate syndication': '/education/real-estate-syndication-guide',
+      'dst investments': '/education/dst-investment-guide',
+      'qualified opportunity zones': '/education/opportunity-zones-guide',
+      
+      // Other important pages
       'contact us': '/contact',
       'about DoorList': '/about',
+      'submit investment': '/submit-investment',
+      'investment criteria': '/about#investment-criteria',
     };
 
     // Replace key terms with internal links
     Object.entries(internalLinks).forEach(([term, url]) => {
+      // Case-insensitive regex that excludes existing links and HTML tags
       const regex = new RegExp(`\\b${term}\\b(?![^<]*>|[^<>]*<\\/a>)`, 'gi');
       processed = processed.replace(regex, `<a href="${url}" class="text-doorlist-salmon hover:underline">${term}</a>`);
+    });
+
+    // Add dynamic sponsor links if they exist in the content
+    // This regex looks for company names followed by common sponsor identifiers
+    const sponsorRegex = /([A-Z][A-Za-z0-9\s&.-]+)\s+(Investments|Capital|Properties|Real Estate|Group|Partners)(?!\s*<\/a>)/g;
+    processed = processed.replace(sponsorRegex, (match) => {
+      const sponsorSlug = match.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      return `<a href="/sponsors/${sponsorSlug}" class="text-doorlist-salmon hover:underline">${match}</a>`;
+    });
+
+    // Add dynamic investment property links
+    // This regex looks for property names followed by common property types
+    const propertyRegex = /([A-Z][A-Za-z0-9\s&.-]+)\s+(Apartments|Plaza|Tower|Center|Complex|Building|Development)(?!\s*<\/a>)/g;
+    processed = processed.replace(propertyRegex, (match) => {
+      const propertySlug = match.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      return `<a href="/investments/${propertySlug}" class="text-doorlist-salmon hover:underline">${match}</a>`;
     });
 
     return processed;
