@@ -1,38 +1,53 @@
+import { Link } from "react-router-dom";
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 const NotFound = () => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen">
       <Helmet>
         <title>Page Not Found | DoorList</title>
-        <meta name="description" content="The page you're looking for cannot be found." />
+        <meta name="description" content="The page you're looking for cannot be found. Return to DoorList's homepage to explore real estate investment opportunities." />
       </Helmet>
-      
       <Navbar />
-      
-      <main className="flex-grow container mx-auto px-4 flex items-center justify-center">
+      <main className="container mx-auto px-4 py-24">
         <div className="max-w-2xl mx-auto text-center">
-          <h1 className="text-[40px] font-bold text-doorlist-navy mb-4">Page Not Found</h1>
-          <p className="text-lg text-gray-600 mb-8">
-            We're sorry, but the page you're looking for cannot be found. It might have been moved or deleted.
+          <h1 className="text-4xl font-bold text-doorlist-navy mb-4">Page Not Found</h1>
+          <p className="text-xl text-gray-600 mb-8">
+            The page you're looking for cannot be found. Please check the URL or return to our homepage.
           </p>
-          <div className="space-y-6">
-            <p className="text-gray-600">Here are some helpful links:</p>
-            <div className="flex justify-center">
+          <Link
+            to="/"
+            className="inline-block px-8 py-3 bg-doorlist-salmon text-white rounded-full hover:bg-opacity-90 transition-colors text-lg"
+          >
+            Return to Homepage
+          </Link>
+          <div className="mt-8 space-y-4">
+            <p className="text-gray-600">You might also be interested in:</p>
+            <div className="flex flex-wrap justify-center gap-4">
               <Link
-                to="/"
-                className="inline-flex items-center justify-center px-8 py-3 border border-doorlist-salmon rounded-md text-base font-medium text-doorlist-salmon hover:text-white hover:bg-doorlist-salmon transition-colors duration-200"
+                to="/investments"
+                className="text-doorlist-salmon hover:underline"
               >
-                Go to Homepage
+                Browse Investments
+              </Link>
+              <Link
+                to="/sponsors"
+                className="text-doorlist-salmon hover:underline"
+              >
+                View Sponsors
+              </Link>
+              <Link
+                to="/education"
+                className="text-doorlist-salmon hover:underline"
+              >
+                Education Center
               </Link>
             </div>
           </div>
         </div>
       </main>
-      
       <Footer />
     </div>
   );

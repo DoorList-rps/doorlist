@@ -1,11 +1,16 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const FooterLogo = () => {
   return (
     <div>
-      <img src="/lovable-uploads/57591e9e-a8d6-4180-b51a-6b8bdabb29fb.png" alt="DoorList Logo" className="h-40 mb-4" />
+      <Link to="/" aria-label="Return to Homepage">
+        <img src="/lovable-uploads/57591e9e-a8d6-4180-b51a-6b8bdabb29fb.png" alt="DoorList Logo" className="h-40 mb-4" />
+      </Link>
       <p className="text-gray-400">
-        Access institutional-quality real estate investments
+        <Link to="/" className="hover:text-white transition-colors">
+          Access institutional-quality real estate investments
+        </Link>
       </p>
       <div className="mt-4">
         <a 

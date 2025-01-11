@@ -43,7 +43,7 @@ const Navbar = () => {
     <nav className="fixed w-full bg-white/90 backdrop-blur-md z-50 border-b border-gray-100">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-20">
-          <Link to="/" className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-2" aria-label="Return to Homepage">
             <img 
               src="/lovable-uploads/d1f54f8f-4675-4969-8b15-20412e122947.png" 
               alt="DoorList Logo" 
@@ -51,6 +51,12 @@ const Navbar = () => {
             />
           </Link>
           <div className="hidden md:flex items-center space-x-10">
+            <Link 
+              to="/" 
+              className="text-doorlist-navy hover:text-doorlist-salmon transition-colors font-medium"
+            >
+              Home
+            </Link>
             <Link 
               to="/investments" 
               className="text-doorlist-navy hover:text-doorlist-salmon transition-colors font-medium"
