@@ -8,6 +8,8 @@ const SocialAuth = () => {
   const handleGoogleLogin = async () => {
     try {
       console.log('Starting Google login process...');
+      console.log('Current origin:', window.location.origin);
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -20,12 +22,26 @@ const SocialAuth = () => {
       });
 
       if (error) {
-        console.error('Google login error:', error);
-        toast({
-          title: "Login Failed",
-          description: error.message,
-          variant: "destructive",
+        console.error('Google login error details:', {
+          message: error.message,
+          status: error.status,
+          name: error.name
         });
+        
+        // Specific error handling for common cases
+        if (error.message.includes('connection refused')) {
+          toast({
+            title: "Connection Error",
+            description: "Unable to connect to authentication service. Please check your network connection and try again.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Login Failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
         throw error;
       }
 
@@ -34,7 +50,9 @@ const SocialAuth = () => {
       console.error('Google login error:', error);
       toast({
         title: "Login Failed",
-        description: error instanceof Error ? error.message : "An error occurred during Google login.",
+        description: error instanceof Error 
+          ? `Authentication failed: ${error.message}`
+          : "An unexpected error occurred during Google login.",
         variant: "destructive",
       });
     }
