@@ -1,0 +1,32 @@
+# DoorList robots.txt
+
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://doorlist.com/sitemap.xml
+
+# Disallow crawling of auth pages
+Disallow: /login
+Disallow: /signup
+
+# Crawl-delay to prevent overwhelming the server
+Crawl-delay: 10
+
+# Additional rules for specific bots
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+# Block common spam bots
+User-agent: PetalBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
