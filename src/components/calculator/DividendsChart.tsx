@@ -36,7 +36,7 @@ const DividendsChart = () => {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-doorlist-navy">Annual Dividends</h3>
-      <div className="h-[300px] w-full">
+      <div className="h-[250px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" />

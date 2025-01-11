@@ -17,7 +17,7 @@ const Calculator = () => {
         />
       </Helmet>
       <Navbar />
-      <main className="container mx-auto px-4 py-12">
+      <main className="container mx-auto px-4 pt-28 pb-12">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold text-doorlist-navy mb-6">Investment Calculator</h1>
           <p className="text-lg text-gray-600 mb-8">
@@ -30,7 +30,7 @@ const Calculator = () => {
               <div>
                 <CalculatorForm />
               </div>
-              <div className="space-y-8">
+              <div className="space-y-6">
                 <InvestmentValueChart />
                 <DividendsChart />
               </div>
