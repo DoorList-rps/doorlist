@@ -5,6 +5,24 @@ interface BlogPostContentProps {
 }
 
 const BlogPostContent: React.FC<BlogPostContentProps> = ({ content }) => {
+  // Process content to ensure proper heading tags
+  const processContent = (htmlContent: string) => {
+    // Replace Blogger's style-based headings with proper heading tags
+    let processed = htmlContent
+      // Convert h2 style headings (commonly used in Blogger)
+      .replace(
+        /<h2 style="[^"]*">/g,
+        '<h2 class="text-3xl font-bold text-doorlist-navy mb-6 mt-12">'
+      )
+      // Convert h3 style headings
+      .replace(
+        /<h3 style="[^"]*">/g,
+        '<h3 class="text-2xl font-bold text-doorlist-navy mb-4 mt-8">'
+      );
+    
+    return processed;
+  };
+
   return (
     <div 
       className="prose prose-lg prose-slate max-w-none
@@ -19,7 +37,7 @@ const BlogPostContent: React.FC<BlogPostContentProps> = ({ content }) => {
         prose-ul:list-disc prose-ol:list-decimal
         prose-blockquote:border-l-4 prose-blockquote:border-doorlist-salmon
         prose-img:rounded-lg prose-img:shadow-lg"
-      dangerouslySetInnerHTML={{ __html: content }} 
+      dangerouslySetInnerHTML={{ __html: processContent(content) }} 
     />
   );
 };
