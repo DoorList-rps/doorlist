@@ -15,19 +15,17 @@ const Calculator = () => {
       </Helmet>
       <Navbar />
       <main className="container mx-auto px-4 py-24">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold text-doorlist-navy mb-8">Investment Calculator</h1>
-          <div className="grid md:grid-cols-2 gap-8">
-            <CalculatorProvider>
-              <div className="space-y-8">
-                <CalculatorForm />
-              </div>
-              <div className="space-y-8">
-                <InvestmentValueChart />
-                <DividendsChart />
-              </div>
-            </CalculatorProvider>
-          </div>
+        <h1 className="text-4xl font-bold text-doorlist-navy mb-8">Investment Calculator</h1>
+        <div className="grid md:grid-cols-2 gap-8">
+          <CalculatorProvider>
+            <div className="space-y-8">
+              <CalculatorForm />
+            </div>
+            <div className="space-y-8">
+              <InvestmentValueChart />
+              <DividendsChart />
+            </div>
+          </CalculatorProvider>
         </div>
       </main>
       <Footer />

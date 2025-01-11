@@ -64,7 +64,7 @@ const Investments = () => {
       </Helmet>
       <Navbar />
       <main className="container mx-auto px-4 py-24">
-        <InvestmentHeader />
+        <h1 className="text-4xl font-bold text-doorlist-navy mb-8">Investment Opportunities</h1>
         
         <div className="md:sticky md:top-20 bg-white z-10 py-4">
           <InvestmentFilters

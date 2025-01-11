@@ -76,7 +76,7 @@ const Profile = () => {
       </Helmet>
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8 mt-16">
-        <h2 className="text-2xl font-bold text-doorlist-navy mb-6">Profile</h2>
+        <h1 className="text-2xl font-bold text-doorlist-navy mb-6">My Profile</h1>
         
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-doorlist-navy mb-6">Connections in Progress</h2>

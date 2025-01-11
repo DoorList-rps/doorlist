@@ -83,12 +83,7 @@ const Contact = () => {
       <Navbar />
       <div className="flex-grow container mx-auto px-4 py-24">
         <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-doorlist-navy mb-4">Contact Us</h1>
-            <p className="text-xl text-gray-600">
-              Have questions? We're here to help you on your investment journey.
-            </p>
-          </div>
+          <h1 className="text-4xl font-bold text-doorlist-navy mb-4">Contact Us</h1>
           <div className="bg-white rounded-lg shadow-sm p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>

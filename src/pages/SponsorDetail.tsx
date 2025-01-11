@@ -45,6 +45,7 @@ const SponsorDetail = () => {
       </Helmet>
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8 mt-16">
+        <h1 className="sr-only">{sponsor.name}</h1>
         <div className="mb-6">
           <Link to="/sponsors">
             <Button variant="ghost" className="text-doorlist-navy hover:text-doorlist-salmon">

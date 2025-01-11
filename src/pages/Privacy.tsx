@@ -13,7 +13,6 @@ const Privacy = () => {
       <main className="container mx-auto px-4 py-24">
         <div className="max-w-4xl mx-auto prose">
           <h1 className="text-4xl font-bold text-doorlist-navy mb-8">Privacy Policy</h1>
-          
           <p className="text-gray-600">Last updated: {new Date().toLocaleDateString()}</p>
           
           <p>
