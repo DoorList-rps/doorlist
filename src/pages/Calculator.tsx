@@ -4,28 +4,36 @@ import Footer from "@/components/Footer";
 import { CalculatorProvider } from "@/components/calculator/CalculatorContext";
 import CalculatorForm from "@/components/calculator/CalculatorForm";
 import InvestmentValueChart from "@/components/calculator/InvestmentValueChart";
-import DividendsChart from "@/components/calculator/DividendsChart";
 
 const Calculator = () => {
   return (
     <div className="min-h-screen">
       <Helmet>
         <title>Investment Calculator | DoorList</title>
-        <meta name="description" content="Calculate potential returns on your real estate investments with DoorList's interactive investment calculator." />
+        <meta 
+          name="description" 
+          content="Plan your investment strategy with DoorList's comprehensive investment calculator. Estimate returns, analyze growth potential, and make informed decisions." 
+        />
       </Helmet>
       <Navbar />
-      <main className="container mx-auto px-4 py-24">
-        <h1 className="text-4xl font-bold text-doorlist-navy mb-8">Investment Calculator</h1>
-        <div className="grid md:grid-cols-2 gap-8">
-          <CalculatorProvider>
-            <div className="space-y-8">
-              <CalculatorForm />
-            </div>
-            <div className="space-y-8">
-              <InvestmentValueChart />
-              <DividendsChart />
-            </div>
-          </CalculatorProvider>
+      <main className="container mx-auto px-4 py-12">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-4xl font-bold text-doorlist-navy mb-6">Investment Calculator</h1>
+          <p className="text-lg text-gray-600 mb-8">
+            Use our calculator to estimate potential returns on your investments over time. 
+            Adjust variables like initial investment, monthly contributions, and expected returns 
+            to see how your investment could grow.
+          </p>
+          <div className="grid md:grid-cols-2 gap-8">
+            <CalculatorProvider>
+              <div>
+                <CalculatorForm />
+              </div>
+              <div className="space-y-8">
+                <InvestmentValueChart />
+              </div>
+            </CalculatorProvider>
+          </div>
         </div>
       </main>
       <Footer />

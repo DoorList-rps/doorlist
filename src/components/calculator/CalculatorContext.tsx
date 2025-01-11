@@ -1,11 +1,12 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 
 export interface CalculatorState {
-  investmentAmount: number;
-  holdingPeriod: number;
-  targetIRR: number;
-  annualAppreciation: number;
-  cashYield: number;
+  initialInvestment: number;
+  monthlyContribution: number;
+  timeframe: number;
+  expectedReturn: number;
+  compoundingFrequency: "annually" | "monthly";
+  inflationRate: number;
   showAdvanced: boolean;
 }
 
@@ -26,11 +27,12 @@ export const useCalculator = () => {
 
 export const CalculatorProvider = ({ children }: { children: ReactNode }) => {
   const [state, setState] = useState<CalculatorState>({
-    investmentAmount: 100000,
-    holdingPeriod: 5,
-    targetIRR: 15,
-    annualAppreciation: 3,
-    cashYield: 7,
+    initialInvestment: 10000,
+    monthlyContribution: 500,
+    timeframe: 10,
+    expectedReturn: 7,
+    compoundingFrequency: "annually",
+    inflationRate: 2.5,
     showAdvanced: false,
   });
 

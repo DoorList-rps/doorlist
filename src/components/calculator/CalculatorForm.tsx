@@ -3,6 +3,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Toggle } from "@/components/ui/toggle";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { useCalculator } from "./CalculatorContext";
 
@@ -10,57 +17,90 @@ const CalculatorForm = () => {
   const { toast } = useToast();
   const { state, setState } = useCalculator();
 
-  const handleInputChange = (field: keyof typeof state, value: number | boolean) => {
+  const handleInputChange = (field: keyof typeof state, value: number | string | boolean) => {
     setState({ ...state, [field]: value });
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
   };
 
   const handleCalculate = () => {
     toast({
       title: "Calculation Updated",
-      description: "The investment projections have been updated with your inputs.",
+      description: "Your investment projections have been updated.",
     });
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-white p-6 rounded-lg shadow-sm">
       <div>
-        <Label htmlFor="investmentAmount">Investment Amount ($)</Label>
-        <Input
-          id="investmentAmount"
-          type="number"
-          value={state.investmentAmount}
-          onChange={(e) => handleInputChange('investmentAmount', Number(e.target.value))}
-          min={0}
-          step={1000}
-        />
+        <Label htmlFor="initialInvestment">Initial Investment</Label>
+        <div className="mt-1.5">
+          <Input
+            id="initialInvestment"
+            type="number"
+            value={state.initialInvestment}
+            onChange={(e) => handleInputChange('initialInvestment', Number(e.target.value))}
+            min={0}
+            step={1000}
+            className="text-lg"
+          />
+          <div className="text-sm text-muted-foreground mt-1">
+            {formatCurrency(state.initialInvestment)}
+          </div>
+        </div>
       </div>
 
       <div>
-        <Label htmlFor="holdingPeriod">Holding Period (Years)</Label>
+        <Label htmlFor="monthlyContribution">Monthly Contribution</Label>
+        <div className="mt-1.5">
+          <Input
+            id="monthlyContribution"
+            type="number"
+            value={state.monthlyContribution}
+            onChange={(e) => handleInputChange('monthlyContribution', Number(e.target.value))}
+            min={0}
+            step={100}
+            className="text-lg"
+          />
+          <div className="text-sm text-muted-foreground mt-1">
+            {formatCurrency(state.monthlyContribution)}
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <Label htmlFor="timeframe">Investment Timeframe (Years)</Label>
         <Slider
-          id="holdingPeriod"
+          id="timeframe"
           min={1}
-          max={10}
+          max={40}
           step={1}
-          value={[state.holdingPeriod]}
-          onValueChange={([value]) => handleInputChange('holdingPeriod', value)}
+          value={[state.timeframe]}
+          onValueChange={([value]) => handleInputChange('timeframe', value)}
           className="my-4"
         />
-        <div className="text-sm text-gray-500">{state.holdingPeriod} years</div>
+        <div className="text-sm text-muted-foreground">{state.timeframe} years</div>
       </div>
 
       <div>
-        <Label htmlFor="targetIRR">Target IRR (%)</Label>
+        <Label htmlFor="expectedReturn">Expected Annual Return (%)</Label>
         <Slider
-          id="targetIRR"
-          min={0}
-          max={30}
+          id="expectedReturn"
+          min={1}
+          max={15}
           step={0.5}
-          value={[state.targetIRR]}
-          onValueChange={([value]) => handleInputChange('targetIRR', value)}
+          value={[state.expectedReturn]}
+          onValueChange={([value]) => handleInputChange('expectedReturn', value)}
           className="my-4"
         />
-        <div className="text-sm text-gray-500">{state.targetIRR}%</div>
+        <div className="text-sm text-muted-foreground">{state.expectedReturn}%</div>
       </div>
 
       <div className="flex items-center gap-2 my-4">
@@ -75,31 +115,35 @@ const CalculatorForm = () => {
       {state.showAdvanced && (
         <>
           <div>
-            <Label htmlFor="annualAppreciation">Annual Appreciation (%)</Label>
-            <Slider
-              id="annualAppreciation"
-              min={0}
-              max={10}
-              step={0.5}
-              value={[state.annualAppreciation]}
-              onValueChange={([value]) => handleInputChange('annualAppreciation', value)}
-              className="my-4"
-            />
-            <div className="text-sm text-gray-500">{state.annualAppreciation}%</div>
+            <Label htmlFor="compoundingFrequency">Compounding Frequency</Label>
+            <Select
+              value={state.compoundingFrequency}
+              onValueChange={(value: "annually" | "monthly") => 
+                handleInputChange('compoundingFrequency', value)
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select frequency" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="annually">Annually</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
-            <Label htmlFor="cashYield">Cash Yield (%)</Label>
+            <Label htmlFor="inflationRate">Inflation Rate (%)</Label>
             <Slider
-              id="cashYield"
+              id="inflationRate"
               min={0}
-              max={15}
+              max={10}
               step={0.5}
-              value={[state.cashYield]}
-              onValueChange={([value]) => handleInputChange('cashYield', value)}
+              value={[state.inflationRate]}
+              onValueChange={([value]) => handleInputChange('inflationRate', value)}
               className="my-4"
             />
-            <div className="text-sm text-gray-500">{state.cashYield}%</div>
+            <div className="text-sm text-muted-foreground">{state.inflationRate}%</div>
           </div>
         </>
       )}
