@@ -13,7 +13,7 @@ const NotFound = () => {
       <Navbar />
       <main className="container mx-auto px-4 py-24">
         <div className="max-w-2xl mx-auto text-center">
-          <h1 className="text-4xl font-bold text-doorlist-navy mb-4">Page Not Found</h1>
+          <h1 className="text-4xl font-bold text-doorlist-navy mb-4">404 - Page Not Found</h1>
           <p className="text-xl text-gray-600 mb-8">
             The page you're looking for cannot be found. Please check the URL or return to our homepage.
           </p>

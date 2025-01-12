@@ -19,7 +19,7 @@ const Calculator = () => {
       <Navbar />
       <main className="container mx-auto px-4 pt-28 pb-12">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold text-doorlist-navy mb-6">Investment Calculator</h1>
+          <h1 className="text-4xl font-bold text-doorlist-navy mb-6">Real Estate Investment Calculator</h1>
           <p className="text-lg text-gray-600 mb-8">
             Use our calculator to estimate potential returns on your investments over time. 
             Adjust variables like initial investment, monthly contributions, and expected returns 

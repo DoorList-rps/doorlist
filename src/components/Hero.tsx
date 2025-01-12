@@ -18,10 +18,10 @@ const Hero = () => {
             className="h-40 mx-auto mb-8"
           />
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-            Passively Invest in Real Estate
+            Discover Passive Real Estate Investment Opportunities
           </h1>
           <p className="text-xl md:text-2xl text-gray-300 mb-8">
-          DoorList is the most comprehensive database of passive real estate investment opportunities, opening access to the world of private real estate investing.
+            DoorList is the most comprehensive database of passive real estate investment opportunities, opening access to the world of private real estate investing.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
