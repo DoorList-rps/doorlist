@@ -44,17 +44,20 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
 
   // Check if user is admin
   const checkAdmin = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user.email) {
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('email', session.user.email)
-        .single();
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("Current session:", session); // Debug log
       
-      // Add admin email
-      const adminEmails = ['ryan.sudeck@gmail.com'];
-      setIsAdmin(adminEmails.includes(profiles?.email || ''));
+      if (session?.user?.email) {
+        console.log("User email:", session.user.email); // Debug log
+        
+        // Add admin email
+        const adminEmails = ['ryan.sudeck@gmail.com'];
+        setIsAdmin(adminEmails.includes(session.user.email));
+        console.log("Is admin?", adminEmails.includes(session.user.email)); // Debug log
+      }
+    } catch (error) {
+      console.error("Error checking admin status:", error);
     }
   };
 
