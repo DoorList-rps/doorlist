@@ -57,13 +57,13 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
       for (const member of teamMembers) {
         try {
           const { data, error } = await supabase.functions.invoke('validate-linkedin', {
-            body: { name: member.name, currentUrl: member.linkedin_url }
+            body: { name: member.name }
           });
           
           if (error) {
             console.error('Error validating LinkedIn URL:', error);
-          } else if (data.url !== member.linkedin_url) {
-            console.log(`Updated LinkedIn URL for ${member.name}: ${data.url}`);
+          } else if (data.url) {
+            console.log(`Found LinkedIn URL for ${member.name}: ${data.url}`);
           }
         } catch (error) {
           console.error('Error calling validate-linkedin function:', error);

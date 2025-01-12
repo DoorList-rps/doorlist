@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { name, currentUrl } = await req.json();
+    const { name } = await req.json();
     
     // Initialize OpenAI
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
@@ -21,7 +21,7 @@ serve(async (req) => {
       throw new Error('Missing OpenAI API key');
     }
 
-    console.log(`Processing LinkedIn URL for ${name}. Current URL: ${currentUrl}`);
+    console.log(`Searching LinkedIn URL for ${name}`);
 
     // Use OpenAI to search for the person's LinkedIn URL
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -35,11 +35,11 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful assistant that finds LinkedIn profile URLs. You should return ONLY the LinkedIn profile URL in the format https://www.linkedin.com/in/username. If you cannot find a definitive LinkedIn URL or if the current URL seems correct, return the current URL. Do not include any other text in your response.'
+            content: 'You are a LinkedIn profile finder. Your task is to find and return ONLY the LinkedIn profile URL for the given person who works in real estate investment or private equity. Return ONLY the URL in the format https://www.linkedin.com/in/username. If you cannot find a definitive match, return an empty string. Do not include any other text in your response.'
           },
           {
             role: 'user',
-            content: `Find the LinkedIn URL for ${name} who works in real estate investment or private equity. Their current LinkedIn URL is ${currentUrl || 'not provided'}. Return ONLY the URL, no other text. If you can't find a definitive match, return the current URL.`
+            content: `Find the LinkedIn URL for ${name} who works in real estate investment or private equity. Return ONLY the URL, no other text.`
           }
         ],
         temperature: 0.1,
@@ -56,10 +56,10 @@ serve(async (req) => {
     const data = await response.json();
     const linkedinUrl = data.choices[0].message.content.trim();
     
-    console.log(`OpenAI suggested URL for ${name}: ${linkedinUrl}`);
+    console.log(`Found LinkedIn URL for ${name}: ${linkedinUrl}`);
 
-    // Only proceed if we got a different URL
-    if (linkedinUrl !== currentUrl) {
+    // Only proceed if we got a URL
+    if (linkedinUrl) {
       // Initialize Supabase client
       const supabaseClient = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
@@ -79,7 +79,7 @@ serve(async (req) => {
 
       console.log(`Successfully updated LinkedIn URL for ${name} to ${linkedinUrl}`);
     } else {
-      console.log(`No update needed for ${name}, keeping current URL: ${currentUrl}`);
+      console.log(`No LinkedIn URL found for ${name}`);
     }
 
     return new Response(
