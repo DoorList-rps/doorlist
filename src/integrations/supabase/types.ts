@@ -439,7 +439,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_team_member_linkedin: {
+        Args: {
+          p_name: string
+          p_linkedin_url: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
