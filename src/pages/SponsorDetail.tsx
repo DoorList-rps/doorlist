@@ -7,6 +7,7 @@ import { useSponsorInvestments } from "@/hooks/useSponsorInvestments";
 import SponsorHeader from "@/components/sponsor-detail/SponsorHeader";
 import SponsorEditorial from "@/components/sponsor-detail/SponsorEditorial";
 import SponsorInvestments from "@/components/sponsor-detail/SponsorInvestments";
+import UpdateSponsorTeams from "@/components/sponsor-detail/UpdateSponsorTeams";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
@@ -55,6 +56,7 @@ const SponsorDetail = () => {
             </Button>
           </Link>
         </div>
+        <UpdateSponsorTeams />
         <SponsorHeader sponsor={sponsor} />
         <SponsorInvestments 
           investments={investments || []} 
