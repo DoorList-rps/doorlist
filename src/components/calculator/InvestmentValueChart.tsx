@@ -68,12 +68,16 @@ const InvestmentValueChart = () => {
   }, [state.initialInvestment, state.monthlyContribution, state.timeframe, state.expectedReturn, state.dividendYield, state.reinvestDividends]);
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
+    if (value >= 1000000000) {
+      return `$${(value / 1000000000).toFixed(1)}B`;
+    }
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(1)}M`;
+    }
+    if (value >= 1000) {
+      return `$${(value / 1000).toFixed(0)}K`;
+    }
+    return `$${value}`;
   };
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -120,7 +124,7 @@ const InvestmentValueChart = () => {
               tickFormatter={(value) => `Year ${value}`}
             />
             <YAxis
-              tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+              tickFormatter={formatCurrency}
             />
             <Tooltip content={<CustomTooltip />} />
             <Area

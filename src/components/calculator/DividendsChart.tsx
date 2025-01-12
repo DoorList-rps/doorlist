@@ -37,12 +37,15 @@ const DividendsChart = () => {
       
       return {
         year,
-        dividends: Math.round(annualDividend), // Round to remove decimals
+        dividends: Math.round(annualDividend),
       };
     });
   }, [state.initialInvestment, state.monthlyContribution, state.timeframe, state.expectedReturn, state.dividendYield, state.reinvestDividends]);
 
   const formatYAxis = (value: number) => {
+    if (value >= 1000000000) {
+      return `$${(value / 1000000000).toFixed(1)}B`;
+    }
     if (value >= 1000000) {
       return `$${(value / 1000000).toFixed(1)}M`;
     }
@@ -68,7 +71,7 @@ const DividendsChart = () => {
             />
             <Tooltip
               formatter={(value: number) => [
-                `$${value.toLocaleString()}`,
+                formatYAxis(value),
                 "Dividends"
               ]}
               labelFormatter={(label) => `Year ${label}`}
