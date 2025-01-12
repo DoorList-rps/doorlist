@@ -21,21 +21,31 @@ serve(async (req) => {
     })
     const openai = new OpenAIApi(configuration)
 
-    // Use GPT to find LinkedIn URL and profile photo URL with more specific prompt
+    // Use a more specific prompt for Origin Investments' deals
     const completion = await openai.createChatCompletion({
       model: "gpt-4o-mini",
       messages: [{
         role: "user",
-        content: `Find information about ${name} from Origin Investments:
+        content: `Find information about "${name}" from Origin Investments:
+
+        If this appears to be a past real estate deal or property:
+        1. Find a high-quality photo of the property
+        2. The property's website or listing page
+        3. Detailed location information
+        4. Brief description of the deal
+
+        If this appears to be a team member:
         1. Their LinkedIn profile URL
-        2. Their profile photo URL
-        3. If this is a past deal rather than a person, find:
-           - A high-quality photo of the property
-           - The property's website
-           - Location details
-        
-        Return a JSON object with 'url', 'image_url', 'website_url' (for deals), and 'location' (for deals) properties. 
-        If any property is not found, return null for that property.`
+        2. Their professional headshot/profile photo
+
+        Return a JSON object with these properties (use null for any not found):
+        {
+          "type": "deal" or "person",
+          "url": LinkedIn URL for people, website URL for deals,
+          "image_url": profile photo URL or property photo URL,
+          "location": full location details for deals,
+          "description": deal description if applicable
+        }`
       }]
     })
 
@@ -45,13 +55,27 @@ serve(async (req) => {
     try {
       const data = JSON.parse(response)
       
-      // If this is a team member (has LinkedIn URL)
-      if (data.url) {
-        const supabase = createClient(
-          Deno.env.get('SUPABASE_URL') ?? '',
-          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      )
+
+      if (data.type === 'deal') {
+        const { error: dbError } = await supabase.rpc(
+          'update_past_deal_info',
+          { 
+            p_name: name,
+            p_website_url: data.url,
+            p_image_url: data.image_url,
+            p_location: data.location
+          }
         )
 
+        if (dbError) {
+          console.error('Database error updating deal:', dbError)
+          throw dbError
+        }
+      } else if (data.type === 'person' && data.url) {
         const { error: dbError } = await supabase.rpc(
           'update_team_member_linkedin_and_image',
           { 
@@ -62,30 +86,7 @@ serve(async (req) => {
         )
 
         if (dbError) {
-          console.error('Database error:', dbError)
-          throw dbError
-        }
-      }
-      // If this is a past deal (has website URL)
-      else if (data.website_url) {
-        const supabase = createClient(
-          Deno.env.get('SUPABASE_URL') ?? '',
-          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-        )
-
-        // Update past deal information
-        const { error: dbError } = await supabase.rpc(
-          'update_past_deal_info',
-          { 
-            p_name: name,
-            p_website_url: data.website_url,
-            p_image_url: data.image_url,
-            p_location: data.location
-          }
-        )
-
-        if (dbError) {
-          console.error('Database error:', dbError)
+          console.error('Database error updating team member:', dbError)
           throw dbError
         }
       }
