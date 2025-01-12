@@ -1,10 +1,12 @@
 import type { Tables } from "@/integrations/supabase/types";
 import { Card, CardContent } from "@/components/ui/card";
+import { Link2, Linkedin } from "lucide-react";
 
 interface TeamMember {
   name: string;
   title: string;
   bio: string;
+  linkedin_url?: string;
 }
 
 interface PastDeal {
@@ -13,6 +15,7 @@ interface PastDeal {
   type: string;
   description: string;
   year: number;
+  website_url?: string;
 }
 
 interface SponsorEditorialProps {
@@ -63,7 +66,20 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
               <div className="grid gap-6 md:grid-cols-2">
                 {teamMembers.map((member, index) => (
                   <div key={index} className="space-y-2">
-                    <h4 className="font-semibold text-doorlist-navy">{member.name}</h4>
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold text-doorlist-navy">{member.name}</h4>
+                      {member.linkedin_url && (
+                        <a 
+                          href={member.linkedin_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-doorlist-salmon hover:text-doorlist-navy transition-colors"
+                          aria-label={`${member.name}'s LinkedIn profile`}
+                        >
+                          <Linkedin className="h-5 w-5" />
+                        </a>
+                      )}
+                    </div>
                     <p className="text-sm text-doorlist-salmon">{member.title}</p>
                     <p className="text-sm text-gray-600">{member.bio}</p>
                   </div>
@@ -80,7 +96,20 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
               <div className="grid gap-6 md:grid-cols-2">
                 {pastDeals.map((deal, index) => (
                   <div key={index} className="space-y-2">
-                    <h4 className="font-semibold text-doorlist-navy">{deal.name}</h4>
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold text-doorlist-navy">{deal.name}</h4>
+                      {deal.website_url && (
+                        <a 
+                          href={deal.website_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-doorlist-salmon hover:text-doorlist-navy transition-colors"
+                          aria-label={`Visit ${deal.name} website`}
+                        >
+                          <Link2 className="h-5 w-5" />
+                        </a>
+                      )}
+                    </div>
                     <div className="text-sm text-gray-600 space-y-1">
                       <p><span className="font-medium">Location:</span> {deal.location}</p>
                       <p><span className="font-medium">Type:</span> {deal.type}</p>
