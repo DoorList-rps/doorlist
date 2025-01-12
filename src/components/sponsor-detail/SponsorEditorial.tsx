@@ -2,6 +2,8 @@ import type { Tables } from "@/integrations/supabase/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link2, Linkedin } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TeamMember {
   name: string;
@@ -45,9 +47,32 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
     { title: "Investment Philosophy", content: sponsor.investment_philosophy }
   ].filter(section => section.content);
 
-  // Safely cast the JSON data to our TypeScript interfaces using a double cast
   const teamMembers = ((sponsor.team_members as unknown) as TeamMember[] | null) ?? null;
   const pastDeals = ((sponsor.past_deals as unknown) as PastDeal[] | null) ?? null;
+
+  useEffect(() => {
+    const validateLinkedInUrls = async () => {
+      if (!teamMembers) return;
+      
+      for (const member of teamMembers) {
+        try {
+          const { data, error } = await supabase.functions.invoke('validate-linkedin', {
+            body: { name: member.name, currentUrl: member.linkedin_url }
+          });
+          
+          if (error) {
+            console.error('Error validating LinkedIn URL:', error);
+          } else if (data.url !== member.linkedin_url) {
+            console.log(`Updated LinkedIn URL for ${member.name}: ${data.url}`);
+          }
+        } catch (error) {
+          console.error('Error calling validate-linkedin function:', error);
+        }
+      }
+    };
+
+    validateLinkedInUrls();
+  }, [teamMembers]);
 
   const formatLinkedInUrl = (url: string | undefined): string => {
     if (!url) return '';
