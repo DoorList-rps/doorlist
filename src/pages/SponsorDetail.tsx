@@ -56,11 +56,11 @@ const SponsorDetail = () => {
           </Link>
         </div>
         <SponsorHeader sponsor={sponsor} />
-        <SponsorEditorial sponsor={sponsor} />
         <SponsorInvestments 
           investments={investments || []} 
           sponsorName={sponsor.name}
         />
+        <SponsorEditorial sponsor={sponsor} />
       </main>
       <Footer />
     </div>
