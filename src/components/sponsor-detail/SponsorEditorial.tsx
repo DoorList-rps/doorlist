@@ -77,17 +77,19 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
   const formatLinkedInUrl = (url: string | undefined): string => {
     if (!url) return '';
     
-    // If it's already a full URL, return it
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }
     
-    // If it's just the profile ID/handle, construct the full URL
     if (!url.includes('linkedin.com')) {
       return `https://www.linkedin.com/in/${url}`;
     }
     
     return url;
+  };
+
+  const getDefaultAvatarUrl = (name: string): string => {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
   };
 
   return (
@@ -114,10 +116,21 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
                     <div className="flex items-start gap-4">
                       <Avatar className="h-16 w-16">
                         {member.image_url ? (
-                          <AvatarImage src={member.image_url} alt={member.name} />
+                          <AvatarImage 
+                            src={member.image_url} 
+                            alt={member.name}
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = getDefaultAvatarUrl(member.name);
+                            }}
+                          />
                         ) : (
-                          <AvatarFallback>{member.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                          <AvatarImage 
+                            src={getDefaultAvatarUrl(member.name)}
+                            alt={member.name}
+                          />
                         )}
+                        <AvatarFallback>{member.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
@@ -153,11 +166,15 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
                 {pastDeals.map((deal, index) => (
                   <div key={index} className="space-y-4">
                     {deal.image_url && (
-                      <div className="aspect-video relative rounded-lg overflow-hidden">
+                      <div className="aspect-video relative rounded-lg overflow-hidden bg-gray-100">
                         <img 
                           src={deal.image_url} 
                           alt={deal.name}
                           className="object-cover w-full h-full"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                          }}
                         />
                       </div>
                     )}
