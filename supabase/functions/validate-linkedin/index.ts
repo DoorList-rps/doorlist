@@ -21,7 +21,8 @@ serve(async (req) => {
     })
     const openai = new OpenAIApi(configuration)
 
-    // Use a more specific prompt for Origin Investments' deals
+    console.log('Processing request for:', name)
+
     const completion = await openai.createChatCompletion({
       model: "gpt-4o-mini",
       messages: [{
@@ -49,11 +50,16 @@ serve(async (req) => {
       }]
     })
 
+    if (!completion.data.choices[0]?.message?.content) {
+      throw new Error('No response from OpenAI')
+    }
+
     const response = completion.data.choices[0].message.content
     console.log('OpenAI Response:', response)
 
     try {
       const data = JSON.parse(response)
+      console.log('Parsed data:', data)
       
       const supabase = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
@@ -61,6 +67,7 @@ serve(async (req) => {
       )
 
       if (data.type === 'deal') {
+        console.log('Updating deal info for:', name)
         const { error: dbError } = await supabase.rpc(
           'update_past_deal_info',
           { 
@@ -76,6 +83,7 @@ serve(async (req) => {
           throw dbError
         }
       } else if (data.type === 'person' && data.url) {
+        console.log('Updating team member info for:', name)
         const { error: dbError } = await supabase.rpc(
           'update_team_member_linkedin_and_image',
           { 
@@ -100,9 +108,11 @@ serve(async (req) => {
     }
   } catch (error) {
     console.error('Error in validate-linkedin function:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    return new Response(
+      JSON.stringify({ error: error.message }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    )
   }
 })
