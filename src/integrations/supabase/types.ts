@@ -355,10 +355,12 @@ export type Database = {
           name: string
           notable_deals: string | null
           number_of_deals: number | null
+          past_deals: Json | null
           property_types: string[] | null
           short_description: string | null
           slug: string
           team_highlights: string | null
+          team_members: Json | null
           track_record: string | null
           updated_at: string
           website_url: string | null
@@ -386,10 +388,12 @@ export type Database = {
           name: string
           notable_deals?: string | null
           number_of_deals?: number | null
+          past_deals?: Json | null
           property_types?: string[] | null
           short_description?: string | null
           slug: string
           team_highlights?: string | null
+          team_members?: Json | null
           track_record?: string | null
           updated_at?: string
           website_url?: string | null
@@ -417,10 +421,12 @@ export type Database = {
           name?: string
           notable_deals?: string | null
           number_of_deals?: number | null
+          past_deals?: Json | null
           property_types?: string[] | null
           short_description?: string | null
           slug?: string
           team_highlights?: string | null
+          team_members?: Json | null
           track_record?: string | null
           updated_at?: string
           website_url?: string | null
