@@ -39,8 +39,9 @@ interface SponsorEditorialProps {
 const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [currentSponsor, setCurrentSponsor] = useState(sponsor);
   const { toast } = useToast();
-  const teamMembers = ((sponsor.team_members as unknown) as TeamMember[] | null) ?? null;
+  const teamMembers = ((currentSponsor.team_members as unknown) as TeamMember[] | null) ?? null;
 
   // Check if user is admin
   const checkAdmin = async () => {
@@ -70,8 +71,8 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
       setIsRefreshing(true);
       const { data, error } = await supabase.functions.invoke('generate-sponsor-content', {
         body: {
-          sponsorName: sponsor.name,
-          sponsorData: sponsor,
+          sponsorName: currentSponsor.name,
+          sponsorData: currentSponsor,
         },
       });
 
@@ -79,13 +80,24 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
         throw error;
       }
 
+      // Fetch the updated sponsor data
+      const { data: updatedSponsor, error: fetchError } = await supabase
+        .from('sponsors')
+        .select('*')
+        .eq('name', currentSponsor.name)
+        .single();
+
+      if (fetchError) {
+        throw fetchError;
+      }
+
+      // Update the local state with the new sponsor data
+      setCurrentSponsor(updatedSponsor);
+
       toast({
         title: "Content refreshed",
         description: "The sponsor's editorial content has been updated.",
       });
-
-      // Reload the page to show new content
-      window.location.reload();
     } catch (error) {
       console.error('Error refreshing content:', error);
       toast({
@@ -101,7 +113,7 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
   return (
     <div className="mt-12">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-doorlist-navy">About {sponsor.name}</h2>
+        <h2 className="text-2xl font-bold text-doorlist-navy">About {currentSponsor.name}</h2>
         {isAdmin && (
           <Button
             variant="outline"
@@ -118,9 +130,9 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
         )}
       </div>
       <div className="grid gap-6">
-        <SponsorAboutSections sponsor={sponsor} />
+        <SponsorAboutSections sponsor={currentSponsor} />
         {teamMembers && <SponsorTeam teamMembers={teamMembers} />}
-        <SponsorPastInvestments sponsorName={sponsor.name} />
+        <SponsorPastInvestments sponsorName={currentSponsor.name} />
       </div>
     </div>
   );
