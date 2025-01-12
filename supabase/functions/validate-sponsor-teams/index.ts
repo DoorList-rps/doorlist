@@ -29,7 +29,7 @@ serve(async (req) => {
       console.log('Processing team member:', member.name)
 
       const completion = await openai.createChatCompletion({
-        model: "gpt-4",
+        model: "gpt-4o",
         messages: [{
           role: "user",
           content: `Find information about "${member.name}" from ${sponsor_name}:
