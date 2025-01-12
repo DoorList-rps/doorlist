@@ -18,7 +18,7 @@ const SponsorTeam = ({ teamMembers }: SponsorTeamProps) => {
   if (!teamMembers || teamMembers.length === 0) return null;
 
   const getDefaultAvatarUrl = (name: string): string => {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=F1F0FB&color=252F48`;
   };
 
   const formatLinkedInUrl = (url: string | undefined): string => {
@@ -40,7 +40,7 @@ const SponsorTeam = ({ teamMembers }: SponsorTeamProps) => {
           {teamMembers.map((member, index) => (
             <div key={index} className="space-y-4">
               <div className="flex items-start gap-4">
-                <Avatar className="h-16 w-16">
+                <Avatar className="h-16 w-16 bg-[#F1F0FB]">
                   {member.image_url ? (
                     <AvatarImage 
                       src={member.image_url} 
@@ -56,7 +56,9 @@ const SponsorTeam = ({ teamMembers }: SponsorTeamProps) => {
                       alt={member.name}
                     />
                   )}
-                  <AvatarFallback>{member.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                  <AvatarFallback className="bg-[#F1F0FB] text-doorlist-navy">
+                    {member.name.split(' ').map(n => n[0]).join('')}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
