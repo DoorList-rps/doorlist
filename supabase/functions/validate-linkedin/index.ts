@@ -35,11 +35,15 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a LinkedIn profile finder. Your task is to find and return ONLY the LinkedIn profile URL for the given person who works in real estate investment or private equity. Return ONLY the URL in the format https://www.linkedin.com/in/username. If you cannot find a definitive match, return an empty string. Do not include any other text in your response.'
+            content: `You are a LinkedIn profile finder specialized in real estate investment professionals. Here are some examples of correct matches:
+            - David Scherer (Origin Investments) -> https://www.linkedin.com/in/david-scherer-09204529/
+            - Michael Episcope (Origin Investments) -> https://www.linkedin.com/in/michaelepiscope/
+            
+            Your task is to find and return ONLY the LinkedIn profile URL for the given person. Return ONLY the URL in the format https://www.linkedin.com/in/username. If you cannot find a definitive match with high confidence, return an empty string. Do not include any other text in your response.`
           },
           {
             role: 'user',
-            content: `Find the LinkedIn URL for ${name} who works in real estate investment or private equity. Return ONLY the URL, no other text.`
+            content: `Find the LinkedIn URL for ${name} who works in real estate investment. Return ONLY the URL, no other text.`
           }
         ],
         temperature: 0.1,
