@@ -21,7 +21,7 @@ serve(async (req) => {
     const { sponsorName, sponsorData } = await req.json();
     console.log('Generating content for sponsor:', sponsorName);
     console.log('Sponsor data:', sponsorData);
-    
+
     if (!openAIApiKey) {
       throw new Error('OpenAI API key is not configured');
     }
@@ -51,6 +51,8 @@ serve(async (req) => {
 
       Make it professional, factual, and engaging. Each section should be 2-3 sentences long.
     `;
+
+    console.log('Sending request to OpenAI with prompt:', prompt);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

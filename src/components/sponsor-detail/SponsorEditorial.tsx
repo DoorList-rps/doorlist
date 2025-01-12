@@ -46,15 +46,15 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
   const checkAdmin = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      console.log("Current session:", session); // Debug log
+      console.log("Current session:", session);
       
       if (session?.user?.email) {
-        console.log("User email:", session.user.email); // Debug log
+        console.log("User email:", session.user.email);
         
         // Add admin email
         const adminEmails = ['ryan.sudeck@gmail.com'];
         setIsAdmin(adminEmails.includes(session.user.email));
-        console.log("Is admin?", adminEmails.includes(session.user.email)); // Debug log
+        console.log("Is admin?", adminEmails.includes(session.user.email));
       }
     } catch (error) {
       console.error("Error checking admin status:", error);
@@ -68,20 +68,15 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
   const refreshContent = async () => {
     try {
       setIsRefreshing(true);
-      const response = await fetch('/functions/v1/generate-sponsor-content', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('generate-sponsor-content', {
+        body: {
           sponsorName: sponsor.name,
           sponsorData: sponsor,
-        }),
+        },
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to refresh content');
+      if (error) {
+        throw error;
       }
 
       toast({
