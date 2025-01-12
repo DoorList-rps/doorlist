@@ -4,22 +4,13 @@ import { Link2, Linkedin } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { usePastInvestments } from "@/hooks/usePastInvestments";
 
 interface TeamMember {
   name: string;
   title: string;
   bio: string;
   linkedin_url?: string;
-  image_url?: string;
-}
-
-interface PastDeal {
-  name: string;
-  location: string;
-  type: string;
-  description: string;
-  year: number;
-  website_url?: string;
   image_url?: string;
 }
 
@@ -32,8 +23,7 @@ interface SponsorEditorialProps {
     'notable_deals' | 
     'market_focus' | 
     'investment_philosophy' |
-    'team_members' |
-    'past_deals'
+    'team_members'
   >;
 }
 
@@ -48,7 +38,7 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
   ].filter(section => section.content);
 
   const teamMembers = ((sponsor.team_members as unknown) as TeamMember[] | null) ?? null;
-  const pastDeals = ((sponsor.past_deals as unknown) as PastDeal[] | null) ?? null;
+  const { data: pastInvestments } = usePastInvestments(sponsor.name);
 
   useEffect(() => {
     const validateLinkedInUrls = async () => {
@@ -158,18 +148,18 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
           </Card>
         )}
 
-        {pastDeals && pastDeals.length > 0 && (
+        {pastInvestments && pastInvestments.length > 0 && (
           <Card>
             <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-doorlist-navy mb-4">Past Deals</h3>
+              <h3 className="text-lg font-semibold text-doorlist-navy mb-4">Past Investments</h3>
               <div className="grid gap-6 md:grid-cols-2">
-                {pastDeals.map((deal, index) => (
-                  <div key={index} className="space-y-4">
-                    {deal.image_url && (
+                {pastInvestments.map((investment) => (
+                  <div key={investment.id} className="space-y-4">
+                    {investment.hero_image_url && (
                       <div className="aspect-video relative rounded-lg overflow-hidden bg-gray-100">
                         <img 
-                          src={deal.image_url} 
-                          alt={deal.name}
+                          src={investment.hero_image_url} 
+                          alt={investment.name}
                           className="object-cover w-full h-full"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
@@ -180,24 +170,27 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
                     )}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <h4 className="font-semibold text-doorlist-navy">{deal.name}</h4>
-                        {deal.website_url && (
+                        <h4 className="font-semibold text-doorlist-navy">{investment.name}</h4>
+                        {investment.investment_url && (
                           <a 
-                            href={deal.website_url}
+                            href={investment.investment_url}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-doorlist-salmon hover:text-doorlist-navy transition-colors"
-                            aria-label={`Visit ${deal.name} website`}
+                            aria-label={`Visit ${investment.name} website`}
                           >
                             <Link2 className="h-5 w-5" />
                           </a>
                         )}
                       </div>
                       <div className="text-sm text-gray-600 space-y-1">
-                        <p><span className="font-medium">Location:</span> {deal.location}</p>
-                        <p><span className="font-medium">Type:</span> {deal.type}</p>
-                        <p><span className="font-medium">Year:</span> {deal.year}</p>
-                        <p className="mt-2">{deal.description}</p>
+                        {investment.location_city && investment.location_state && (
+                          <p><span className="font-medium">Location:</span> {`${investment.location_city}, ${investment.location_state}`}</p>
+                        )}
+                        {investment.property_type && (
+                          <p><span className="font-medium">Type:</span> {investment.property_type}</p>
+                        )}
+                        <p className="mt-2">{investment.short_description}</p>
                       </div>
                     </div>
                   </div>
