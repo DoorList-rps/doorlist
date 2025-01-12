@@ -18,6 +18,8 @@ serve(async (req) => {
 
   try {
     const { sponsorName, sponsorData } = await req.json();
+    console.log('Generating content for sponsor:', sponsorName);
+    console.log('Sponsor data:', sponsorData);
     
     const prompt = `
       As an expert in real estate investment, create detailed and contextual editorial content for ${sponsorName}.
@@ -64,6 +66,8 @@ serve(async (req) => {
     });
 
     const data = await response.json();
+    console.log('OpenAI response:', data);
+    
     const content = data.choices[0].message.content;
 
     // Parse the content into sections
@@ -95,12 +99,15 @@ serve(async (req) => {
 
     // Update the sponsor in the database
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
+    console.log('Updating sponsor with sections:', sections);
+    
     const { error: updateError } = await supabase
       .from('sponsors')
       .update(sections)
       .eq('name', sponsorName);
 
     if (updateError) {
+      console.error('Error updating sponsor:', updateError);
       throw updateError;
     }
 
