@@ -446,6 +446,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      update_team_member_linkedin_and_image: {
+        Args: {
+          p_name: string
+          p_linkedin_url: string
+          p_image_url: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
