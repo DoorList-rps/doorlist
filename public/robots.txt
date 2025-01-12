@@ -7,6 +7,9 @@ Allow: /
 # Sitemap location
 Sitemap: https://doorlist.com/sitemap.xml
 
+# IndexNow verification
+Allow: /indexnow.txt
+
 # Disallow crawling of auth pages
 Disallow: /login
 Disallow: /signup
