@@ -1,3 +1,4 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -14,29 +15,29 @@ serve(async (req) => {
   try {
     const { name, currentUrl } = await req.json()
     
-    // Initialize Perplexity client
-    const PERPLEXITY_API_KEY = Deno.env.get('PERPLEXITY_API_KEY')
-    if (!PERPLEXITY_API_KEY) {
-      throw new Error('Missing Perplexity API key')
+    // Initialize OpenAI
+    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
+    if (!OPENAI_API_KEY) {
+      throw new Error('Missing OpenAI API key')
     }
 
-    // Use Perplexity to search for the person's LinkedIn URL
-    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+    // Use OpenAI to search for the person's LinkedIn URL
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${PERPLEXITY_API_KEY}`,
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.1-sonar-small-128k-online',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful assistant that finds LinkedIn URLs. Return ONLY the URL, nothing else.'
+            content: 'You are a helpful assistant that finds LinkedIn URLs. Return ONLY the URL, nothing else. If you cannot find a definitive LinkedIn URL, return the current URL that was provided.'
           },
           {
             role: 'user',
-            content: `What is the LinkedIn URL for ${name}? They work in real estate investment.`
+            content: `What is the LinkedIn URL for ${name}? They work in real estate investment. If you find multiple matches, focus on someone in real estate or investment management. Their current URL is ${currentUrl || 'not provided'}. Return ONLY the URL, no other text.`
           }
         ],
         temperature: 0.1,
@@ -49,6 +50,7 @@ serve(async (req) => {
 
     // Validate that it's a LinkedIn URL
     if (!linkedinUrl.includes('linkedin.com/in/')) {
+      console.log(`No valid LinkedIn URL found for ${name}, keeping current URL: ${currentUrl}`)
       return new Response(
         JSON.stringify({ url: currentUrl }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -61,21 +63,24 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Note: This assumes your team_members is stored as JSONB array
-    // You'll need to update the specific team member's LinkedIn URL
-    // This is a simplified example - you might need to adjust based on your exact data structure
     const { error } = await supabaseClient.rpc('update_team_member_linkedin', {
       p_name: name,
       p_linkedin_url: linkedinUrl
     })
 
-    if (error) throw error
+    if (error) {
+      console.error('Error updating LinkedIn URL:', error)
+      throw error
+    }
+
+    console.log(`Successfully updated LinkedIn URL for ${name}: ${linkedinUrl}`)
 
     return new Response(
       JSON.stringify({ url: linkedinUrl }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
+    console.error('Error in validate-linkedin function:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
