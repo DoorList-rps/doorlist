@@ -13,7 +13,7 @@ const Sponsors = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPropertyTypes, setSelectedPropertyTypes] = useState<string[]>([]);
   const [selectedInvestmentTypes, setSelectedInvestmentTypes] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<SortOption>("latest");
+  const [sortBy, setSortBy] = useState<SortOption>("default");
 
   const { data: sponsors, isLoading, error } = useQuery({
     queryKey: ['sponsors'],
@@ -37,6 +37,13 @@ const Sponsors = () => {
     ? Array.from(new Set(sponsors.flatMap(s => s.investment_types || [])))
     : [];
 
+  const getWeekNumber = () => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 1);
+    const diff = now.getTime() - start.getTime();
+    return Math.floor(diff / (1000 * 60 * 60 * 24 * 7));
+  };
+
   const sortSponsors = (sponsors: Tables<'sponsors'>[]) => {
     const sortedSponsors = [...sponsors];
     
@@ -54,11 +61,15 @@ const Sponsors = () => {
           };
           return getNumericReturn(b.advertised_returns) - getNumericReturn(a.advertised_returns);
         });
-      case "latest":
+      case "default":
       default:
-        return sortedSponsors.sort((a, b) => 
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
+        // Use a deterministic random sort based on the week number
+        const weekNumber = getWeekNumber();
+        return sortedSponsors.sort((a, b) => {
+          const hashA = (a.id + weekNumber.toString()).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+          const hashB = (b.id + weekNumber.toString()).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+          return hashA - hashB;
+        });
     }
   };
 

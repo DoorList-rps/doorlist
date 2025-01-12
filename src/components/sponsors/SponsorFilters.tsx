@@ -159,7 +159,7 @@ const SponsorFilters = ({
               <SelectValue placeholder="Sort by..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="latest">Latest</SelectItem>
+              <SelectItem value="default">Default</SelectItem>
               <SelectItem value="nameAsc">Name (A to Z)</SelectItem>
               <SelectItem value="nameDesc">Name (Z to A)</SelectItem>
               <SelectItem value="returnsDesc">Highest Returns</SelectItem>

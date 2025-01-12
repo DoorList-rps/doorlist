@@ -1,1 +1,1 @@
-export type SortOption = "latest" | "nameAsc" | "nameDesc" | "returnsDesc";
+export type SortOption = "default" | "nameAsc" | "nameDesc" | "returnsDesc";
