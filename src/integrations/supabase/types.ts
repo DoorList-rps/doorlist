@@ -345,15 +345,21 @@ export type Database = {
           hero_image_url: string | null
           holding_period: string | null
           id: string
+          investment_philosophy: string | null
+          investment_strategy: string | null
           investment_types: string[] | null
           linkedin_url: string | null
           logo_url: string | null
+          market_focus: string | null
           minimum_investment: string | null
           name: string
+          notable_deals: string | null
           number_of_deals: number | null
           property_types: string[] | null
           short_description: string | null
           slug: string
+          team_highlights: string | null
+          track_record: string | null
           updated_at: string
           website_url: string | null
           year_founded: number | null
@@ -370,15 +376,21 @@ export type Database = {
           hero_image_url?: string | null
           holding_period?: string | null
           id?: string
+          investment_philosophy?: string | null
+          investment_strategy?: string | null
           investment_types?: string[] | null
           linkedin_url?: string | null
           logo_url?: string | null
+          market_focus?: string | null
           minimum_investment?: string | null
           name: string
+          notable_deals?: string | null
           number_of_deals?: number | null
           property_types?: string[] | null
           short_description?: string | null
           slug: string
+          team_highlights?: string | null
+          track_record?: string | null
           updated_at?: string
           website_url?: string | null
           year_founded?: number | null
@@ -395,15 +407,21 @@ export type Database = {
           hero_image_url?: string | null
           holding_period?: string | null
           id?: string
+          investment_philosophy?: string | null
+          investment_strategy?: string | null
           investment_types?: string[] | null
           linkedin_url?: string | null
           logo_url?: string | null
+          market_focus?: string | null
           minimum_investment?: string | null
           name?: string
+          notable_deals?: string | null
           number_of_deals?: number | null
           property_types?: string[] | null
           short_description?: string | null
           slug?: string
+          team_highlights?: string | null
+          track_record?: string | null
           updated_at?: string
           website_url?: string | null
           year_founded?: number | null
