@@ -49,6 +49,22 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
   const teamMembers = ((sponsor.team_members as unknown) as TeamMember[] | null) ?? null;
   const pastDeals = ((sponsor.past_deals as unknown) as PastDeal[] | null) ?? null;
 
+  const formatLinkedInUrl = (url: string | undefined): string => {
+    if (!url) return '';
+    
+    // If it's already a full URL, return it
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    
+    // If it's just the profile ID/handle, construct the full URL
+    if (!url.includes('linkedin.com')) {
+      return `https://www.linkedin.com/in/${url}`;
+    }
+    
+    return url;
+  };
+
   return (
     <div className="mt-12">
       <h2 className="text-2xl font-bold text-doorlist-navy mb-6">About {sponsor.name}</h2>
@@ -83,7 +99,7 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
                           <h4 className="font-semibold text-doorlist-navy">{member.name}</h4>
                           {member.linkedin_url && (
                             <a 
-                              href={member.linkedin_url}
+                              href={formatLinkedInUrl(member.linkedin_url)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-doorlist-salmon hover:text-doorlist-navy transition-colors"
