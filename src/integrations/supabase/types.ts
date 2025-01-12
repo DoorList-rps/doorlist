@@ -448,6 +448,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      update_sponsor_team_members: {
+        Args: {
+          p_sponsor_name: string
+          p_team_members: Json
+        }
+        Returns: undefined
+      }
       update_team_member_linkedin: {
         Args: {
           p_name: string
