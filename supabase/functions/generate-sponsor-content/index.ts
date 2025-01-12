@@ -12,6 +12,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -21,6 +22,14 @@ serve(async (req) => {
     console.log('Generating content for sponsor:', sponsorName);
     console.log('Sponsor data:', sponsorData);
     
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key is not configured');
+    }
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Supabase configuration is missing');
+    }
+
     const prompt = `
       As an expert in real estate investment, create detailed and contextual editorial content for ${sponsorName}.
       Use the following information about the sponsor:
@@ -65,6 +74,12 @@ serve(async (req) => {
       }),
     });
 
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('OpenAI API error:', error);
+      throw new Error(`OpenAI API error: ${error}`);
+    }
+
     const data = await response.json();
     console.log('OpenAI response:', data);
     
@@ -98,7 +113,7 @@ serve(async (req) => {
     });
 
     // Update the sponsor in the database
-    const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
     console.log('Updating sponsor with sections:', sections);
     
     const { error: updateError } = await supabase
