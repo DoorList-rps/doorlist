@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 interface SponsorEditorialProps {
   sponsor: Pick<Tables<'sponsors'>, 
+    'name' |
     'track_record' | 
     'investment_strategy' | 
     'team_highlights' | 
