@@ -45,8 +45,9 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
     { title: "Investment Philosophy", content: sponsor.investment_philosophy }
   ].filter(section => section.content);
 
-  const teamMembers = sponsor.team_members as TeamMember[] | null;
-  const pastDeals = sponsor.past_deals as PastDeal[] | null;
+  // Safely cast the JSON data to our TypeScript interfaces
+  const teamMembers = (sponsor.team_members as TeamMember[] | null) ?? null;
+  const pastDeals = (sponsor.past_deals as PastDeal[] | null) ?? null;
 
   return (
     <div className="mt-12">
