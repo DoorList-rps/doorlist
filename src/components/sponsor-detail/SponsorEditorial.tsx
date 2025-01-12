@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Tables } from "@/integrations/supabase/types";
 import SponsorAboutSections from "./SponsorAboutSections";
 import SponsorTeam from "./SponsorTeam";
@@ -52,13 +52,13 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
         .eq('email', session.user.email)
         .single();
       
-      // Add your admin emails here
-      const adminEmails = ['your-admin-email@example.com'];
+      // Add admin email
+      const adminEmails = ['ryan.sudeck@gmail.com'];
       setIsAdmin(adminEmails.includes(profiles?.email || ''));
     }
   };
 
-  useState(() => {
+  useEffect(() => {
     checkAdmin();
   }, []);
 
