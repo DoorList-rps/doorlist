@@ -1,108 +1,49 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from 'react-helmet-async';
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import type { Tables } from "@/integrations/supabase/types";
-import SponsorCard from "@/components/sponsors/SponsorCard";
 import SponsorFilters from "@/components/sponsors/SponsorFilters";
-import type { SortOption } from "@/components/sponsors/types";
+import SponsorList from "@/components/sponsors/SponsorList";
+import { useSponsorFilters } from "@/hooks/useSponsorFilters";
 
 const Sponsors = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedPropertyTypes, setSelectedPropertyTypes] = useState<string[]>([]);
-  const [selectedInvestmentTypes, setSelectedInvestmentTypes] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<SortOption>("default");
-
   const { data: sponsors, isLoading, error } = useQuery({
     queryKey: ['sponsors'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('sponsors')
         .select('*')
-        .eq('approved', true);  // Only fetch approved sponsors
+        .eq('approved', true);
 
       if (error) throw error;
       return data as Tables<'sponsors'>[];
     }
   });
 
-  // Extract unique property and investment types
-  const propertyTypes = sponsors
-    ? Array.from(new Set(sponsors.flatMap(s => s.property_types || [])))
-    : [];
-  
-  const investmentTypes = sponsors
-    ? Array.from(new Set(sponsors.flatMap(s => s.investment_types || [])))
-    : [];
-
-  const getWeekNumber = () => {
-    const now = new Date();
-    const start = new Date(now.getFullYear(), 0, 1);
-    const diff = now.getTime() - start.getTime();
-    return Math.floor(diff / (1000 * 60 * 60 * 24 * 7));
-  };
-
-  const sortSponsors = (sponsors: Tables<'sponsors'>[]) => {
-    const sortedSponsors = [...sponsors];
-    
-    switch (sortBy) {
-      case "nameAsc":
-        return sortedSponsors.sort((a, b) => a.name.localeCompare(b.name));
-      case "nameDesc":
-        return sortedSponsors.sort((a, b) => b.name.localeCompare(a.name));
-      case "returnsDesc":
-        return sortedSponsors.sort((a, b) => {
-          const getNumericReturn = (returns: string | null) => {
-            if (!returns) return 0;
-            const match = returns.match(/\d+/);
-            return match ? parseInt(match[0]) : 0;
-          };
-          return getNumericReturn(b.advertised_returns) - getNumericReturn(a.advertised_returns);
-        });
-      case "default":
-      default:
-        // Use a deterministic random sort based on the week number
-        const weekNumber = getWeekNumber();
-        return sortedSponsors.sort((a, b) => {
-          const hashA = (a.id + weekNumber.toString()).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-          const hashB = (b.id + weekNumber.toString()).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-          return hashA - hashB;
-        });
-    }
-  };
-
-  const filteredSponsors = sponsors ? sortSponsors(
-    sponsors.filter((sponsor) => {
-      const searchFields = [
-        sponsor.name,
-        sponsor.description,
-        sponsor.headquarters,
-        sponsor.short_description
-      ].filter(Boolean);
-      
-      const matchesSearch = searchFields.some(field => 
-        field?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-
-      const matchesPropertyType = selectedPropertyTypes.length === 0 || 
-        (sponsor.property_types && 
-          selectedPropertyTypes.some(type => sponsor.property_types?.includes(type)));
-
-      const matchesInvestmentType = selectedInvestmentTypes.length === 0 || 
-        (sponsor.investment_types && 
-          selectedInvestmentTypes.some(type => sponsor.investment_types?.includes(type)));
-
-      return matchesSearch && matchesPropertyType && matchesInvestmentType;
-    })
-  ) : [];
+  const {
+    searchTerm,
+    setSearchTerm,
+    selectedPropertyTypes,
+    setSelectedPropertyTypes,
+    selectedInvestmentTypes,
+    setSelectedInvestmentTypes,
+    sortBy,
+    setSortBy,
+    propertyTypes,
+    investmentTypes,
+    filteredSponsors
+  } = useSponsorFilters(sponsors);
 
   return (
     <div className="min-h-screen flex flex-col">
       <Helmet>
         <title>Real Estate Investment Sponsors | DoorList</title>
-        <meta name="description" content="Discover top-tier real estate investment sponsors and their track records. Find trusted partners for your investment journey." />
+        <meta 
+          name="description" 
+          content="Discover top-tier real estate investment sponsors and their track records. Find trusted partners for your investment journey." 
+        />
       </Helmet>
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8 mt-16">
@@ -130,24 +71,13 @@ const Sponsors = () => {
         {error && (
           <div className="text-center py-12">
             <h3 className="text-xl font-semibold text-red-600">Error loading sponsors</h3>
-            <p className="text-gray-500 mt-2">{error instanceof Error ? error.message : 'Unknown error occurred'}</p>
+            <p className="text-gray-500 mt-2">
+              {error instanceof Error ? error.message : 'Unknown error occurred'}
+            </p>
           </div>
         )}
 
-        {!isLoading && !error && (!filteredSponsors || filteredSponsors.length === 0) && (
-          <div className="text-center py-12">
-            <h3 className="text-xl font-semibold text-gray-600">No sponsors found</h3>
-            <p className="text-gray-500 mt-2">Try adjusting your search criteria</p>
-          </div>
-        )}
-
-        {filteredSponsors && filteredSponsors.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredSponsors.map((sponsor) => (
-              <SponsorCard key={sponsor.id} sponsor={sponsor} />
-            ))}
-          </div>
-        )}
+        {!isLoading && !error && <SponsorList sponsors={filteredSponsors} />}
       </main>
       <Footer />
     </div>
