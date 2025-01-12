@@ -1,12 +1,14 @@
 import type { Tables } from "@/integrations/supabase/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link2, Linkedin } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface TeamMember {
   name: string;
   title: string;
   bio: string;
   linkedin_url?: string;
+  image_url?: string;
 }
 
 interface PastDeal {
@@ -16,6 +18,7 @@ interface PastDeal {
   description: string;
   year: number;
   website_url?: string;
+  image_url?: string;
 }
 
 interface SponsorEditorialProps {
@@ -65,23 +68,34 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
               <h3 className="text-lg font-semibold text-doorlist-navy mb-4">Leadership Team</h3>
               <div className="grid gap-6 md:grid-cols-2">
                 {teamMembers.map((member, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-semibold text-doorlist-navy">{member.name}</h4>
-                      {member.linkedin_url && (
-                        <a 
-                          href={member.linkedin_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-doorlist-salmon hover:text-doorlist-navy transition-colors"
-                          aria-label={`${member.name}'s LinkedIn profile`}
-                        >
-                          <Linkedin className="h-5 w-5" />
-                        </a>
-                      )}
+                  <div key={index} className="space-y-4">
+                    <div className="flex items-start gap-4">
+                      <Avatar className="h-16 w-16">
+                        {member.image_url ? (
+                          <AvatarImage src={member.image_url} alt={member.name} />
+                        ) : (
+                          <AvatarFallback>{member.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                        )}
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-semibold text-doorlist-navy">{member.name}</h4>
+                          {member.linkedin_url && (
+                            <a 
+                              href={member.linkedin_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-doorlist-salmon hover:text-doorlist-navy transition-colors"
+                              aria-label={`${member.name}'s LinkedIn profile`}
+                            >
+                              <Linkedin className="h-5 w-5" />
+                            </a>
+                          )}
+                        </div>
+                        <p className="text-sm text-doorlist-salmon">{member.title}</p>
+                        <p className="text-sm text-gray-600 mt-2">{member.bio}</p>
+                      </div>
                     </div>
-                    <p className="text-sm text-doorlist-salmon">{member.title}</p>
-                    <p className="text-sm text-gray-600">{member.bio}</p>
                   </div>
                 ))}
               </div>
@@ -95,26 +109,37 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
               <h3 className="text-lg font-semibold text-doorlist-navy mb-4">Past Deals</h3>
               <div className="grid gap-6 md:grid-cols-2">
                 {pastDeals.map((deal, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-semibold text-doorlist-navy">{deal.name}</h4>
-                      {deal.website_url && (
-                        <a 
-                          href={deal.website_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-doorlist-salmon hover:text-doorlist-navy transition-colors"
-                          aria-label={`Visit ${deal.name} website`}
-                        >
-                          <Link2 className="h-5 w-5" />
-                        </a>
-                      )}
-                    </div>
-                    <div className="text-sm text-gray-600 space-y-1">
-                      <p><span className="font-medium">Location:</span> {deal.location}</p>
-                      <p><span className="font-medium">Type:</span> {deal.type}</p>
-                      <p><span className="font-medium">Year:</span> {deal.year}</p>
-                      <p className="mt-2">{deal.description}</p>
+                  <div key={index} className="space-y-4">
+                    {deal.image_url && (
+                      <div className="aspect-video relative rounded-lg overflow-hidden">
+                        <img 
+                          src={deal.image_url} 
+                          alt={deal.name}
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                    )}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-semibold text-doorlist-navy">{deal.name}</h4>
+                        {deal.website_url && (
+                          <a 
+                            href={deal.website_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-doorlist-salmon hover:text-doorlist-navy transition-colors"
+                            aria-label={`Visit ${deal.name} website`}
+                          >
+                            <Link2 className="h-5 w-5" />
+                          </a>
+                        )}
+                      </div>
+                      <div className="text-sm text-gray-600 space-y-1">
+                        <p><span className="font-medium">Location:</span> {deal.location}</p>
+                        <p><span className="font-medium">Type:</span> {deal.type}</p>
+                        <p><span className="font-medium">Year:</span> {deal.year}</p>
+                        <p className="mt-2">{deal.description}</p>
+                      </div>
                     </div>
                   </div>
                 ))}
