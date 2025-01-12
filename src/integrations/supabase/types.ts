@@ -439,6 +439,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      update_past_deal_info: {
+        Args: {
+          p_name: string
+          p_website_url: string
+          p_image_url: string
+          p_location: string
+        }
+        Returns: undefined
+      }
       update_team_member_linkedin: {
         Args: {
           p_name: string
