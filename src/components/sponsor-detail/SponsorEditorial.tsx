@@ -43,6 +43,10 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
   const { toast } = useToast();
   const teamMembers = ((currentSponsor.team_members as unknown) as TeamMember[] | null) ?? null;
 
+  useEffect(() => {
+    setCurrentSponsor(sponsor);
+  }, [sponsor]);
+
   // Check if user is admin
   const checkAdmin = async () => {
     try {
@@ -52,8 +56,8 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
       if (session?.user?.email) {
         console.log("User email:", session.user.email);
         
-        // Add admin email
-        const adminEmails = ['ryan.sudeck@gmail.com'];
+        // Add admin emails
+        const adminEmails = ['ryan.sudeck@gmail.com', 'ryan@doorlist.co', 'test@doorlist.co'];
         setIsAdmin(adminEmails.includes(session.user.email));
         console.log("Is admin?", adminEmails.includes(session.user.email));
       }
@@ -69,16 +73,21 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
   const refreshContent = async () => {
     try {
       setIsRefreshing(true);
-      const { data, error } = await supabase.functions.invoke('generate-sponsor-content', {
+      console.log("Starting content refresh for sponsor:", currentSponsor.name);
+
+      const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-sponsor-content', {
         body: {
           sponsorName: currentSponsor.name,
           sponsorData: currentSponsor,
         },
       });
 
-      if (error) {
-        throw error;
+      if (functionError) {
+        console.error("Edge function error:", functionError);
+        throw functionError;
       }
+
+      console.log("Edge function response:", functionData);
 
       // Fetch the updated sponsor data
       const { data: updatedSponsor, error: fetchError } = await supabase
@@ -88,8 +97,11 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
         .single();
 
       if (fetchError) {
+        console.error("Error fetching updated sponsor:", fetchError);
         throw fetchError;
       }
+
+      console.log("Updated sponsor data:", updatedSponsor);
 
       // Update the local state with the new sponsor data
       setCurrentSponsor(updatedSponsor);
@@ -109,6 +121,11 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
       setIsRefreshing(false);
     }
   };
+
+  if (!currentSponsor) {
+    console.log("No sponsor data available");
+    return null;
+  }
 
   return (
     <div className="mt-12">
