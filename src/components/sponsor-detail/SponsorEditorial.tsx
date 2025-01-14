@@ -39,12 +39,16 @@ interface SponsorEditorialProps {
 const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [currentSponsor, setCurrentSponsor] = useState(sponsor);
+  const [currentSponsor, setCurrentSponsor] = useState<SponsorEditorialProps['sponsor']>(sponsor);
   const { toast } = useToast();
-  const teamMembers = ((currentSponsor.team_members as unknown) as TeamMember[] | null) ?? null;
+  const teamMembers = ((currentSponsor?.team_members as unknown) as TeamMember[] | null) ?? null;
 
+  // Update currentSponsor when sponsor prop changes
   useEffect(() => {
-    setCurrentSponsor(sponsor);
+    if (sponsor) {
+      console.log("Updating current sponsor with new data:", sponsor);
+      setCurrentSponsor(sponsor);
+    }
   }, [sponsor]);
 
   // Check if user is admin
@@ -92,9 +96,25 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
       // Fetch the updated sponsor data
       const { data: updatedSponsor, error: fetchError } = await supabase
         .from('sponsors')
-        .select('*')
+        .select(`
+          name,
+          track_record,
+          investment_strategy,
+          team_highlights,
+          notable_deals,
+          market_focus,
+          investment_philosophy,
+          team_members,
+          year_founded,
+          headquarters,
+          assets_under_management,
+          deal_volume,
+          number_of_deals,
+          investment_types,
+          property_types
+        `)
         .eq('name', currentSponsor.name)
-        .single();
+        .maybeSingle();
 
       if (fetchError) {
         console.error("Error fetching updated sponsor:", fetchError);
@@ -103,13 +123,17 @@ const SponsorEditorial = ({ sponsor }: SponsorEditorialProps) => {
 
       console.log("Updated sponsor data:", updatedSponsor);
 
-      // Update the local state with the new sponsor data
-      setCurrentSponsor(updatedSponsor);
+      if (updatedSponsor) {
+        // Update the local state with the new sponsor data
+        setCurrentSponsor(updatedSponsor);
 
-      toast({
-        title: "Content refreshed",
-        description: "The sponsor's editorial content has been updated.",
-      });
+        toast({
+          title: "Content refreshed",
+          description: "The sponsor's editorial content has been updated.",
+        });
+      } else {
+        throw new Error("No sponsor data returned after update");
+      }
     } catch (error) {
       console.error('Error refreshing content:', error);
       toast({
