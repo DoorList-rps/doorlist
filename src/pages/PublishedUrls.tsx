@@ -91,18 +91,21 @@ const PublishedUrls = () => {
     fetchAllUrls();
   }, []);
 
-  // Set content type using meta tag
+  // Set XML content type using useEffect
   useEffect(() => {
+    // Create and append meta tag for XML content type
     const meta = document.createElement('meta');
     meta.httpEquiv = 'Content-Type';
     meta.content = 'application/xml; charset=utf-8';
     document.head.appendChild(meta);
 
+    // Cleanup function to remove meta tag
     return () => {
       document.head.removeChild(meta);
     };
   }, []);
 
+  // Return XML content
   if (loading) {
     return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n</urlset>';
   }
