@@ -30,10 +30,11 @@ export async function generateSitemap() {
       return;
     }
 
-    // Fetch blog posts
+    // Fetch published blog posts
     const { data: blogPosts, error: blogError } = await supabase
       .from('blog_posts')
-      .select('slug');
+      .select('slug')
+      .not('published_at', 'is', null);
 
     if (blogError) {
       console.error('Error fetching blog posts:', blogError);
@@ -94,7 +95,7 @@ export async function generateSitemap() {
       sitemapContent += `  <url>
     <loc>${SITE_URL}/education/${slug}</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
 `;
     });
