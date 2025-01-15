@@ -100,6 +100,17 @@ const PublishedUrls = () => {
     fetchAllUrls();
   }, []);
 
+  const generateSitemapXml = () => {
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map(url => `  <url>
+    <loc>${url.loc}</loc>
+    <changefreq>${url.changefreq}</changefreq>
+    <priority>${url.priority}</priority>
+  </url>`).join('\n')}
+</urlset>`;
+  };
+
   return (
     <div className="min-h-screen">
       <Helmet>
@@ -108,7 +119,7 @@ const PublishedUrls = () => {
       </Helmet>
       <Navbar />
       <main className="container mx-auto px-4 py-24">
-        <h1 className="text-3xl font-bold text-doorlist-navy mb-8">Published URLs</h1>
+        <h1 className="text-3xl font-bold text-doorlist-navy mb-8">Published URLs (Sitemap Format)</h1>
         <Card className="w-full">
           <CardContent className="p-6">
             {loading ? (
@@ -117,33 +128,9 @@ const PublishedUrls = () => {
               </div>
             ) : (
               <ScrollArea className="h-[600px]">
-                <table className="w-full">
-                  <thead>
-                    <tr className="text-left border-b">
-                      <th className="pb-4">URL</th>
-                      <th className="pb-4">Change Frequency</th>
-                      <th className="pb-4">Priority</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {urls.map((url, index) => (
-                      <tr key={index} className="border-b last:border-0">
-                        <td className="py-4">
-                          <a 
-                            href={url.loc}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800"
-                          >
-                            {url.loc}
-                          </a>
-                        </td>
-                        <td className="py-4">{url.changefreq}</td>
-                        <td className="py-4">{url.priority}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <pre className="text-sm font-mono whitespace-pre overflow-x-auto">
+                  {generateSitemapXml()}
+                </pre>
               </ScrollArea>
             )}
           </CardContent>
