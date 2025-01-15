@@ -81,9 +81,9 @@ const PublishedUrls = () => {
           });
 
         setUrls(allUrls);
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching URLs:', error);
-      } finally {
         setLoading(false);
       }
     };
@@ -92,26 +92,25 @@ const PublishedUrls = () => {
   }, []);
 
   useEffect(() => {
-    // Remove any existing document content
-    document.documentElement.innerHTML = '';
-    
-    // Create XML processing instruction
-    const xmlPI = document.createProcessingInstruction('xml', 'version="1.0" encoding="UTF-8"');
-    document.insertBefore(xmlPI, document.firstChild);
-    
-    // Set content type
-    const meta = document.createElement('meta');
-    meta.httpEquiv = 'Content-Type';
-    meta.content = 'application/xml; charset=utf-8';
-    document.head.appendChild(meta);
+    if (typeof document !== 'undefined') {
+      // Clear existing content
+      document.documentElement.innerHTML = '';
+      
+      // Create XML processing instruction
+      const xmlPI = document.createProcessingInstruction('xml', 'version="1.0" encoding="UTF-8"');
+      document.insertBefore(xmlPI, document.firstChild);
+      
+      // Set content type
+      const meta = document.createElement('meta');
+      meta.httpEquiv = 'Content-Type';
+      meta.content = 'application/xml; charset=utf-8';
+      document.head.appendChild(meta);
+    }
   }, []);
 
-  // Return raw XML string
-  if (loading) {
-    return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n</urlset>';
-  }
-
-  const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+  // Generate XML content
+  const generateXmlContent = () => {
+    const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map(url => `  <url>
     <loc>${url.loc}</loc>
@@ -120,12 +119,19 @@ ${urls.map(url => `  <url>
   </url>`).join('\n')}
 </urlset>`;
 
-  // Use document.write to output raw XML
-  if (typeof document !== 'undefined') {
-    document.open('text/xml');
-    document.write(xmlContent);
-    document.close();
-  }
+    if (typeof document !== 'undefined') {
+      document.open('text/xml');
+      document.write(xmlContent);
+      document.close();
+    }
+  };
+
+  // Effect to render XML content when URLs are loaded
+  useEffect(() => {
+    if (!loading && urls.length > 0) {
+      generateXmlContent();
+    }
+  }, [loading, urls]);
 
   return null;
 };
