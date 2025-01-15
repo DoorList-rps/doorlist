@@ -23,7 +23,6 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Contact from "./pages/Contact";
 import Calculator from "./pages/Calculator";
-import PublishedUrls from "./pages/PublishedUrls";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -65,7 +64,6 @@ const App = () => (
               <Route path="/terms" element={<Terms />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/calculator" element={<Calculator />} />
-              <Route path="/published-urls" element={<PublishedUrls />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </TooltipProvider>
