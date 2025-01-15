@@ -81,9 +81,9 @@ const PublishedUrls = () => {
           });
 
         setUrls(allUrls);
-        setLoading(false);
       } catch (error) {
         console.error('Error fetching URLs:', error);
+      } finally {
         setLoading(false);
       }
     };
@@ -91,26 +91,26 @@ const PublishedUrls = () => {
     fetchAllUrls();
   }, []);
 
+  // Set XML content type using useEffect
   useEffect(() => {
-    if (typeof document !== 'undefined') {
-      // Clear existing content
-      document.documentElement.innerHTML = '';
-      
-      // Create XML processing instruction
-      const xmlPI = document.createProcessingInstruction('xml', 'version="1.0" encoding="UTF-8"');
-      document.insertBefore(xmlPI, document.firstChild);
-      
-      // Set content type
-      const meta = document.createElement('meta');
-      meta.httpEquiv = 'Content-Type';
-      meta.content = 'application/xml; charset=utf-8';
-      document.head.appendChild(meta);
-    }
+    // Create and append meta tag for XML content type
+    const meta = document.createElement('meta');
+    meta.httpEquiv = 'Content-Type';
+    meta.content = 'application/xml; charset=utf-8';
+    document.head.appendChild(meta);
+
+    // Cleanup function to remove meta tag
+    return () => {
+      document.head.removeChild(meta);
+    };
   }, []);
 
-  // Generate XML content
-  const generateXmlContent = () => {
-    const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+  // Return XML content
+  if (loading) {
+    return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n</urlset>';
+  }
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map(url => `  <url>
     <loc>${url.loc}</loc>
@@ -118,22 +118,6 @@ ${urls.map(url => `  <url>
     <priority>${url.priority}</priority>
   </url>`).join('\n')}
 </urlset>`;
-
-    if (typeof document !== 'undefined') {
-      document.open('text/xml');
-      document.write(xmlContent);
-      document.close();
-    }
-  };
-
-  // Effect to render XML content when URLs are loaded
-  useEffect(() => {
-    if (!loading && urls.length > 0) {
-      generateXmlContent();
-    }
-  }, [loading, urls]);
-
-  return null;
 };
 
 export default PublishedUrls;
