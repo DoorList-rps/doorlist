@@ -95,9 +95,16 @@ const PublishedUrls = () => {
     fetchAllUrls();
   }, []);
 
-  // Set content type header
+  // Set content type using meta tag
   useEffect(() => {
-    document.contentType = 'application/xml';
+    const meta = document.createElement('meta');
+    meta.httpEquiv = 'Content-Type';
+    meta.content = 'application/xml; charset=utf-8';
+    document.head.appendChild(meta);
+
+    return () => {
+      document.head.removeChild(meta);
+    };
   }, []);
 
   if (loading) {
