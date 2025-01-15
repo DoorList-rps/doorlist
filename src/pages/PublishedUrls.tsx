@@ -91,26 +91,27 @@ const PublishedUrls = () => {
     fetchAllUrls();
   }, []);
 
-  // Set XML content type using useEffect
   useEffect(() => {
-    // Create and append meta tag for XML content type
+    // Remove any existing document content
+    document.documentElement.innerHTML = '';
+    
+    // Create XML processing instruction
+    const xmlPI = document.createProcessingInstruction('xml', 'version="1.0" encoding="UTF-8"');
+    document.insertBefore(xmlPI, document.firstChild);
+    
+    // Set content type
     const meta = document.createElement('meta');
     meta.httpEquiv = 'Content-Type';
     meta.content = 'application/xml; charset=utf-8';
     document.head.appendChild(meta);
-
-    // Cleanup function to remove meta tag
-    return () => {
-      document.head.removeChild(meta);
-    };
   }, []);
 
-  // Return XML content
+  // Return raw XML string
   if (loading) {
     return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n</urlset>';
   }
 
-  return `<?xml version="1.0" encoding="UTF-8"?>
+  const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map(url => `  <url>
     <loc>${url.loc}</loc>
@@ -118,6 +119,15 @@ ${urls.map(url => `  <url>
     <priority>${url.priority}</priority>
   </url>`).join('\n')}
 </urlset>`;
+
+  // Use document.write to output raw XML
+  if (typeof document !== 'undefined') {
+    document.open('text/xml');
+    document.write(xmlContent);
+    document.close();
+  }
+
+  return null;
 };
 
 export default PublishedUrls;
