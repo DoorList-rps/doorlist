@@ -3,6 +3,8 @@ import fs from 'fs';
 import path from 'path';
 
 const SITE_URL = 'https://doorlist.com';
+const BLOG_ID = '1694084439153189152';
+const API_KEY = 'AIzaSyA1vMBgHX4iN8zs-PN7UDQfGp6AhIMq6G4';
 
 export async function generateSitemap() {
   console.log('Starting sitemap generation...');
@@ -30,18 +32,11 @@ export async function generateSitemap() {
       return;
     }
 
-    // Fetch published blog posts
-    const { data: blogPosts, error: blogError } = await supabase
-      .from('blog_posts')
-      .select('slug')
-      .not('published_at', 'is', null);
+    // Fetch blog posts from Blogger API
+    const blogPosts = await fetchBlogPosts();
+    console.log(`Found ${blogPosts.length} blog posts from Blogger API`);
 
-    if (blogError) {
-      console.error('Error fetching blog posts:', blogError);
-      return;
-    }
-
-    console.log(`Found: ${sponsors?.length || 0} sponsors, ${investments?.length || 0} investments, ${blogPosts?.length || 0} blog posts`);
+    console.log(`Found: ${sponsors?.length || 0} sponsors, ${investments?.length || 0} investments, ${blogPosts.length} blog posts`);
 
     const staticUrls = [
       { url: '/', changefreq: 'daily', priority: '1.0' },
@@ -91,7 +86,8 @@ export async function generateSitemap() {
     });
 
     // Add blog post URLs
-    blogPosts?.forEach(({ slug }) => {
+    blogPosts.forEach((post) => {
+      const slug = post.url.split('/').pop();
       sitemapContent += `  <url>
     <loc>${SITE_URL}/education/${slug}</loc>
     <changefreq>monthly</changefreq>
@@ -113,6 +109,24 @@ export async function generateSitemap() {
   } catch (error) {
     console.error('Error generating sitemap:', error);
     return null;
+  }
+}
+
+async function fetchBlogPosts() {
+  try {
+    const response = await fetch(
+      `https://www.googleapis.com/blogger/v3/blogs/${BLOG_ID}/posts?key=${API_KEY}&maxResults=500`
+    );
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch blog posts');
+    }
+    
+    const data = await response.json();
+    return data.items || [];
+  } catch (error) {
+    console.error('Error fetching blog posts:', error);
+    return [];
   }
 }
 
