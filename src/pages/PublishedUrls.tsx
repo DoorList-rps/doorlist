@@ -1,10 +1,5 @@
-import { Helmet } from 'react-helmet-async';
 import { useEffect, useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { Card, CardContent } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 const BLOG_ID = '1694084439153189152';
 const API_KEY = 'AIzaSyA1vMBgHX4iN8zs-PN7UDQfGp6AhIMq6G4';
@@ -100,8 +95,11 @@ const PublishedUrls = () => {
     fetchAllUrls();
   }, []);
 
-  const generateSitemapXml = () => {
-    return `<?xml version="1.0" encoding="UTF-8"?>
+  if (loading) {
+    return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n</urlset>';
+  }
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map(url => `  <url>
     <loc>${url.loc}</loc>
@@ -109,36 +107,6 @@ ${urls.map(url => `  <url>
     <priority>${url.priority}</priority>
   </url>`).join('\n')}
 </urlset>`;
-  };
-
-  return (
-    <div className="min-h-screen">
-      <Helmet>
-        <title>Published URLs | DoorList</title>
-        <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
-      <Navbar />
-      <main className="container mx-auto px-4 py-24">
-        <h1 className="text-3xl font-bold text-doorlist-navy mb-8">Published URLs (Sitemap Format)</h1>
-        <Card className="w-full">
-          <CardContent className="p-6">
-            {loading ? (
-              <div className="flex justify-center items-center h-[600px]">
-                <p>Loading URLs...</p>
-              </div>
-            ) : (
-              <ScrollArea className="h-[600px]">
-                <pre className="text-sm font-mono whitespace-pre overflow-x-auto">
-                  {generateSitemapXml()}
-                </pre>
-              </ScrollArea>
-            )}
-          </CardContent>
-        </Card>
-      </main>
-      <Footer />
-    </div>
-  );
 };
 
 export default PublishedUrls;
