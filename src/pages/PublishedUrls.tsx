@@ -15,12 +15,6 @@ const PublishedUrls = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set XML content type
-    const meta = document.createElement('meta');
-    meta.httpEquiv = 'Content-Type';
-    meta.content = 'application/xml; charset=utf-8';
-    document.head.appendChild(meta);
-
     const fetchAllUrls = async () => {
       try {
         setLoading(true);
@@ -99,11 +93,11 @@ const PublishedUrls = () => {
     };
 
     fetchAllUrls();
+  }, []);
 
-    // Cleanup
-    return () => {
-      document.head.removeChild(meta);
-    };
+  // Set content type header
+  useEffect(() => {
+    document.contentType = 'application/xml';
   }, []);
 
   if (loading) {
