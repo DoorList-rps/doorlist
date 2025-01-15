@@ -67,6 +67,21 @@ const PublishedUrls = () => {
           extractedUrls.push(...sponsorUrls);
         }
 
+        // Fetch approved investments
+        const { data: investments } = await supabase
+          .from('investments')
+          .select('slug')
+          .eq('approved', true);
+
+        if (investments) {
+          const investmentUrls = investments.map(investment => ({
+            loc: `https://doorlist.com/investments/${investment.slug}`,
+            changefreq: 'weekly',
+            priority: '0.8'
+          }));
+          extractedUrls.push(...investmentUrls);
+        }
+
         // Sort URLs by priority (descending) and then alphabetically
         const sortedUrls = extractedUrls.sort((a, b) => {
           const priorityDiff = Number(b.priority) - Number(a.priority);
