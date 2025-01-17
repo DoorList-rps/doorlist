@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
-const KLAVIYO_API_KEY = Deno.env.get('KLAVIYO_PRIVATE_KEY')
-const KLAVIYO_API_URL = 'https://a.klaviyo.com/api/v2'
+const KLAVIYO_PRIVATE_KEY = Deno.env.get('KLAVIYO_PRIVATE_KEY')
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,49 +15,53 @@ serve(async (req) => {
 
   try {
     const { event_name, customer_properties, properties } = await req.json()
+    console.log('Received event:', { event_name, customer_properties, properties })
 
-    if (!event_name || !customer_properties?.email) {
-      throw new Error('Missing required parameters')
+    if (!KLAVIYO_PRIVATE_KEY) {
+      throw new Error('KLAVIYO_PRIVATE_KEY is not set')
     }
 
-    const trackData = {
-      token: KLAVIYO_API_KEY,
-      event: event_name,
-      customer_properties: customer_properties,
-      properties: properties || {},
-      time: Math.floor(Date.now() / 1000)
-    }
-
-    const response = await fetch(`${KLAVIYO_API_URL}/track`, {
+    const response = await fetch('https://a.klaviyo.com/api/track', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Klaviyo-API-Key ${KLAVIYO_PRIVATE_KEY}`
       },
-      body: JSON.stringify(trackData)
+      body: JSON.stringify({
+        data: {
+          type: "event",
+          attributes: {
+            profile: {
+              email: customer_properties.$email
+            },
+            metric: {
+              name: event_name
+            },
+            properties: properties
+          }
+        }
+      })
     })
 
     if (!response.ok) {
-      throw new Error(`Klaviyo API error: ${response.statusText}`)
+      const errorData = await response.text()
+      console.error('Klaviyo API error:', errorData)
+      throw new Error(`Klaviyo API error: ${response.status} ${response.statusText}`)
     }
 
-    const result = await response.json()
+    const data = await response.json()
+    console.log('Successfully sent event to Klaviyo:', data)
 
-    return new Response(
-      JSON.stringify({ success: true, data: result }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
-      }
-    )
+    return new Response(JSON.stringify(data), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
+    })
 
   } catch (error) {
-    console.error('Error tracking Klaviyo event:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500 
-      }
-    )
+    console.error('Error processing request:', error)
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+    })
   }
 })
