@@ -65,8 +65,15 @@ const InvestmentInquiryButton = ({ investmentId, isLoggedIn, userId }: Investmen
         return;
       }
 
+      // Get investment details for the Klaviyo event
+      const { data: investment } = await supabase
+        .from('investments')
+        .select('*')
+        .eq('id', investmentId)
+        .single();
+
       console.log('Submitting new investment inquiry:', { investmentId, userId });
-      const { error } = await supabase
+      const { error: inquiryError } = await supabase
         .from('investment_inquiries')
         .insert([
           { 
@@ -76,10 +83,24 @@ const InvestmentInquiryButton = ({ investmentId, isLoggedIn, userId }: Investmen
           }
         ]);
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
+      if (inquiryError) throw inquiryError;
+
+      // Track the investment inquiry in Klaviyo
+      await supabase.functions.invoke('klaviyo-events', {
+        body: {
+          event_name: 'Investment Inquiry Created',
+          customer_properties: {
+            $email: userId // The webhook will fetch the actual email
+          },
+          properties: {
+            investment_name: investment?.name,
+            minimum_investment: investment?.minimum_investment,
+            target_return: investment?.target_return,
+            property_type: investment?.property_type,
+            location: `${investment?.location_city}, ${investment?.location_state}`
+          }
+        }
+      });
 
       console.log('Investment inquiry submitted successfully');
       toast({

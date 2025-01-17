@@ -27,11 +27,25 @@ const SignUpForm = ({ isLoading, setIsLoading }: SignUpFormProps) => {
 
       if (error) throw error;
 
+      // Track signup event in Klaviyo
+      await supabase.functions.invoke('klaviyo-events', {
+        body: {
+          event_name: 'New User Sign Up',
+          customer_properties: {
+            email: email
+          },
+          properties: {
+            signup_method: 'email'
+          }
+        }
+      });
+
       toast({
         title: "Sign Up Successful",
         description: "Please check your email to verify your account.",
       });
     } catch (error) {
+      console.error('Sign up error:', error);
       toast({
         title: "Sign Up Failed",
         description: error instanceof Error ? error.message : "An error occurred during sign up.",

@@ -61,7 +61,7 @@ const SponsorIntroduction = ({
       }
 
       console.log('Submitting new sponsor introduction:', { sponsorId: sponsor.id, userId });
-      const { error } = await supabase
+      const { error: introError } = await supabase
         .from('sponsor_introductions')
         .insert([
           { 
@@ -71,10 +71,23 @@ const SponsorIntroduction = ({
           }
         ]);
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
+      if (introError) throw introError;
+
+      // Track the sponsor introduction request in Klaviyo
+      await supabase.functions.invoke('klaviyo-events', {
+        body: {
+          event_name: 'Sponsor Introduction Requested',
+          customer_properties: {
+            $email: userId // The webhook will fetch the actual email
+          },
+          properties: {
+            sponsor_name: sponsor.name,
+            sponsor_id: sponsor.id,
+            minimum_investment: sponsor.minimum_investment,
+            advertised_returns: sponsor.advertised_returns
+          }
+        }
+      });
 
       console.log('Sponsor introduction submitted successfully');
       toast({
