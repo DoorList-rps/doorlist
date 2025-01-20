@@ -21,25 +21,17 @@ serve(async (req) => {
       throw new Error('KLAVIYO_PRIVATE_KEY is not set')
     }
 
-    const response = await fetch('https://a.klaviyo.com/api/track', {
+    const response = await fetch('https://a.klaviyo.com/api/v2/track', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Klaviyo-API-Key ${KLAVIYO_PRIVATE_KEY}`
       },
       body: JSON.stringify({
-        data: {
-          type: "event",
-          attributes: {
-            profile: {
-              email: customer_properties.$email
-            },
-            metric: {
-              name: event_name
-            },
-            properties: properties
-          }
-        }
+        token: KLAVIYO_PRIVATE_KEY,
+        event: event_name,
+        customer_properties: customer_properties,
+        properties: properties
       })
     })
 
