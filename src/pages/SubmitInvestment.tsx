@@ -36,10 +36,11 @@ const SubmitInvestment = () => {
     const formData = new FormData(e.currentTarget);
     
     try {
+      const description = formData.get('description')?.toString() || '';
       const investmentData: TablesInsert<'investments'> = {
         name: formData.get('name')?.toString() || '',
-        description: formData.get('description')?.toString(),
-        short_description: formData.get('shortDescription')?.toString(),
+        description: description,
+        short_description: description.substring(0, 200), // Create short description from main description
         minimum_investment: Number(formData.get('minimumInvestment')) || null,
         target_return: formData.get('targetReturn')?.toString(),
         property_type: formData.get('propertyType')?.toString(),
@@ -52,6 +53,7 @@ const SubmitInvestment = () => {
         location_state: formData.get('state')?.toString(),
         accredited_only: formData.get('accreditedOnly') === 'true',
         closing_date: formData.get('closingDate')?.toString() || null,
+        investment_url: formData.get('investmentUrl')?.toString(),
         approved: false,
         slug: formData.get('name')?.toString().toLowerCase().replace(/[^a-z0-9]+/g, '-') || '',
       };
@@ -102,13 +104,25 @@ const SubmitInvestment = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="shortDescription">Short Description</Label>
-            <Input id="shortDescription" name="shortDescription" required />
+            <Label htmlFor="description">Description</Label>
+            <Textarea 
+              id="description" 
+              name="description" 
+              required 
+              className="min-h-[150px]"
+              placeholder="Provide a detailed description of your investment opportunity..."
+            />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Full Description</Label>
-            <Textarea id="description" name="description" required />
+            <Label htmlFor="investmentUrl">Investment URL</Label>
+            <Input 
+              id="investmentUrl" 
+              name="investmentUrl" 
+              type="url" 
+              placeholder="https://..."
+              required 
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
