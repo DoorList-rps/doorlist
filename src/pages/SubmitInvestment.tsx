@@ -1,3 +1,4 @@
+
 import { Helmet } from 'react-helmet-async';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { TablesInsert } from "@/integrations/supabase/types";
 
 const SubmitInvestment = () => {
@@ -41,8 +43,15 @@ const SubmitInvestment = () => {
         minimum_investment: Number(formData.get('minimumInvestment')) || null,
         target_return: formData.get('targetReturn')?.toString(),
         property_type: formData.get('propertyType')?.toString(),
+        investment_type: formData.get('investmentType')?.toString(),
+        hold_period: formData.get('holdPeriod')?.toString(),
+        distribution_frequency: formData.get('distributionFrequency')?.toString(),
+        total_equity: Number(formData.get('totalEquity')) || null,
+        equity_remaining: Number(formData.get('equityRemaining')) || null,
         location_city: formData.get('city')?.toString(),
         location_state: formData.get('state')?.toString(),
+        accredited_only: formData.get('accreditedOnly') === 'true',
+        closing_date: formData.get('closingDate')?.toString() || null,
         approved: false,
         slug: formData.get('name')?.toString().toLowerCase().replace(/[^a-z0-9]+/g, '-') || '',
       };
@@ -102,33 +111,74 @@ const SubmitInvestment = () => {
             <Textarea id="description" name="description" required />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="minimumInvestment">Minimum Investment ($)</Label>
-            <Input 
-              id="minimumInvestment" 
-              name="minimumInvestment" 
-              type="number" 
-              min="0" 
-              required 
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="propertyType">Property Type</Label>
+              <Input id="propertyType" name="propertyType" required />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="investmentType">Investment Type</Label>
+              <Input id="investmentType" name="investmentType" required />
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="targetReturn">Target Return (%)</Label>
-            <Input 
-              id="targetReturn" 
-              name="targetReturn" 
-              required 
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="holdPeriod">Hold Period</Label>
+              <Input id="holdPeriod" name="holdPeriod" required />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="distributionFrequency">Distribution Frequency</Label>
+              <Input id="distributionFrequency" name="distributionFrequency" required />
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="propertyType">Property Type</Label>
-            <Input 
-              id="propertyType" 
-              name="propertyType" 
-              required 
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="minimumInvestment">Minimum Investment ($)</Label>
+              <Input 
+                id="minimumInvestment" 
+                name="minimumInvestment" 
+                type="number" 
+                min="0" 
+                required 
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="targetReturn">Target Return (%)</Label>
+              <Input 
+                id="targetReturn" 
+                name="targetReturn" 
+                required 
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="totalEquity">Total Equity ($)</Label>
+              <Input 
+                id="totalEquity" 
+                name="totalEquity" 
+                type="number" 
+                min="0" 
+                required 
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="equityRemaining">Equity Remaining ($)</Label>
+              <Input 
+                id="equityRemaining" 
+                name="equityRemaining" 
+                type="number" 
+                min="0" 
+                required 
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -139,6 +189,31 @@ const SubmitInvestment = () => {
             <div className="space-y-2">
               <Label htmlFor="state">State</Label>
               <Input id="state" name="state" required />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="accreditedOnly">Accredited Investors Only</Label>
+              <Select name="accreditedOnly" defaultValue="true">
+                <SelectTrigger>
+                  <SelectValue placeholder="Select..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="true">Yes</SelectItem>
+                  <SelectItem value="false">No</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="closingDate">Closing Date</Label>
+              <Input 
+                id="closingDate" 
+                name="closingDate" 
+                type="date"
+                required 
+              />
             </div>
           </div>
 
