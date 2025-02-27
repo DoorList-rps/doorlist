@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -28,17 +29,24 @@ const SignUpForm = ({ isLoading, setIsLoading }: SignUpFormProps) => {
       if (error) throw error;
 
       // Track signup event in Klaviyo
-      await supabase.functions.invoke('klaviyo-events', {
-        body: {
-          event_name: 'New User Sign Up',
-          customer_properties: {
-            email: email
-          },
-          properties: {
-            signup_method: 'email'
+      try {
+        console.log('Sending signup event to Klaviyo');
+        const response = await supabase.functions.invoke('klaviyo-events', {
+          body: {
+            event_name: 'New User Sign Up',
+            customer_properties: {
+              $email: email
+            },
+            properties: {
+              signup_method: 'email'
+            }
           }
-        }
-      });
+        });
+        console.log('Klaviyo response:', response);
+      } catch (klaviyoError) {
+        console.error('Failed to send event to Klaviyo:', klaviyoError);
+        // Don't block signup if Klaviyo fails
+      }
 
       toast({
         title: "Sign Up Successful",

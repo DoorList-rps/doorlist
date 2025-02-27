@@ -37,7 +37,7 @@ serve(async (req) => {
               name: event_name
             },
             profile: {
-              email: customer_properties.$email
+              email: customer_properties.$email || customer_properties.email
             },
             properties: properties
           }
