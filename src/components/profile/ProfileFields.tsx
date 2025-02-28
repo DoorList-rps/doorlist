@@ -60,12 +60,16 @@ const ProfileFields = ({ formData, setFormData, isEditing, userProfile }: Profil
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-600">Email</label>
         {isEditing ? (
-          <Input
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            placeholder="Enter your email"
-            className="border-gray-200 focus:border-doorlist-salmon"
-          />
+          <div className="relative">
+            <Input
+              value={formData.email}
+              readOnly
+              className="border-gray-200 bg-gray-50 cursor-not-allowed"
+            />
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-500">
+              Cannot be changed
+            </div>
+          </div>
         ) : (
           <p className="py-2 px-3 bg-gray-50 rounded-md border border-gray-100">
             {userProfile?.email || 'Not set'}
