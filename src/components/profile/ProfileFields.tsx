@@ -1,3 +1,4 @@
+
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -13,6 +14,7 @@ interface ProfileFieldsProps {
     first_name: string;
     last_name: string;
     phone_number: string;
+    email: string;
     is_accredited_investor: string;
   };
   setFormData: (data: any) => void;
@@ -57,9 +59,18 @@ const ProfileFields = ({ formData, setFormData, isEditing, userProfile }: Profil
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-600">Email</label>
-        <p className="py-2 px-3 bg-gray-50 rounded-md border border-gray-100">
-          {userProfile?.email || 'Not set'}
-        </p>
+        {isEditing ? (
+          <Input
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            placeholder="Enter your email"
+            className="border-gray-200 focus:border-doorlist-salmon"
+          />
+        ) : (
+          <p className="py-2 px-3 bg-gray-50 rounded-md border border-gray-100">
+            {userProfile?.email || 'Not set'}
+          </p>
+        )}
       </div>
 
       <div className="space-y-2">

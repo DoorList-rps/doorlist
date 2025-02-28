@@ -17,6 +17,7 @@ const ProfileForm = ({ userProfile }: ProfileFormProps) => {
     first_name: userProfile?.first_name || '',
     last_name: userProfile?.last_name || '',
     phone_number: userProfile?.phone_number || '',
+    email: userProfile?.email || '',
     is_accredited_investor: userProfile?.is_accredited_investor === null 
       ? "" 
       : userProfile?.is_accredited_investor 
@@ -32,6 +33,7 @@ const ProfileForm = ({ userProfile }: ProfileFormProps) => {
       first_name?: string;
       last_name?: string;
       phone_number?: string;
+      email?: string;
       is_accredited_investor?: boolean;
     }) => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -42,6 +44,8 @@ const ProfileForm = ({ userProfile }: ProfileFormProps) => {
         acc[key] = value === '' ? null : value;
         return acc;
       }, {} as Record<string, any>);
+
+      console.log('Updating profile with data:', sanitizedProfile);
 
       const { error, data } = await supabase
         .from('profiles')
@@ -91,6 +95,7 @@ const ProfileForm = ({ userProfile }: ProfileFormProps) => {
       first_name: userProfile?.first_name || '',
       last_name: userProfile?.last_name || '',
       phone_number: userProfile?.phone_number || '',
+      email: userProfile?.email || '',
       is_accredited_investor: userProfile?.is_accredited_investor === null 
         ? "" 
         : userProfile?.is_accredited_investor 
