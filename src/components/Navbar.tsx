@@ -1,12 +1,15 @@
+
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect, useState } from "react";
+import { Menu, X } from "lucide-react";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -37,6 +40,10 @@ const Navbar = () => {
       });
       navigate("/login");
     }
+  };
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
   };
 
   return (
@@ -105,8 +112,97 @@ const Navbar = () => {
               </Link>
             )}
           </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden flex items-center">
+            <button
+              type="button"
+              onClick={toggleMobileMenu}
+              className="text-doorlist-navy p-2"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-menu"
+            >
+              <span className="sr-only">{mobileMenuOpen ? 'Close menu' : 'Open menu'}</span>
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6" aria-hidden="true" />
+              ) : (
+                <Menu className="h-6 w-6" aria-hidden="true" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Mobile menu, show/hide based on menu state */}
+      {mobileMenuOpen && (
+        <div id="mobile-menu" className="md:hidden bg-white border-t border-gray-100">
+          <div className="px-4 pt-2 pb-4 space-y-1">
+            <Link
+              to="/"
+              className="block py-3 text-doorlist-navy hover:text-doorlist-salmon border-b border-gray-100"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Home
+            </Link>
+            <Link
+              to="/investments"
+              className="block py-3 text-doorlist-navy hover:text-doorlist-salmon border-b border-gray-100"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Investments
+            </Link>
+            <Link
+              to="/sponsors"
+              className="block py-3 text-doorlist-navy hover:text-doorlist-salmon border-b border-gray-100"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Sponsors
+            </Link>
+            <Link
+              to="/education"
+              className="block py-3 text-doorlist-navy hover:text-doorlist-salmon border-b border-gray-100"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Education
+            </Link>
+            <Link
+              to="/about"
+              className="block py-3 text-doorlist-navy hover:text-doorlist-salmon border-b border-gray-100"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              About
+            </Link>
+            {isLoggedIn ? (
+              <>
+                <Link
+                  to="/profile"
+                  className="block py-3 text-doorlist-navy hover:text-doorlist-salmon border-b border-gray-100"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Profile
+                </Link>
+                <button
+                  onClick={() => {
+                    handleSignOut();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left py-3 text-doorlist-salmon font-medium"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/login"
+                className="block py-3 text-doorlist-salmon font-medium"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Sign In / Sign Up
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
