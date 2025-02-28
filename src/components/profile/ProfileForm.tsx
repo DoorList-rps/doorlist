@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,22 +37,36 @@ const ProfileForm = ({ userProfile }: ProfileFormProps) => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
 
-      const { error } = await supabase
+      // Fix: Convert empty strings to null to avoid empty string values in the database
+      const sanitizedProfile = Object.entries(updatedProfile).reduce((acc, [key, value]) => {
+        acc[key] = value === '' ? null : value;
+        return acc;
+      }, {} as Record<string, any>);
+
+      const { error, data } = await supabase
         .from('profiles')
-        .update(updatedProfile)
-        .eq('id', session.user.id);
+        .update(sanitizedProfile)
+        .eq('id', session.user.id)
+        .select();
 
       if (error) throw error;
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Update the local cache with the returned data
+      queryClient.setQueryData(['user-profile'], data?.[0] || null);
+      
+      // Then invalidate the query to ensure fresh data
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+      
       toast({
         title: "Profile Updated",
         description: "Your profile has been successfully updated.",
       });
       setIsEditing(false);
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Profile update error:", error);
       toast({
         title: "Error",
         description: "Failed to update profile. Please try again.",
@@ -61,10 +76,14 @@ const ProfileForm = ({ userProfile }: ProfileFormProps) => {
   });
 
   const handleSave = () => {
-    updateProfileMutation.mutate({
+    // Convert string representation of boolean to actual boolean
+    const processedFormData = {
       ...formData,
-      is_accredited_investor: formData.is_accredited_investor === "true"
-    });
+      is_accredited_investor: formData.is_accredited_investor === "true" ? true : 
+                              formData.is_accredited_investor === "false" ? false : null
+    };
+    
+    updateProfileMutation.mutate(processedFormData);
   };
 
   const handleCancel = () => {

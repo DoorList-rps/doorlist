@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -34,9 +35,16 @@ const Profile = () => {
         .eq('id', session.user.id)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
+      }
+      
+      console.log('Fetched user profile:', data);
       return data;
-    }
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: true,
   });
 
   const { data: savedInvestments, isLoading: investmentsLoading } = useQuery({
