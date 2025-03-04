@@ -64,8 +64,11 @@ const SubmitInvestment = () => {
     
     try {
       const description = formData.get('description')?.toString() || '';
-      const investmentData: TablesInsert<'investments'> = {
-        name: formData.get('name')?.toString() || '',
+      const name = formData.get('name')?.toString() || '';
+      
+      const submissionData = {
+        user_id: session.user.id,
+        name: name,
         description: description,
         short_description: description.substring(0, 200), // Create short description from main description
         minimum_investment: Number(formData.get('minimumInvestment')) || null,
@@ -79,13 +82,14 @@ const SubmitInvestment = () => {
         accredited_only: formData.get('accreditedOnly') === 'true',
         closing_date: formData.get('closingDate')?.toString() || null,
         investment_url: formData.get('investmentUrl')?.toString(),
+        status: 'pending',
         approved: false,
-        slug: formData.get('name')?.toString().toLowerCase().replace(/[^a-z0-9]+/g, '-') || '',
+        slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
       };
 
       const { error } = await supabase
-        .from('investments')
-        .insert(investmentData);
+        .from('investment_submissions')
+        .insert(submissionData);
 
       if (error) throw error;
 

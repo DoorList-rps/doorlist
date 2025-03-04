@@ -1,0 +1,6 @@
+
+# Database webhook function
+# This webhook is triggered when a new investment submission is created
+
+# Note: To deploy, run the following command:
+# supabase functions deploy investment-submissions-webhook

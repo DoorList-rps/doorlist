@@ -90,6 +90,78 @@ export type Database = {
           },
         ]
       }
+      investment_submissions: {
+        Row: {
+          accredited_only: boolean | null
+          approved: boolean | null
+          closing_date: string | null
+          created_at: string | null
+          description: string | null
+          distribution_frequency: string | null
+          equity_remaining: number | null
+          hold_period: string | null
+          id: string
+          investment_type: string | null
+          investment_url: string | null
+          minimum_investment: number | null
+          name: string
+          property_type: string | null
+          short_description: string | null
+          slug: string
+          status: string | null
+          target_return: string | null
+          total_equity: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          accredited_only?: boolean | null
+          approved?: boolean | null
+          closing_date?: string | null
+          created_at?: string | null
+          description?: string | null
+          distribution_frequency?: string | null
+          equity_remaining?: number | null
+          hold_period?: string | null
+          id?: string
+          investment_type?: string | null
+          investment_url?: string | null
+          minimum_investment?: number | null
+          name: string
+          property_type?: string | null
+          short_description?: string | null
+          slug: string
+          status?: string | null
+          target_return?: string | null
+          total_equity?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          accredited_only?: boolean | null
+          approved?: boolean | null
+          closing_date?: string | null
+          created_at?: string | null
+          description?: string | null
+          distribution_frequency?: string | null
+          equity_remaining?: number | null
+          hold_period?: string | null
+          id?: string
+          investment_type?: string | null
+          investment_url?: string | null
+          minimum_investment?: number | null
+          name?: string
+          property_type?: string | null
+          short_description?: string | null
+          slug?: string
+          status?: string | null
+          target_return?: string | null
+          total_equity?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       investments: {
         Row: {
           accredited_only: boolean | null

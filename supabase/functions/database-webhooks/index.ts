@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
@@ -78,6 +79,45 @@ serve(async (req) => {
                   minimum_investment: inquiryData.investments?.minimum_investment,
                   target_return: inquiryData.investments?.target_return,
                   created_at: inquiryData.created_at,
+                },
+              }),
+            });
+          }
+        }
+
+        // Handle new investment submission
+        if (payload.table === 'investment_submissions') {
+          const { data: submissionData } = await supabase
+            .from('investment_submissions')
+            .select(`
+              *,
+              profiles:user_id (email, first_name, last_name, phone_number)
+            `)
+            .eq('id', record.id)
+            .single();
+
+          if (submissionData?.profiles) {
+            await fetch(`${supabaseUrl}/functions/v1/klaviyo-events`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${supabaseServiceKey}`,
+              },
+              body: JSON.stringify({
+                event: 'New Investment Submission',
+                customer_properties: {
+                  $email: submissionData.profiles.email,
+                  $first_name: submissionData.profiles.first_name,
+                  $last_name: submissionData.profiles.last_name,
+                  phone_number: submissionData.profiles.phone_number,
+                },
+                properties: {
+                  investment_name: submissionData.name,
+                  property_type: submissionData.property_type,
+                  investment_type: submissionData.investment_type,
+                  minimum_investment: submissionData.minimum_investment,
+                  target_return: submissionData.target_return,
+                  created_at: submissionData.created_at,
                 },
               }),
             });
