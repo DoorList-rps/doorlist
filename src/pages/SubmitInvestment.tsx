@@ -14,6 +14,33 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { TablesInsert } from "@/integrations/supabase/types";
 
+const propertyTypes = [
+  "Multifamily",
+  "Single Family",
+  "Office",
+  "Retail",
+  "Industrial",
+  "Hotel/Hospitality",
+  "Land",
+  "Mixed Use",
+  "Self Storage",
+  "Senior Housing",
+  "Student Housing",
+  "Other"
+];
+
+const investmentTypes = [
+  "Equity",
+  "Debt",
+  "Preferred Equity",
+  "Fund",
+  "REIT",
+  "Syndication",
+  "1031 Exchange",
+  "Opportunity Zone",
+  "Other"
+];
+
 const SubmitInvestment = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -49,8 +76,6 @@ const SubmitInvestment = () => {
         distribution_frequency: formData.get('distributionFrequency')?.toString(),
         total_equity: Number(formData.get('totalEquity')) || null,
         equity_remaining: Number(formData.get('equityRemaining')) || null,
-        location_city: formData.get('city')?.toString(),
-        location_state: formData.get('state')?.toString(),
         accredited_only: formData.get('accreditedOnly') === 'true',
         closing_date: formData.get('closingDate')?.toString() || null,
         investment_url: formData.get('investmentUrl')?.toString(),
@@ -82,7 +107,7 @@ const SubmitInvestment = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50">
       <Helmet>
         <title>Submit Investment Opportunity | DoorList</title>
         <meta 
@@ -91,154 +116,191 @@ const SubmitInvestment = () => {
         />
       </Helmet>
       <Navbar />
-      <main className="container mx-auto px-4 py-24">
-        <h1 className="text-4xl font-bold text-doorlist-navy mb-4">Submit Investment Opportunity</h1>
-        <p className="text-gray-600 mb-8">
-          Share your real estate investment opportunity with our community. All submissions will be reviewed before being listed.
-        </p>
+      <main className="container mx-auto px-4 py-28">
+        <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm p-8">
+          <h1 className="text-3xl font-bold text-doorlist-navy mb-2">Submit Investment Opportunity</h1>
+          <p className="text-gray-600 mb-8">
+            Share your real estate investment opportunity with our community. All submissions will be reviewed before being listed.
+          </p>
 
-        <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="name">Investment Name</Label>
-            <Input id="name" name="name" required />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea 
-              id="description" 
-              name="description" 
-              required 
-              className="min-h-[150px]"
-              placeholder="Provide a detailed description of your investment opportunity..."
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="investmentUrl">Investment URL</Label>
-            <Input 
-              id="investmentUrl" 
-              name="investmentUrl" 
-              type="url" 
-              placeholder="https://..."
-              required 
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="propertyType">Property Type</Label>
-              <Input id="propertyType" name="propertyType" required />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="investmentType">Investment Type</Label>
-              <Input id="investmentType" name="investmentType" required />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="holdPeriod">Hold Period</Label>
-              <Input id="holdPeriod" name="holdPeriod" required />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="distributionFrequency">Distribution Frequency</Label>
-              <Input id="distributionFrequency" name="distributionFrequency" required />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="minimumInvestment">Minimum Investment ($)</Label>
+              <Label htmlFor="name">Investment Name</Label>
               <Input 
-                id="minimumInvestment" 
-                name="minimumInvestment" 
-                type="number" 
-                min="0" 
-                required 
+                id="name" 
+                name="name" 
+                required
+                placeholder="Enter investment name" 
+                className="bg-gray-50 focus:bg-white"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="targetReturn">Target Return (%)</Label>
-              <Input 
-                id="targetReturn" 
-                name="targetReturn" 
+              <Label htmlFor="description">Description</Label>
+              <Textarea 
+                id="description" 
+                name="description" 
                 required 
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="totalEquity">Total Equity ($)</Label>
-              <Input 
-                id="totalEquity" 
-                name="totalEquity" 
-                type="number" 
-                min="0" 
-                required 
+                className="min-h-[150px] bg-gray-50 focus:bg-white"
+                placeholder="Provide a detailed description of your investment opportunity..."
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="equityRemaining">Equity Remaining ($)</Label>
+              <Label htmlFor="investmentUrl">Investment URL</Label>
               <Input 
-                id="equityRemaining" 
-                name="equityRemaining" 
-                type="number" 
-                min="0" 
+                id="investmentUrl" 
+                name="investmentUrl" 
+                type="url" 
+                placeholder="https://..."
                 required 
+                className="bg-gray-50 focus:bg-white"
               />
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
-              <Input id="city" name="city" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="state">State</Label>
-              <Input id="state" name="state" required />
-            </div>
-          </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="propertyType">Property Type</Label>
+                <Select name="propertyType" required>
+                  <SelectTrigger className="bg-gray-50 focus:bg-white">
+                    <SelectValue placeholder="Select property type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {propertyTypes.map((type) => (
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="accreditedOnly">Accredited Investors Only</Label>
-              <Select name="accreditedOnly" defaultValue="true">
-                <SelectTrigger>
-                  <SelectValue placeholder="Select..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="true">Yes</SelectItem>
-                  <SelectItem value="false">No</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-2">
+                <Label htmlFor="investmentType">Investment Type</Label>
+                <Select name="investmentType" required>
+                  <SelectTrigger className="bg-gray-50 focus:bg-white">
+                    <SelectValue placeholder="Select investment type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {investmentTypes.map((type) => (
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="closingDate">Closing Date</Label>
-              <Input 
-                id="closingDate" 
-                name="closingDate" 
-                type="date"
-                required 
-              />
-            </div>
-          </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="holdPeriod">Hold Period</Label>
+                <Input 
+                  id="holdPeriod" 
+                  name="holdPeriod" 
+                  required 
+                  placeholder="e.g., 5 years"
+                  className="bg-gray-50 focus:bg-white"
+                />
+              </div>
 
-          <Button 
-            type="submit" 
-            className="w-full"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Submitting..." : "Submit Investment"}
-          </Button>
-        </form>
+              <div className="space-y-2">
+                <Label htmlFor="distributionFrequency">Distribution Frequency</Label>
+                <Input 
+                  id="distributionFrequency" 
+                  name="distributionFrequency" 
+                  required 
+                  placeholder="e.g., Monthly, Quarterly"
+                  className="bg-gray-50 focus:bg-white"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="minimumInvestment">Minimum Investment ($)</Label>
+                <Input 
+                  id="minimumInvestment" 
+                  name="minimumInvestment" 
+                  type="number" 
+                  min="0" 
+                  required 
+                  placeholder="Minimum investment amount"
+                  className="bg-gray-50 focus:bg-white"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="targetReturn">Target Return (%)</Label>
+                <Input 
+                  id="targetReturn" 
+                  name="targetReturn" 
+                  required 
+                  placeholder="e.g., 8-10%"
+                  className="bg-gray-50 focus:bg-white"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="totalEquity">Total Equity ($)</Label>
+                <Input 
+                  id="totalEquity" 
+                  name="totalEquity" 
+                  type="number" 
+                  min="0" 
+                  required 
+                  placeholder="Total equity offering"
+                  className="bg-gray-50 focus:bg-white"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="equityRemaining">Equity Remaining ($)</Label>
+                <Input 
+                  id="equityRemaining" 
+                  name="equityRemaining" 
+                  type="number" 
+                  min="0" 
+                  required 
+                  placeholder="Equity currently available"
+                  className="bg-gray-50 focus:bg-white"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="accreditedOnly">Accredited Investors Only</Label>
+                <Select name="accreditedOnly" defaultValue="true">
+                  <SelectTrigger className="bg-gray-50 focus:bg-white">
+                    <SelectValue placeholder="Select..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="true">Yes</SelectItem>
+                    <SelectItem value="false">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="closingDate">Closing Date</Label>
+                <Input 
+                  id="closingDate" 
+                  name="closingDate" 
+                  type="date"
+                  required 
+                  className="bg-gray-50 focus:bg-white"
+                />
+              </div>
+            </div>
+
+            <Button 
+              type="submit" 
+              className="w-full bg-doorlist-navy hover:bg-doorlist-navy/90 text-white mt-6"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Submitting..." : "Submit Investment Opportunity"}
+            </Button>
+          </form>
+        </div>
       </main>
       <Footer />
     </div>
