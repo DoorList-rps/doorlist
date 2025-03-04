@@ -1,6 +1,6 @@
 
-# Database webhook function
-# This webhook is triggered when a new investment submission is created
+# Investment Submissions Webhook Function
+# This webhook handles new investment submissions and integrates with Zapier
 
-# Note: To deploy, run the following command:
+# To deploy this function, run:
 # supabase functions deploy investment-submissions-webhook

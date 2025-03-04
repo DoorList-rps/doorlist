@@ -4,6 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const zapierWebhookUrl = Deno.env.get('ZAPIER_WEBHOOK_URL');
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -11,7 +12,6 @@ serve(async (req) => {
   const payload = await req.json();
   const { type, record, table } = payload;
 
-  // Initialize Supabase client with service role key
   try {
     // Handle new investment submission
     if (table === 'investment_submissions' && type === 'INSERT') {
@@ -26,6 +26,41 @@ serve(async (req) => {
 
       if (userError) {
         console.error('Error fetching user data:', userError);
+      }
+
+      // Prepare data for Zapier
+      const submissionData = {
+        submission: {
+          id: record.id,
+          name: record.name,
+          property_type: record.property_type,
+          investment_type: record.investment_type,
+          minimum_investment: record.minimum_investment,
+          target_return: record.target_return,
+          created_at: record.created_at,
+        },
+        user: userData ? {
+          email: userData.email,
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+          phone_number: userData.phone_number,
+        } : null
+      };
+
+      // Send to Zapier if configured
+      if (zapierWebhookUrl) {
+        console.log('Sending to Zapier webhook');
+        try {
+          const zapierResponse = await fetch(zapierWebhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(submissionData),
+          });
+          
+          console.log('Zapier response status:', zapierResponse.status);
+        } catch (zapierError) {
+          console.error('Error sending to Zapier:', zapierError);
+        }
       }
 
       // Send notification via Klaviyo if configured
@@ -55,9 +90,6 @@ serve(async (req) => {
           }),
         });
       }
-
-      // You could also implement email notifications here
-      // Add your email notification logic
     }
 
     return new Response(JSON.stringify({ success: true }), {
