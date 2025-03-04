@@ -1,0 +1,6 @@
+
+# Profile Creation/Update Webhook Function
+# This webhook sends profile data to Zapier when a new user profile is created or updated
+
+# To deploy this function, run:
+# supabase functions deploy profile-webhook
