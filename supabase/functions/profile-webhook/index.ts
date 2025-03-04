@@ -1,11 +1,14 @@
 
+// Import necessary dependencies
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
+// Get environment variables
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const zapierWebhookUrl = "https://hooks.zapier.com/hooks/catch/21071318/2qdgze1/";
 
+// Create Supabase client with admin privileges
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 // Add CORS headers for browser requests
