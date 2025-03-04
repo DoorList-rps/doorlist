@@ -1,5 +1,8 @@
+
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
 interface SponsorInvestmentsProps {
@@ -22,14 +25,35 @@ interface SponsorInvestmentsProps {
 const SponsorInvestments = ({ investments, sponsorName }: SponsorInvestmentsProps) => {
   if (!investments || investments.length === 0) {
     console.log('No investments found for sponsor:', sponsorName);
-    return null;
+    return (
+      <div className="mt-12 bg-gray-50 border border-gray-100 rounded-lg p-6">
+        <h2 className="text-2xl font-bold text-doorlist-navy mb-2">No Current Investments</h2>
+        <p className="text-gray-600 mb-4">
+          {sponsorName} doesn't have any active investment opportunities at this time.
+        </p>
+        <Link to="/submit-investment">
+          <Button className="bg-doorlist-salmon hover:bg-doorlist-salmon/90 text-white">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Submit Investment
+          </Button>
+        </Link>
+      </div>
+    );
   }
 
   console.log('Rendering investments:', investments);
 
   return (
     <div className="mt-12">
-      <h2 className="text-2xl font-bold text-doorlist-navy mb-6">Investment Opportunities from {sponsorName}</h2>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+        <h2 className="text-2xl font-bold text-doorlist-navy">Investment Opportunities from {sponsorName}</h2>
+        <Link to="/submit-investment" className="mt-4 md:mt-0">
+          <Button className="bg-doorlist-salmon hover:bg-doorlist-salmon/90 text-white">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Submit Investment
+          </Button>
+        </Link>
+      </div>
       <div className="grid md:grid-cols-3 gap-6">
         {investments.map((inv) => (
           <Link key={inv.id} to={`/investments/${inv.slug}`}>

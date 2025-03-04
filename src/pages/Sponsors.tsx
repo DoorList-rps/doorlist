@@ -1,5 +1,7 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from 'react-helmet-async';
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -7,6 +9,8 @@ import type { Tables } from "@/integrations/supabase/types";
 import SponsorFilters from "@/components/sponsors/SponsorFilters";
 import SponsorList from "@/components/sponsors/SponsorList";
 import { useSponsorFilters } from "@/hooks/useSponsorFilters";
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
 
 const Sponsors = () => {
   const { data: sponsors, isLoading, error } = useQuery({
@@ -47,7 +51,26 @@ const Sponsors = () => {
       </Helmet>
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8 mt-16">
-        <h1 className="text-4xl font-bold text-doorlist-navy mb-8">Our Sponsors</h1>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+          <h1 className="text-4xl font-bold text-doorlist-navy">Our Sponsors</h1>
+          <Link to="/submit-investment" className="mt-4 md:mt-0">
+            <Button className="bg-doorlist-salmon hover:bg-doorlist-salmon/90 text-white">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Submit Investment
+            </Button>
+          </Link>
+        </div>
+        
+        <div className="bg-gray-50 border border-gray-100 rounded-lg p-6 mb-8">
+          <h2 className="text-xl font-semibold text-doorlist-navy mb-2">Are you a sponsor?</h2>
+          <p className="text-gray-600 mb-4">
+            DoorList provides exposure to qualified investors for your real estate investments. 
+            Submit your investment opportunity for our team to review and get featured on our platform.
+          </p>
+          <Link to="/submit-investment" className="text-doorlist-salmon hover:underline font-medium">
+            Submit an investment opportunity →
+          </Link>
+        </div>
         
         <SponsorFilters
           searchTerm={searchTerm}
