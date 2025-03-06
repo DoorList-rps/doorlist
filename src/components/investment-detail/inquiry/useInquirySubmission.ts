@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -74,21 +75,42 @@ export const useInquirySubmission = (investmentId: string, isLoggedIn: boolean, 
 
       if (inquiryError) throw inquiryError;
 
-      await supabase.functions.invoke('klaviyo-events', {
-        body: {
+      // Get user profile data for Klaviyo
+      const { data: userProfile } = await supabase
+        .from('profiles')
+        .select('email, first_name, last_name, phone_number, is_accredited_investor')
+        .eq('id', userId)
+        .single();
+
+      console.log('User profile retrieved for Klaviyo:', userProfile);
+
+      // Send event to Klaviyo with proper formatting
+      if (userProfile) {
+        const eventData = {
           event_name: 'Investment Inquiry Created',
           customer_properties: {
-            $email: userId
+            email: userProfile.email,
+            first_name: userProfile.first_name,
+            last_name: userProfile.last_name,
+            phone_number: userProfile.phone_number,
+            is_accredited_investor: userProfile.is_accredited_investor
           },
           properties: {
             investment_name: investment?.name,
             minimum_investment: investment?.minimum_investment,
             target_return: investment?.target_return,
             property_type: investment?.property_type,
-            location: `${investment?.location_city}, ${investment?.location_state}`
+            location: `${investment?.location_city}, ${investment?.location_state}`,
+            timestamp: new Date().toISOString()
           }
-        }
-      });
+        };
+
+        console.log('Sending Klaviyo event with data:', JSON.stringify(eventData));
+
+        await supabase.functions.invoke('klaviyo-events', {
+          body: eventData
+        });
+      }
 
       console.log('Investment inquiry submitted successfully');
       toast({

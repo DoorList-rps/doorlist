@@ -59,42 +59,42 @@ const SignUpForm = ({ isLoading, setIsLoading }: SignUpFormProps) => {
 
       if (error) throw error;
 
-      // Track signup event in Klaviyo
+      // Track signup event in Klaviyo with detailed logging
       try {
-        console.log('Sending signup event to Klaviyo with user data:', {
-          email,
-          firstName,
-          lastName,
-          phoneNumber,
-          isAccreditedInvestor
-        });
+        const eventData = {
+          event_name: 'New User Sign Up',
+          customer_properties: {
+            email: email,
+            first_name: firstName,
+            last_name: lastName,
+            phone_number: phoneNumber,
+            is_accredited_investor: isAccreditedInvestor === "true"
+          },
+          properties: {
+            signup_method: 'email',
+            platform: 'DoorList',
+            source: 'website',
+            timestamp: new Date().toISOString()
+          }
+        };
+        
+        console.log('Sending signup event to Klaviyo with data:', JSON.stringify(eventData));
         
         const klaviyoResponse = await supabase.functions.invoke('klaviyo-events', {
-          body: {
-            event_name: 'New User Sign Up',
-            customer_properties: {
-              email: email,
-              first_name: firstName,
-              last_name: lastName,
-              phone_number: phoneNumber,
-              is_accredited_investor: isAccreditedInvestor === "true"
-            },
-            properties: {
-              signup_method: 'email',
-              platform: 'DoorList',
-              source: 'website'
-            }
-          }
+          body: eventData
         });
         
         console.log('Klaviyo response:', klaviyoResponse);
         
         if (klaviyoResponse.error) {
           console.error('Klaviyo event error:', klaviyoResponse.error);
+          throw new Error(`Klaviyo API error: ${klaviyoResponse.error.message || 'Unknown error'}`);
         }
+        
+        console.log('Successfully sent signup event to Klaviyo');
       } catch (klaviyoError) {
         console.error('Failed to send event to Klaviyo:', klaviyoError);
-        // Don't block signup if Klaviyo fails
+        // Don't block signup if Klaviyo fails, but log the error
       }
 
       toast({

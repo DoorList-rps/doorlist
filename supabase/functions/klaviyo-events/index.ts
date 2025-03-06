@@ -22,18 +22,26 @@ serve(async (req) => {
       throw new Error('KLAVIYO_PRIVATE_KEY is not set')
     }
 
+    console.log('KLAVIYO_PRIVATE_KEY exists:', !!KLAVIYO_PRIVATE_KEY)
+    // Mask the API key in logs for security (only show first 5 characters)
+    const maskedKey = KLAVIYO_PRIVATE_KEY.substring(0, 5) + '...'
+    console.log('Using Klaviyo API key starting with:', maskedKey)
+
     // Create a proper profile object for Klaviyo API V3
     const profile = {
-      email: customer_properties.email,
-      first_name: customer_properties.first_name,
-      last_name: customer_properties.last_name,
-      phone_number: customer_properties.phone_number,
-      properties: {
-        is_accredited_investor: customer_properties.is_accredited_investor || false
+      type: "profile",
+      attributes: {
+        email: customer_properties.email,
+        first_name: customer_properties.first_name,
+        last_name: customer_properties.last_name,
+        phone_number: customer_properties.phone_number,
+        properties: {
+          is_accredited_investor: customer_properties.is_accredited_investor || false
+        }
       }
     }
 
-    console.log('Formatted profile data:', profile)
+    console.log('Formatted profile data:', JSON.stringify(profile))
 
     // Using Klaviyo's V3 API endpoint for tracking events
     const response = await fetch('https://a.klaviyo.com/api/events/', {
@@ -52,14 +60,23 @@ serve(async (req) => {
             metric: {
               name: event_name
             },
-            properties: properties || {}
+            properties: properties || {},
+            time: new Date().toISOString()
           }
         }
       })
     })
 
-    const responseText = await response.text()
     console.log('Klaviyo API response status:', response.status)
+    
+    // Log complete response headers for debugging
+    const responseHeaders = {};
+    response.headers.forEach((value, key) => {
+      responseHeaders[key] = value;
+    });
+    console.log('Klaviyo API response headers:', responseHeaders);
+    
+    const responseText = await response.text()
     console.log('Klaviyo API response body:', responseText)
 
     if (!response.ok) {
