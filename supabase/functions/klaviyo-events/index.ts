@@ -16,30 +16,43 @@ serve(async (req) => {
 
   try {
     const { event_name, customer_properties, properties } = await req.json()
-    console.log('Received event:', { event_name, customer_properties, properties })
+    console.log('Received event data:', { event_name, customer_properties, properties })
 
     if (!KLAVIYO_PRIVATE_KEY) {
       throw new Error('KLAVIYO_PRIVATE_KEY is not set')
     }
 
-    // Using the current Klaviyo API (V3)
-    const response = await fetch('https://a.klaviyo.com/api/track', {
+    // Create a proper profile object for Klaviyo API V3
+    const profile = {
+      email: customer_properties.$email || customer_properties.email,
+      first_name: customer_properties.$first_name || customer_properties.first_name,
+      last_name: customer_properties.$last_name || customer_properties.last_name,
+      phone_number: customer_properties.$phone_number || customer_properties.phone_number,
+      properties: {
+        is_accredited_investor: customer_properties.is_accredited_investor || false
+      }
+    }
+
+    console.log('Formatted profile data:', profile)
+
+    // Using Klaviyo's V3 API endpoint for tracking events
+    const response = await fetch('https://a.klaviyo.com/api/events/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Klaviyo-API-Key ${KLAVIYO_PRIVATE_KEY}`
+        'Accept': 'application/json',
+        'Authorization': `Klaviyo-API-Key ${KLAVIYO_PRIVATE_KEY}`,
+        'revision': '2023-02-22'
       },
       body: JSON.stringify({
         data: {
           type: "event",
           attributes: {
+            profile: profile,
             metric: {
               name: event_name
             },
-            profile: {
-              email: customer_properties.$email || customer_properties.email
-            },
-            properties: properties
+            properties: properties || {}
           }
         }
       })
