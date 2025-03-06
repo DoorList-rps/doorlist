@@ -24,10 +24,10 @@ serve(async (req) => {
 
     // Create a proper profile object for Klaviyo API V3
     const profile = {
-      email: customer_properties.$email || customer_properties.email,
-      first_name: customer_properties.$first_name || customer_properties.first_name,
-      last_name: customer_properties.$last_name || customer_properties.last_name,
-      phone_number: customer_properties.$phone_number || customer_properties.phone_number,
+      email: customer_properties.email,
+      first_name: customer_properties.first_name,
+      last_name: customer_properties.last_name,
+      phone_number: customer_properties.phone_number,
       properties: {
         is_accredited_investor: customer_properties.is_accredited_investor || false
       }

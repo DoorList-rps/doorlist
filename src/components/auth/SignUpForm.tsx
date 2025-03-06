@@ -59,7 +59,7 @@ const SignUpForm = ({ isLoading, setIsLoading }: SignUpFormProps) => {
 
       if (error) throw error;
 
-      // Track signup event in Klaviyo with improved error handling
+      // Track signup event in Klaviyo
       try {
         console.log('Sending signup event to Klaviyo with user data:', {
           email,
