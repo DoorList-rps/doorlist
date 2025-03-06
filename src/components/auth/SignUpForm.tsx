@@ -5,6 +5,14 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { TabsContent } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface SignUpFormProps {
   isLoading: boolean;
@@ -14,16 +22,39 @@ interface SignUpFormProps {
 const SignUpForm = ({ isLoading, setIsLoading }: SignUpFormProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [isAccreditedInvestor, setIsAccreditedInvestor] = useState<string>("");
   const { toast } = useToast();
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
+    if (!firstName || !lastName || !phoneNumber || !isAccreditedInvestor) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const { error } = await supabase.auth.signUp({
+      // Sign up with email and password
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            phone_number: phoneNumber,
+            is_accredited_investor: isAccreditedInvestor === "true",
+          },
+        },
       });
 
       if (error) throw error;
@@ -35,7 +66,11 @@ const SignUpForm = ({ isLoading, setIsLoading }: SignUpFormProps) => {
           body: {
             event_name: 'New User Sign Up',
             customer_properties: {
-              $email: email
+              $email: email,
+              $first_name: firstName,
+              $last_name: lastName,
+              $phone_number: phoneNumber,
+              is_accredited_investor: isAccreditedInvestor === "true"
             },
             properties: {
               signup_method: 'email'
@@ -66,11 +101,38 @@ const SignUpForm = ({ isLoading, setIsLoading }: SignUpFormProps) => {
 
   return (
     <TabsContent value="signup">
-      <form onSubmit={handleSignUp} className="space-y-6">
+      <form onSubmit={handleSignUp} className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="first-name" className="block text-sm font-medium text-gray-700 mb-1">
+              First Name *
+            </Label>
+            <Input
+              id="first-name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+              placeholder="John"
+            />
+          </div>
+          <div>
+            <Label htmlFor="last-name" className="block text-sm font-medium text-gray-700 mb-1">
+              Last Name *
+            </Label>
+            <Input
+              id="last-name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+              placeholder="Doe"
+            />
+          </div>
+        </div>
+
         <div>
-          <label htmlFor="signup-email" className="block text-sm font-medium text-gray-700 mb-1">
-            Email
-          </label>
+          <Label htmlFor="signup-email" className="block text-sm font-medium text-gray-700 mb-1">
+            Email *
+          </Label>
           <Input
             id="signup-email"
             type="email"
@@ -80,10 +142,44 @@ const SignUpForm = ({ isLoading, setIsLoading }: SignUpFormProps) => {
             placeholder="your.email@example.com"
           />
         </div>
+
         <div>
-          <label htmlFor="signup-password" className="block text-sm font-medium text-gray-700 mb-1">
-            Password
-          </label>
+          <Label htmlFor="phone-number" className="block text-sm font-medium text-gray-700 mb-1">
+            Phone Number *
+          </Label>
+          <Input
+            id="phone-number"
+            type="tel"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            required
+            placeholder="(555) 123-4567"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="accredited-investor" className="block text-sm font-medium text-gray-700 mb-1">
+            Are you an accredited investor? *
+          </Label>
+          <Select
+            value={isAccreditedInvestor}
+            onValueChange={setIsAccreditedInvestor}
+            required
+          >
+            <SelectTrigger id="accredited-investor" className="w-full">
+              <SelectValue placeholder="Select option" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="true">Yes</SelectItem>
+              <SelectItem value="false">No</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="signup-password" className="block text-sm font-medium text-gray-700 mb-1">
+            Password *
+          </Label>
           <Input
             id="signup-password"
             type="password"
@@ -93,6 +189,7 @@ const SignUpForm = ({ isLoading, setIsLoading }: SignUpFormProps) => {
             placeholder="Choose a password"
           />
         </div>
+
         <Button type="submit" className="w-full bg-doorlist-navy hover:bg-doorlist-navy/90" disabled={isLoading}>
           {isLoading ? "Signing Up..." : "Sign Up"}
         </Button>
