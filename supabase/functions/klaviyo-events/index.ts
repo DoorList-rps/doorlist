@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const KLAVIYO_PRIVATE_KEY = Deno.env.get('KLAVIYO_PRIVATE_KEY')
+const ZAPIER_WEBHOOK_URL = Deno.env.get('ZAPIER_WEBHOOK_URL')
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,13 +20,8 @@ serve(async (req) => {
     console.log('Received event data:', { event_name, customer_properties, properties })
 
     if (!KLAVIYO_PRIVATE_KEY) {
-      throw new Error('KLAVIYO_PRIVATE_KEY is not set')
+      console.warn('KLAVIYO_PRIVATE_KEY is not set, only sending to Zapier webhook if configured')
     }
-
-    console.log('KLAVIYO_PRIVATE_KEY exists:', !!KLAVIYO_PRIVATE_KEY)
-    // Mask the API key in logs for security (only show first 5 characters)
-    const maskedKey = KLAVIYO_PRIVATE_KEY.substring(0, 5) + '...'
-    console.log('Using Klaviyo API key starting with:', maskedKey)
 
     // Create a proper profile object for Klaviyo API V3
     const profile = {
@@ -43,60 +39,129 @@ serve(async (req) => {
 
     console.log('Formatted profile data:', JSON.stringify(profile))
 
-    // Using Klaviyo's V3 API endpoint for tracking events
-    const response = await fetch('https://a.klaviyo.com/api/events/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `Klaviyo-API-Key ${KLAVIYO_PRIVATE_KEY}`,
-        'revision': '2023-02-22'
-      },
-      body: JSON.stringify({
-        data: {
-          type: "event",
-          attributes: {
-            profile: profile,
-            metric: {
-              name: event_name
-            },
-            properties: properties || {},
-            time: new Date().toISOString()
-          }
+    // Track responses for diagnostics
+    const responses = {
+      klaviyo: null,
+      zapier: null
+    }
+
+    // Try sending to Klaviyo if the API key is available
+    if (KLAVIYO_PRIVATE_KEY) {
+      try {
+        console.log('Attempting to send event to Klaviyo API...')
+        // Using Klaviyo's V3 API endpoint for tracking events
+        const klaviyoResponse = await fetch('https://a.klaviyo.com/api/events/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Klaviyo-API-Key ${KLAVIYO_PRIVATE_KEY}`,
+            'revision': '2023-02-22'
+          },
+          body: JSON.stringify({
+            data: {
+              type: "event",
+              attributes: {
+                profile: profile,
+                metric: {
+                  name: event_name
+                },
+                properties: properties || {},
+                time: new Date().toISOString()
+              }
+            }
+          })
+        })
+
+        console.log('Klaviyo API response status:', klaviyoResponse.status)
+        
+        // Log complete response headers for debugging
+        const responseHeaders = {};
+        klaviyoResponse.headers.forEach((value, key) => {
+          responseHeaders[key] = value;
+        });
+        console.log('Klaviyo API response headers:', responseHeaders);
+        
+        const responseText = await klaviyoResponse.text()
+        console.log('Klaviyo API response body:', responseText)
+
+        responses.klaviyo = {
+          status: klaviyoResponse.status,
+          body: responseText
         }
-      })
-    })
 
-    console.log('Klaviyo API response status:', response.status)
-    
-    // Log complete response headers for debugging
-    const responseHeaders = {};
-    response.headers.forEach((value, key) => {
-      responseHeaders[key] = value;
-    });
-    console.log('Klaviyo API response headers:', responseHeaders);
-    
-    const responseText = await response.text()
-    console.log('Klaviyo API response body:', responseText)
-
-    if (!response.ok) {
-      throw new Error(`Klaviyo API error: ${response.status} ${response.statusText} - ${responseText}`)
+        if (!klaviyoResponse.ok) {
+          console.error(`Klaviyo API error: ${klaviyoResponse.status} ${klaviyoResponse.statusText} - ${responseText}`)
+        } else {
+          console.log('Successfully sent event to Klaviyo')
+        }
+      } catch (klaviyoError) {
+        console.error('Error sending to Klaviyo:', klaviyoError)
+        responses.klaviyo = {
+          error: klaviyoError.message
+        }
+      }
     }
 
-    // Parse the response only if it's JSON
-    let data
-    try {
-      data = responseText ? JSON.parse(responseText) : {}
-    } catch (e) {
-      console.log('Response was not JSON, but request was successful')
-      data = { success: true }
+    // Try sending to Zapier webhook if the URL is configured
+    if (ZAPIER_WEBHOOK_URL) {
+      try {
+        console.log('Sending event to Zapier webhook...')
+        
+        // Format the data for Zapier
+        const zapierData = {
+          event_name,
+          customer: customer_properties,
+          properties: properties || {},
+          timestamp: new Date().toISOString()
+        }
+        
+        const zapierResponse = await fetch(ZAPIER_WEBHOOK_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(zapierData)
+        })
+        
+        const zapierResponseText = await zapierResponse.text()
+        console.log('Zapier webhook response status:', zapierResponse.status)
+        console.log('Zapier webhook response:', zapierResponseText)
+        
+        responses.zapier = {
+          status: zapierResponse.status,
+          body: zapierResponseText
+        }
+        
+        if (!zapierResponse.ok) {
+          console.error(`Zapier webhook error: ${zapierResponse.status} ${zapierResponse.statusText} - ${zapierResponseText}`)
+        } else {
+          console.log('Successfully sent event to Zapier webhook')
+        }
+      } catch (zapierError) {
+        console.error('Error sending to Zapier webhook:', zapierError)
+        responses.zapier = {
+          error: zapierError.message
+        }
+      }
+    } else {
+      console.warn('ZAPIER_WEBHOOK_URL is not set, skipping webhook integration')
     }
 
-    console.log('Successfully sent event to Klaviyo')
+    // Determine overall success status
+    const success = (KLAVIYO_PRIVATE_KEY && responses.klaviyo && !responses.klaviyo.error) || 
+                    (ZAPIER_WEBHOOK_URL && responses.zapier && !responses.zapier.error)
 
-    return new Response(JSON.stringify(data), {
+    // Prepare the response
+    const responseData = {
+      success,
+      message: success ? 'Event successfully sent' : 'Failed to send event to all destinations',
+      details: responses
+    }
+
+    return new Response(JSON.stringify(responseData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
+      status: success ? 200 : 500,
     })
 
   } catch (error) {

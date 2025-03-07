@@ -58,6 +58,8 @@ const SignUpForm = ({ isLoading, setIsLoading }: SignUpFormProps) => {
       });
 
       if (error) throw error;
+      
+      console.log('Sign up successful, preparing to send events');
 
       // Track signup event in Klaviyo with detailed logging
       try {
@@ -78,23 +80,23 @@ const SignUpForm = ({ isLoading, setIsLoading }: SignUpFormProps) => {
           }
         };
         
-        console.log('Sending signup event to Klaviyo with data:', JSON.stringify(eventData));
+        console.log('Sending signup event to event tracking system with data:', JSON.stringify(eventData));
         
-        const klaviyoResponse = await supabase.functions.invoke('klaviyo-events', {
+        const trackingResponse = await supabase.functions.invoke('klaviyo-events', {
           body: eventData
         });
         
-        console.log('Klaviyo response:', klaviyoResponse);
+        console.log('Event tracking response:', trackingResponse);
         
-        if (klaviyoResponse.error) {
-          console.error('Klaviyo event error:', klaviyoResponse.error);
-          throw new Error(`Klaviyo API error: ${klaviyoResponse.error.message || 'Unknown error'}`);
+        if (trackingResponse.error) {
+          console.error('Event tracking error:', trackingResponse.error);
+          throw new Error(`Event tracking error: ${trackingResponse.error.message || 'Unknown error'}`);
         }
         
-        console.log('Successfully sent signup event to Klaviyo');
-      } catch (klaviyoError) {
-        console.error('Failed to send event to Klaviyo:', klaviyoError);
-        // Don't block signup if Klaviyo fails, but log the error
+        console.log('Successfully sent signup event to tracking system');
+      } catch (trackingError) {
+        console.error('Failed to send event to tracking system:', trackingError);
+        // Don't block signup if tracking fails, but log the error
       }
 
       toast({
