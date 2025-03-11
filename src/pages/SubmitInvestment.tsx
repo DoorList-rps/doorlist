@@ -9,8 +9,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import ContactInformationForm from "@/components/investment-submission/ContactInformationForm";
-import InvestmentDetailsForm from "@/components/investment-submission/InvestmentDetailsForm";
+import ContactInformationForm, { ContactFormValues } from "@/components/investment-submission/ContactInformationForm";
+import InvestmentDetailsForm, { InvestmentFormValues } from "@/components/investment-submission/InvestmentDetailsForm";
 
 const SubmitInvestment = () => {
   const { toast } = useToast();
@@ -19,6 +19,7 @@ const SubmitInvestment = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isRollingOffering, setIsRollingOffering] = useState(false);
+  const [contactFormData, setContactFormData] = useState<ContactFormValues | null>(null);
   const [userProfile, setUserProfile] = useState<{
     email: string | null;
     first_name: string | null;
@@ -61,49 +62,52 @@ const SubmitInvestment = () => {
     fetchUserProfile();
   }, [session]);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleContactFormSubmit = (data: ContactFormValues) => {
+    setContactFormData(data);
+  };
+
+  const handleInvestmentFormSubmit = async (data: InvestmentFormValues) => {
+    if (!contactFormData) {
+      toast({
+        title: "Error",
+        description: "Please complete the contact information first",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
-    const formData = new FormData(e.currentTarget);
     
     try {
-      const description = formData.get('description')?.toString() || '';
-      const name = formData.get('name')?.toString() || '';
-      const submitterName = formData.get('submitterName')?.toString() || '';
-      const submitterEmail = formData.get('submitterEmail')?.toString() || '';
-      const submitterCompany = formData.get('submitterCompany')?.toString() || '';
-      const submitterTitle = formData.get('submitterTitle')?.toString() || '';
-      const relationship = formData.get('relationship')?.toString() || '';
-      
       // Determine closing date based on selection
       let closingDate = null;
-      if (!isRollingOffering && selectedDate) {
-        closingDate = format(selectedDate, 'yyyy-MM-dd');
+      if (!isRollingOffering && data.closingDate) {
+        closingDate = format(data.closingDate, 'yyyy-MM-dd');
       }
 
       const submissionData = {
         user_id: session?.user?.id || null,
-        name: name,
-        description: description,
-        short_description: description.substring(0, 200), // Create short description from main description
-        minimum_investment: Number(formData.get('minimumInvestment')) || null,
-        target_return: formData.get('targetReturn')?.toString(),
-        property_type: formData.get('propertyType')?.toString(),
-        investment_type: formData.get('investmentType')?.toString(),
-        hold_period: formData.get('holdPeriod')?.toString(),
-        distribution_frequency: formData.get('distributionFrequency')?.toString(),
-        total_equity: Number(formData.get('totalEquity')) || null,
-        accredited_only: formData.get('accreditedOnly') === 'true',
+        name: data.name,
+        description: data.description,
+        short_description: data.description.substring(0, 200), // Create short description from main description
+        minimum_investment: data.minimumInvestment,
+        target_return: data.targetReturn,
+        property_type: data.propertyType,
+        investment_type: data.investmentType,
+        hold_period: data.holdPeriod,
+        distribution_frequency: data.distributionFrequency,
+        total_equity: data.totalEquity,
+        accredited_only: data.accreditedOnly === 'true',
         closing_date: closingDate,
-        investment_url: formData.get('investmentUrl')?.toString(),
-        submitter_name: submitterName,
-        submitter_email: submitterEmail,
-        submitter_company: submitterCompany,
-        submitter_title: submitterTitle,
-        submitter_relationship: relationship,
+        investment_url: data.investmentUrl,
+        submitter_name: contactFormData.submitterName,
+        submitter_email: contactFormData.submitterEmail,
+        submitter_company: contactFormData.submitterCompany,
+        submitter_title: contactFormData.submitterTitle,
+        submitter_relationship: contactFormData.relationship,
         status: 'pending',
         approved: false,
-        slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        slug: data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
       };
 
       const { error } = await supabase
@@ -129,6 +133,12 @@ const SubmitInvestment = () => {
     }
   };
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // This form is now just a container for the two sub-forms
+    // The actual submission happens in handleInvestmentFormSubmit
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Helmet>
@@ -151,6 +161,7 @@ const SubmitInvestment = () => {
               isLoggedIn={!!session}
               userEmail={session?.user?.email}
               userProfile={userProfile}
+              onSubmit={handleContactFormSubmit}
             />
 
             <InvestmentDetailsForm
@@ -158,12 +169,20 @@ const SubmitInvestment = () => {
               setSelectedDate={setSelectedDate}
               isRollingOffering={isRollingOffering}
               setIsRollingOffering={setIsRollingOffering}
+              onSubmit={handleInvestmentFormSubmit}
             />
 
             <Button 
               type="submit" 
               className="w-full bg-doorlist-navy hover:bg-doorlist-navy/90 text-white mt-6"
               disabled={isSubmitting}
+              onClick={() => {
+                // Trigger form submission through clicking the hidden submit buttons
+                document.querySelectorAll('form').forEach(form => {
+                  const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+                  form.dispatchEvent(submitEvent);
+                });
+              }}
             >
               {isSubmitting ? "Submitting..." : "Submit Investment Opportunity"}
             </Button>

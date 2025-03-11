@@ -1,12 +1,14 @@
 
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserCircle2 } from "lucide-react";
+import { UserCircle2, InfoIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { InfoIcon } from "lucide-react";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 
 const relationshipTypes = [
   "Sponsor",
@@ -26,9 +28,39 @@ interface ContactInformationFormProps {
     company: string | null;
     title: string | null;
   } | null;
+  onSubmit: (data: ContactFormValues) => void;
 }
 
-const ContactInformationForm = ({ isLoggedIn, userEmail, userProfile }: ContactInformationFormProps) => {
+export const contactFormSchema = z.object({
+  submitterName: z.string().min(1, "Name is required"),
+  submitterEmail: z.string().email("Please enter a valid email address"),
+  submitterCompany: z.string().min(1, "Company name is required"),
+  submitterTitle: z.string().min(1, "Title is required"),
+  relationship: z.string().min(1, "Please select your relationship to the investment")
+});
+
+export type ContactFormValues = z.infer<typeof contactFormSchema>;
+
+const ContactInformationForm = ({ isLoggedIn, userEmail, userProfile, onSubmit }: ContactInformationFormProps) => {
+  // Initialize default values from user profile if available
+  const defaultValues = {
+    submitterName: userProfile ? `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim() : '',
+    submitterEmail: userProfile?.email || '',
+    submitterCompany: userProfile?.company || '',
+    submitterTitle: userProfile?.title || '',
+    relationship: ''
+  };
+
+  const form = useForm<ContactFormValues>({
+    resolver: zodResolver(contactFormSchema),
+    defaultValues,
+    mode: "onBlur"
+  });
+
+  const handleSubmit = (data: ContactFormValues) => {
+    onSubmit(data);
+  };
+
   return (
     <div className="space-y-6 p-6 bg-gray-50 rounded-lg border border-gray-100 mb-2">
       <h2 className="text-xl font-semibold text-doorlist-navy">Contact Information</h2>
@@ -49,72 +81,116 @@ const ContactInformationForm = ({ isLoggedIn, userEmail, userProfile }: ContactI
         </div>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <Label htmlFor="submitterName">Your Name *</Label>
-          <Input 
-            id="submitterName" 
-            name="submitterName" 
-            required
-            placeholder="Enter your full name" 
-            className="bg-white"
-            defaultValue={userProfile ? `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim() : ''}
-          />
-        </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="submitterName"
+              render={({ field }) => (
+                <FormItem>
+                  <Label htmlFor="submitterName">Your Name *</Label>
+                  <FormControl>
+                    <Input 
+                      id="submitterName" 
+                      placeholder="Enter your full name" 
+                      className="bg-white"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <div className="space-y-2">
-          <Label htmlFor="submitterEmail">Your Email *</Label>
-          <Input 
-            id="submitterEmail" 
-            name="submitterEmail" 
-            type="email"
-            required
-            placeholder="Enter your email address" 
-            className="bg-white"
-            defaultValue={userProfile?.email || ''}
-          />
-        </div>
-      </div>
+            <FormField
+              control={form.control}
+              name="submitterEmail"
+              render={({ field }) => (
+                <FormItem>
+                  <Label htmlFor="submitterEmail">Your Email *</Label>
+                  <FormControl>
+                    <Input 
+                      id="submitterEmail" 
+                      type="email"
+                      placeholder="Enter your email address" 
+                      className="bg-white"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <Label htmlFor="submitterCompany">Company Name *</Label>
-          <Input 
-            id="submitterCompany" 
-            name="submitterCompany" 
-            required
-            placeholder="Enter your company name" 
-            className="bg-white"
-            defaultValue={userProfile?.company || ''}
-          />
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="submitterCompany"
+              render={({ field }) => (
+                <FormItem>
+                  <Label htmlFor="submitterCompany">Company Name *</Label>
+                  <FormControl>
+                    <Input 
+                      id="submitterCompany" 
+                      placeholder="Enter your company name" 
+                      className="bg-white"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <div className="space-y-2">
-          <Label htmlFor="submitterTitle">Your Title *</Label>
-          <Input 
-            id="submitterTitle" 
-            name="submitterTitle" 
-            required
-            placeholder="Enter your job title" 
-            className="bg-white"
-            defaultValue={userProfile?.title || ''}
-          />
-        </div>
-      </div>
+            <FormField
+              control={form.control}
+              name="submitterTitle"
+              render={({ field }) => (
+                <FormItem>
+                  <Label htmlFor="submitterTitle">Your Title *</Label>
+                  <FormControl>
+                    <Input 
+                      id="submitterTitle" 
+                      placeholder="Enter your job title" 
+                      className="bg-white"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="relationship">Your Relationship to the Investment *</Label>
-        <Select name="relationship" required>
-          <SelectTrigger className="bg-white">
-            <SelectValue placeholder="Select your relationship" />
-          </SelectTrigger>
-          <SelectContent>
-            {relationshipTypes.map((type) => (
-              <SelectItem key={type} value={type}>{type}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+          <FormField
+            control={form.control}
+            name="relationship"
+            render={({ field }) => (
+              <FormItem>
+                <Label htmlFor="relationship">Your Relationship to the Investment *</Label>
+                <Select 
+                  onValueChange={field.onChange} 
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="Select your relationship" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {relationshipTypes.map((type) => (
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </form>
+      </Form>
     </div>
   );
 };
