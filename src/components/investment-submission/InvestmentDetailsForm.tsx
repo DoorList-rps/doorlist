@@ -33,12 +33,19 @@ const propertyTypes = [
 const investmentTypes = [
   "Equity",
   "Debt",
+  "Mezzanine Debt",
   "Preferred Equity",
-  "Fund",
-  "REIT",
+  "Other"
+];
+
+const investmentVehicles = [
+  "Evergreen Fund",
+  "Closed-Ended Fund",
   "Syndication",
-  "1031 Exchange",
-  "Opportunity Zone",
+  "Individual Property",
+  "DST",
+  "Opportunity Zone Fund",
+  "REIT",
   "Other"
 ];
 
@@ -48,6 +55,7 @@ export const investmentFormSchema = z.object({
   investmentUrl: z.string().url("Please enter a valid URL"),
   propertyType: z.string().min(1, "Property type is required"),
   investmentType: z.string().min(1, "Investment type is required"),
+  investmentVehicle: z.string().min(1, "Investment vehicle is required"),
   holdPeriod: z.string().min(1, "Hold period is required"),
   distributionFrequency: z.string().min(1, "Distribution frequency is required"),
   minimumInvestment: z.coerce.number().min(1, "Minimum investment must be greater than 0"),
@@ -82,12 +90,13 @@ const InvestmentDetailsForm = ({
     investmentUrl: "",
     propertyType: "",
     investmentType: "",
+    investmentVehicle: "",
     holdPeriod: "",
     distributionFrequency: "",
     minimumInvestment: 0,
     targetReturn: "",
     totalEquity: 0,
-    accreditedOnly: "true",
+    accreditedOnly: "true" as const,
     isRollingOffering: false,
     closingDate: null
   };
@@ -226,6 +235,32 @@ const InvestmentDetailsForm = ({
               )}
             />
           </div>
+
+          <FormField
+            control={form.control}
+            name="investmentVehicle"
+            render={({ field }) => (
+              <FormItem>
+                <Label htmlFor="investmentVehicle">Investment Vehicle *</Label>
+                <Select 
+                  onValueChange={field.onChange} 
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="Select investment vehicle" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {investmentVehicles.map((vehicle) => (
+                      <SelectItem key={vehicle} value={vehicle}>{vehicle}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField

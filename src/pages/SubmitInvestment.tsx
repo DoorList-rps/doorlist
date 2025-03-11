@@ -94,6 +94,7 @@ const SubmitInvestment = () => {
         target_return: data.targetReturn,
         property_type: data.propertyType,
         investment_type: data.investmentType,
+        investment_vehicle: data.investmentVehicle,
         hold_period: data.holdPeriod,
         distribution_frequency: data.distributionFrequency,
         total_equity: data.totalEquity,
