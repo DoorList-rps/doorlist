@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
-import { supabase } from "@/integrations/supabase/client";
 
 interface Attachment {
   name: string;
@@ -21,7 +20,18 @@ const InvestmentAttachments = ({ investment }: InvestmentAttachmentsProps) => {
 
   useEffect(() => {
     if (investment.attachments) {
-      setAttachments(investment.attachments as Attachment[]);
+      // Cast the JSON data to Attachment[] with type checking
+      const attachmentData = investment.attachments as any[];
+      const validAttachments = attachmentData.filter(
+        (attachment): attachment is Attachment => 
+          typeof attachment === 'object' && 
+          attachment !== null &&
+          typeof attachment.name === 'string' &&
+          typeof attachment.url === 'string' &&
+          typeof attachment.type === 'string' &&
+          typeof attachment.size === 'number'
+      );
+      setAttachments(validAttachments);
     }
   }, [investment.attachments]);
 
