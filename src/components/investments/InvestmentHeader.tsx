@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
@@ -12,7 +13,7 @@ const InvestmentHeader = () => {
           </Button>
         </Link>
       </div>
-      <p className="text-gray-600 mb-4">Explore our curated selection of institutional-quality real estate investment opportunities. Each listing has been carefully vetted to ensure it meets our high standards for quality and potential returns. Have an investment opportunity to share? Submit it here for our team to review.</p>
+      <p className="text-gray-600 mb-4">Explore our curated selection of institutional-quality real estate investment opportunities. Each listing has been carefully vetted to ensure it meets our high standards for quality and potential returns. Have an investment opportunity to share? <Link to="/submit-investment" className="text-doorlist-salmon hover:underline">Submit it here</Link> for our team to review.</p>
       
     </div>;
 };
