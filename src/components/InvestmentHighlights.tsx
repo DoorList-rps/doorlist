@@ -1,37 +1,29 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "./ui/card";
 import { Building2, Users, BadgeDollarSign, Handshake } from "lucide-react";
-
 const InvestmentHighlights = () => {
-  const highlights = [
-    {
-      icon: <Building2 className="w-12 h-12 text-doorlist-salmon mb-4" />,
-      title: "Institutional Quality",
-      description: "Access real estate deals typically reserved for large investors",
-      link: "/investments"
-    },
-    {
-      icon: <Users className="w-12 h-12 text-doorlist-salmon mb-4" />,
-      title: "Experienced Sponsors",
-      description: "Invest alongside experienced sponsors with proven track records",
-      link: "/sponsors"
-    },
-    {
-      icon: <BadgeDollarSign className="w-12 h-12 text-doorlist-salmon mb-4" />,
-      title: "Low Minimums",
-      description: "Investment minimums starting as low as $100",
-      link: "/calculator"
-    },
-    {
-      icon: <Handshake className="w-12 h-12 text-doorlist-salmon mb-4" />,
-      title: "White Glove Service",
-      description: "Direct connections to real estate managers facilitated by DoorList",
-      link: "/contact"
-    },
-  ];
-
-  return (
-    <div className="py-16 md:py-24 bg-white">
+  const highlights = [{
+    icon: <Building2 className="w-12 h-12 text-doorlist-salmon mb-4" />,
+    title: "Institutional Quality",
+    description: "Access real estate deals typically reserved for large investors",
+    link: "/investments"
+  }, {
+    icon: <Users className="w-12 h-12 text-doorlist-salmon mb-4" />,
+    title: "Experienced Sponsors",
+    description: "Invest alongside experienced sponsors with proven track records",
+    link: "/sponsors"
+  }, {
+    icon: <BadgeDollarSign className="w-12 h-12 text-doorlist-salmon mb-4" />,
+    title: "Low Minimums",
+    description: "Investment minimums starting as low as $100",
+    link: "/calculator"
+  }, {
+    icon: <Handshake className="w-12 h-12 text-doorlist-salmon mb-4" />,
+    title: "White Glove Service",
+    description: "Direct connections to real estate managers facilitated by DoorList",
+    link: "/contact"
+  }];
+  return <div className="py-16 bg-white md:py-[48px]">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-doorlist-navy mb-4">
@@ -46,8 +38,7 @@ const InvestmentHighlights = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-6xl mx-auto">
-          {highlights.map((highlight, index) => (
-            <Link key={index} to={highlight.link}>
+          {highlights.map((highlight, index) => <Link key={index} to={highlight.link}>
               <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow h-full">
                 <CardContent className="p-6 text-center flex flex-col items-center">
                   <div className="flex justify-center">{highlight.icon}</div>
@@ -55,15 +46,11 @@ const InvestmentHighlights = () => {
                   <p className="text-gray-600">{highlight.description}</p>
                 </CardContent>
               </Card>
-            </Link>
-          ))}
+            </Link>)}
         </div>
 
         <div className="text-center mt-16 space-y-4">
-          <Link
-            to="/investments"
-            className="inline-flex items-center px-8 py-3 bg-doorlist-salmon text-white rounded-full hover:bg-opacity-90 transition-colors text-lg"
-          >
+          <Link to="/investments" className="inline-flex items-center px-8 py-3 bg-doorlist-salmon text-white rounded-full hover:bg-opacity-90 transition-colors text-lg">
             View Available Deals
           </Link>
           <div className="text-gray-600">
@@ -78,8 +65,6 @@ const InvestmentHighlights = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default InvestmentHighlights;

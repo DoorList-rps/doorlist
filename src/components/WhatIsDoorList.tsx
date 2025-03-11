@@ -2,34 +2,35 @@ import { Link } from "react-router-dom";
 import { Search, Home, Calculator, GraduationCap } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-
 const WhatIsDoorList = () => {
-  const { data: counts } = useQuery({
+  const {
+    data: counts
+  } = useQuery({
     queryKey: ['counts'],
     queryFn: async () => {
-      const { count: investmentCount, error: investmentError } = await supabase
-        .from('investments')
-        .select('*', { count: 'exact', head: true })
-        .eq('approved', true);
-
+      const {
+        count: investmentCount,
+        error: investmentError
+      } = await supabase.from('investments').select('*', {
+        count: 'exact',
+        head: true
+      }).eq('approved', true);
       if (investmentError) throw investmentError;
-
-      const { count: sponsorCount, error: sponsorError } = await supabase
-        .from('sponsors')
-        .select('*', { count: 'exact', head: true })
-        .eq('approved', true);
-
+      const {
+        count: sponsorCount,
+        error: sponsorError
+      } = await supabase.from('sponsors').select('*', {
+        count: 'exact',
+        head: true
+      }).eq('approved', true);
       if (sponsorError) throw sponsorError;
-
       return {
         investments: investmentCount || 0,
         sponsors: sponsorCount || 0
       };
     }
   });
-
-  return (
-    <div className="py-24 bg-white">
+  return <div className="bg-white py-[48px]">
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
@@ -88,28 +89,19 @@ const WhatIsDoorList = () => {
               </div>
             </div>
 
-            <Link 
-              to="/investments"
-              className="inline-flex items-center mt-12 text-lg font-semibold text-doorlist-navy hover:text-doorlist-salmon transition-colors"
-            >
+            <Link to="/investments" className="inline-flex items-center mt-12 text-lg font-semibold text-doorlist-navy hover:text-doorlist-salmon transition-colors">
               EXPLORE THE MARKETPLACE
               <svg className="w-4 h-4 ml-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </Link>
           </div>
 
           <div>
-            <img
-              src="/lovable-uploads/bd499f14-7353-49ac-939d-0da5c2df4ded.png"
-              alt="DoorList Investment Opportunities"
-              className="w-full rounded-lg shadow-xl"
-            />
+            <img src="/lovable-uploads/bd499f14-7353-49ac-939d-0da5c2df4ded.png" alt="DoorList Investment Opportunities" className="w-full rounded-lg shadow-xl" />
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default WhatIsDoorList;
