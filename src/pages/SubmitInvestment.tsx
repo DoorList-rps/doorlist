@@ -1,6 +1,6 @@
 
 import { Helmet } from 'react-helmet-async';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { useSession } from "@supabase/auth-helpers-react";
@@ -11,8 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { TablesInsert } from "@/integrations/supabase/types";
+import { Link } from "react-router-dom";
+import { InfoIcon, UserCircle2 } from "lucide-react";
 
 const propertyTypes = [
   "Multifamily",
@@ -46,28 +48,63 @@ const SubmitInvestment = () => {
   const navigate = useNavigate();
   const session = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userProfile, setUserProfile] = useState<{
+    email: string | null;
+    first_name: string | null;
+    last_name: string | null;
+    company: string | null;
+    title: string | null;
+  } | null>(null);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (session?.user) {
+        try {
+          // Get user email from session
+          const email = session.user.email;
+
+          // Get additional profile data if available
+          const { data: profileData, error } = await supabase
+            .from('profiles')
+            .select('first_name, last_name, company, title')
+            .eq('id', session.user.id)
+            .single();
+
+          if (error) {
+            console.error('Error fetching profile:', error);
+          }
+
+          setUserProfile({
+            email,
+            first_name: profileData?.first_name || '',
+            last_name: profileData?.last_name || '',
+            company: profileData?.company || '',
+            title: profileData?.title || '',
+          });
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [session]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!session) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to submit an investment opportunity.",
-        variant: "destructive",
-      });
-      navigate("/login");
-      return;
-    }
-
     setIsSubmitting(true);
     const formData = new FormData(e.currentTarget);
     
     try {
       const description = formData.get('description')?.toString() || '';
       const name = formData.get('name')?.toString() || '';
+      const submitterName = formData.get('submitterName')?.toString() || '';
+      const submitterEmail = formData.get('submitterEmail')?.toString() || '';
+      const submitterCompany = formData.get('submitterCompany')?.toString() || '';
+      const submitterTitle = formData.get('submitterTitle')?.toString() || '';
       
       const submissionData = {
-        user_id: session.user.id,
+        user_id: session?.user?.id || null,
         name: name,
         description: description,
         short_description: description.substring(0, 200), // Create short description from main description
@@ -82,6 +119,10 @@ const SubmitInvestment = () => {
         accredited_only: formData.get('accreditedOnly') === 'true',
         closing_date: formData.get('closingDate')?.toString() || null,
         investment_url: formData.get('investmentUrl')?.toString(),
+        submitter_name: submitterName,
+        submitter_email: submitterEmail,
+        submitter_company: submitterCompany,
+        submitter_title: submitterTitle,
         status: 'pending',
         approved: false,
         slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
@@ -127,172 +168,249 @@ const SubmitInvestment = () => {
             Share your real estate investment opportunity with our community. All submissions will be reviewed before being listed.
           </p>
 
+          {!session && (
+            <Alert className="mb-6 bg-blue-50 border-blue-200">
+              <InfoIcon className="h-4 w-4 text-blue-500" />
+              <AlertDescription className="text-sm text-blue-700">
+                Already have an account? <Link to="/login?redirect=/submit-investment" className="font-medium text-doorlist-salmon hover:underline">Sign in</Link> to automatically fill your contact information.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {session && (
+            <div className="mb-6 flex items-center gap-2 text-sm text-green-700 bg-green-50 p-3 rounded-md border border-green-200">
+              <UserCircle2 className="h-4 w-4" />
+              <span>Submitting as {session.user.email}</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="name">Investment Name</Label>
-              <Input 
-                id="name" 
-                name="name" 
-                required
-                placeholder="Enter investment name" 
-                className="bg-gray-50 focus:bg-white"
-              />
-            </div>
+            <div className="space-y-6 p-6 bg-gray-50 rounded-lg border border-gray-100 mb-2">
+              <h2 className="text-xl font-semibold text-doorlist-navy">Contact Information</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="submitterName">Your Name *</Label>
+                  <Input 
+                    id="submitterName" 
+                    name="submitterName" 
+                    required
+                    placeholder="Enter your full name" 
+                    className="bg-white"
+                    defaultValue={userProfile ? `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim() : ''}
+                  />
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea 
-                id="description" 
-                name="description" 
-                required 
-                className="min-h-[150px] bg-gray-50 focus:bg-white"
-                placeholder="Provide a detailed description of your investment opportunity..."
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="investmentUrl">Investment URL</Label>
-              <Input 
-                id="investmentUrl" 
-                name="investmentUrl" 
-                type="url" 
-                placeholder="https://..."
-                required 
-                className="bg-gray-50 focus:bg-white"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="propertyType">Property Type</Label>
-                <Select name="propertyType" required>
-                  <SelectTrigger className="bg-gray-50 focus:bg-white">
-                    <SelectValue placeholder="Select property type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {propertyTypes.map((type) => (
-                      <SelectItem key={type} value={type}>{type}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Label htmlFor="submitterEmail">Your Email *</Label>
+                  <Input 
+                    id="submitterEmail" 
+                    name="submitterEmail" 
+                    type="email"
+                    required
+                    placeholder="Enter your email address" 
+                    className="bg-white"
+                    defaultValue={userProfile?.email || ''}
+                  />
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="investmentType">Investment Type</Label>
-                <Select name="investmentType" required>
-                  <SelectTrigger className="bg-gray-50 focus:bg-white">
-                    <SelectValue placeholder="Select investment type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {investmentTypes.map((type) => (
-                      <SelectItem key={type} value={type}>{type}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="submitterCompany">Company Name *</Label>
+                  <Input 
+                    id="submitterCompany" 
+                    name="submitterCompany" 
+                    required
+                    placeholder="Enter your company name" 
+                    className="bg-white"
+                    defaultValue={userProfile?.company || ''}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="submitterTitle">Your Title *</Label>
+                  <Input 
+                    id="submitterTitle" 
+                    name="submitterTitle" 
+                    required
+                    placeholder="Enter your job title" 
+                    className="bg-white"
+                    defaultValue={userProfile?.title || ''}
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-6 p-6 bg-gray-50 rounded-lg border border-gray-100">
+              <h2 className="text-xl font-semibold text-doorlist-navy">Investment Details</h2>
+            
               <div className="space-y-2">
-                <Label htmlFor="holdPeriod">Hold Period</Label>
+                <Label htmlFor="name">Investment Name *</Label>
                 <Input 
-                  id="holdPeriod" 
-                  name="holdPeriod" 
-                  required 
-                  placeholder="e.g., 5 years"
-                  className="bg-gray-50 focus:bg-white"
+                  id="name" 
+                  name="name" 
+                  required
+                  placeholder="Enter investment name" 
+                  className="bg-white"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="distributionFrequency">Distribution Frequency</Label>
-                <Input 
-                  id="distributionFrequency" 
-                  name="distributionFrequency" 
+                <Label htmlFor="description">Description *</Label>
+                <Textarea 
+                  id="description" 
+                  name="description" 
                   required 
-                  placeholder="e.g., Monthly, Quarterly"
-                  className="bg-gray-50 focus:bg-white"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="minimumInvestment">Minimum Investment ($)</Label>
-                <Input 
-                  id="minimumInvestment" 
-                  name="minimumInvestment" 
-                  type="number" 
-                  min="0" 
-                  required 
-                  placeholder="Minimum investment amount"
-                  className="bg-gray-50 focus:bg-white"
+                  className="min-h-[150px] bg-white"
+                  placeholder="Provide a detailed description of your investment opportunity..."
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="targetReturn">Target Return (%)</Label>
+                <Label htmlFor="investmentUrl">Investment URL *</Label>
                 <Input 
-                  id="targetReturn" 
-                  name="targetReturn" 
+                  id="investmentUrl" 
+                  name="investmentUrl" 
+                  type="url" 
+                  placeholder="https://..."
                   required 
-                  placeholder="e.g., 8-10%"
-                  className="bg-gray-50 focus:bg-white"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="totalEquity">Total Equity ($)</Label>
-                <Input 
-                  id="totalEquity" 
-                  name="totalEquity" 
-                  type="number" 
-                  min="0" 
-                  required 
-                  placeholder="Total equity offering"
-                  className="bg-gray-50 focus:bg-white"
+                  className="bg-white"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="equityRemaining">Equity Remaining ($)</Label>
-                <Input 
-                  id="equityRemaining" 
-                  name="equityRemaining" 
-                  type="number" 
-                  min="0" 
-                  required 
-                  placeholder="Equity currently available"
-                  className="bg-gray-50 focus:bg-white"
-                />
-              </div>
-            </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="propertyType">Property Type *</Label>
+                  <Select name="propertyType" required>
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="Select property type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {propertyTypes.map((type) => (
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="accreditedOnly">Accredited Investors Only</Label>
-                <Select name="accreditedOnly" defaultValue="true">
-                  <SelectTrigger className="bg-gray-50 focus:bg-white">
-                    <SelectValue placeholder="Select..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="true">Yes</SelectItem>
-                    <SelectItem value="false">No</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Label htmlFor="investmentType">Investment Type *</Label>
+                  <Select name="investmentType" required>
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="Select investment type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {investmentTypes.map((type) => (
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="closingDate">Closing Date</Label>
-                <Input 
-                  id="closingDate" 
-                  name="closingDate" 
-                  type="date"
-                  required 
-                  className="bg-gray-50 focus:bg-white"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="holdPeriod">Hold Period *</Label>
+                  <Input 
+                    id="holdPeriod" 
+                    name="holdPeriod" 
+                    required 
+                    placeholder="e.g., 5 years"
+                    className="bg-white"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="distributionFrequency">Distribution Frequency *</Label>
+                  <Input 
+                    id="distributionFrequency" 
+                    name="distributionFrequency" 
+                    required 
+                    placeholder="e.g., Monthly, Quarterly"
+                    className="bg-white"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="minimumInvestment">Minimum Investment ($) *</Label>
+                  <Input 
+                    id="minimumInvestment" 
+                    name="minimumInvestment" 
+                    type="number" 
+                    min="0" 
+                    required 
+                    placeholder="Minimum investment amount"
+                    className="bg-white"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="targetReturn">Target Return (%) *</Label>
+                  <Input 
+                    id="targetReturn" 
+                    name="targetReturn" 
+                    required 
+                    placeholder="e.g., 8-10%"
+                    className="bg-white"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="totalEquity">Total Equity ($) *</Label>
+                  <Input 
+                    id="totalEquity" 
+                    name="totalEquity" 
+                    type="number" 
+                    min="0" 
+                    required 
+                    placeholder="Total equity offering"
+                    className="bg-white"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="equityRemaining">Equity Remaining ($) *</Label>
+                  <Input 
+                    id="equityRemaining" 
+                    name="equityRemaining" 
+                    type="number" 
+                    min="0" 
+                    required 
+                    placeholder="Equity currently available"
+                    className="bg-white"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="accreditedOnly">Accredited Investors Only *</Label>
+                  <Select name="accreditedOnly" defaultValue="true">
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="Select..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">Yes</SelectItem>
+                      <SelectItem value="false">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="closingDate">Closing Date *</Label>
+                  <Input 
+                    id="closingDate" 
+                    name="closingDate" 
+                    type="date"
+                    required 
+                    className="bg-white"
+                  />
+                </div>
               </div>
             </div>
 
