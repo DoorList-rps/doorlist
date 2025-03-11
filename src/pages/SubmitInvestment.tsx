@@ -14,7 +14,11 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "react-router-dom";
-import { InfoIcon, UserCircle2 } from "lucide-react";
+import { InfoIcon, UserCircle2, CalendarIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 const propertyTypes = [
   "Multifamily",
@@ -43,11 +47,21 @@ const investmentTypes = [
   "Other"
 ];
 
+const relationshipTypes = [
+  "Sponsor",
+  "Broker",
+  "Placement Agent",
+  "Investor Relations",
+  "Other"
+];
+
 const SubmitInvestment = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const session = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [isRollingOffering, setIsRollingOffering] = useState(false);
   const [userProfile, setUserProfile] = useState<{
     email: string | null;
     first_name: string | null;
@@ -66,7 +80,7 @@ const SubmitInvestment = () => {
           // Get additional profile data if available
           const { data: profileData, error } = await supabase
             .from('profiles')
-            .select('first_name, last_name, company, title')
+            .select('first_name, last_name')
             .eq('id', session.user.id)
             .single();
 
@@ -78,8 +92,8 @@ const SubmitInvestment = () => {
             email,
             first_name: profileData?.first_name || '',
             last_name: profileData?.last_name || '',
-            company: profileData?.company || '',
-            title: profileData?.title || '',
+            company: '', // These fields don't exist in the profiles table
+            title: '',   // These fields don't exist in the profiles table
           });
         } catch (error) {
           console.error('Error fetching user profile:', error);
@@ -102,7 +116,14 @@ const SubmitInvestment = () => {
       const submitterEmail = formData.get('submitterEmail')?.toString() || '';
       const submitterCompany = formData.get('submitterCompany')?.toString() || '';
       const submitterTitle = formData.get('submitterTitle')?.toString() || '';
+      const relationship = formData.get('relationship')?.toString() || '';
       
+      // Determine closing date based on selection
+      let closingDate = null;
+      if (!isRollingOffering && selectedDate) {
+        closingDate = format(selectedDate, 'yyyy-MM-dd');
+      }
+
       const submissionData = {
         user_id: session?.user?.id || null,
         name: name,
@@ -115,14 +136,14 @@ const SubmitInvestment = () => {
         hold_period: formData.get('holdPeriod')?.toString(),
         distribution_frequency: formData.get('distributionFrequency')?.toString(),
         total_equity: Number(formData.get('totalEquity')) || null,
-        equity_remaining: Number(formData.get('equityRemaining')) || null,
         accredited_only: formData.get('accreditedOnly') === 'true',
-        closing_date: formData.get('closingDate')?.toString() || null,
+        closing_date: closingDate,
         investment_url: formData.get('investmentUrl')?.toString(),
         submitter_name: submitterName,
         submitter_email: submitterEmail,
         submitter_company: submitterCompany,
         submitter_title: submitterTitle,
+        submitter_relationship: relationship,
         status: 'pending',
         approved: false,
         slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
@@ -239,6 +260,20 @@ const SubmitInvestment = () => {
                     defaultValue={userProfile?.title || ''}
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="relationship">Your Relationship to the Investment *</Label>
+                <Select name="relationship" required>
+                  <SelectTrigger className="bg-white">
+                    <SelectValue placeholder="Select your relationship" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {relationshipTypes.map((type) => (
+                      <SelectItem key={type} value={type}>{type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -361,33 +396,18 @@ const SubmitInvestment = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="totalEquity">Total Equity ($) *</Label>
+                  <Label htmlFor="totalEquity">Target Total Raise ($) *</Label>
                   <Input 
                     id="totalEquity" 
                     name="totalEquity" 
                     type="number" 
                     min="0" 
                     required 
-                    placeholder="Total equity offering"
+                    placeholder="Target total capital raise"
                     className="bg-white"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="equityRemaining">Equity Remaining ($) *</Label>
-                  <Input 
-                    id="equityRemaining" 
-                    name="equityRemaining" 
-                    type="number" 
-                    min="0" 
-                    required 
-                    placeholder="Equity currently available"
-                    className="bg-white"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="accreditedOnly">Accredited Investors Only *</Label>
                   <Select name="accreditedOnly" defaultValue="true">
@@ -400,17 +420,62 @@ const SubmitInvestment = () => {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="closingDate">Closing Date *</Label>
-                  <Input 
-                    id="closingDate" 
-                    name="closingDate" 
-                    type="date"
-                    required 
-                    className="bg-white"
-                  />
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>Closing Date *</Label>
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="isRollingOffering" className="text-sm font-normal cursor-pointer">
+                      <input
+                        type="checkbox"
+                        id="isRollingOffering"
+                        className="mr-1"
+                        checked={isRollingOffering}
+                        onChange={(e) => setIsRollingOffering(e.target.checked)}
+                      />
+                      Rolling/Evergreen Offering
+                    </Label>
+                  </div>
                 </div>
+                
+                {!isRollingOffering ? (
+                  <div className="flex-1">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal bg-white border-input",
+                            !selectedDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {selectedDate ? format(selectedDate, "PPP") : <span>Select a date</span>}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={selectedDate || undefined}
+                          onSelect={(date) => setSelectedDate(date)}
+                          disabled={(date) => date < new Date()}
+                          initialFocus
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <input
+                      type="hidden"
+                      name="closingDate"
+                      value={selectedDate ? format(selectedDate, "yyyy-MM-dd") : ""}
+                    />
+                  </div>
+                ) : (
+                  <div className="h-10 px-3 py-2 rounded-md border border-input bg-white text-gray-500 flex items-center">
+                    Rolling/Evergreen
+                  </div>
+                )}
               </div>
             </div>
 
