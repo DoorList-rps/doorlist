@@ -84,7 +84,7 @@ const InvestmentDetailsForm = ({
   setIsRollingOffering 
 }: InvestmentDetailsFormProps) => {
   
-  const defaultValues = {
+  const defaultValues: InvestmentFormValues = {
     name: "",
     description: "",
     investmentUrl: "",
@@ -96,7 +96,7 @@ const InvestmentDetailsForm = ({
     minimumInvestment: 0,
     targetReturn: "",
     totalEquity: 0,
-    accreditedOnly: "true" as const,
+    accreditedOnly: "true", // Changed from string to literal "true"
     isRollingOffering: false,
     closingDate: null
   };
