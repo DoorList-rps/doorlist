@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,6 +13,7 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import AttachmentsUpload from "./AttachmentsUpload";
 
 const propertyTypes = [
   "Multifamily",
@@ -63,7 +63,8 @@ export const investmentFormSchema = z.object({
   totalEquity: z.coerce.number().min(1, "Target total raise must be greater than 0"),
   accreditedOnly: z.enum(["true", "false"]),
   isRollingOffering: z.boolean().default(false),
-  closingDate: z.date().optional().nullable()
+  closingDate: z.date().optional().nullable(),
+  attachments: z.array(z.any()).optional(),
 });
 
 export type InvestmentFormValues = z.infer<typeof investmentFormSchema>;
@@ -98,7 +99,8 @@ const InvestmentDetailsForm = ({
     totalEquity: 0,
     accreditedOnly: "true", // Changed from string to literal "true"
     isRollingOffering: false,
-    closingDate: null
+    closingDate: null,
+    attachments: [],
   };
 
   const form = useForm<InvestmentFormValues>({
@@ -448,6 +450,24 @@ const InvestmentDetailsForm = ({
               </div>
             )}
           </div>
+          
+          <FormField
+            control={form.control}
+            name="attachments"
+            render={({ field }) => (
+              <FormItem>
+                <Label>Documents</Label>
+                <FormControl>
+                  <AttachmentsUpload
+                    onAttachmentsChange={(attachments) => {
+                      field.onChange(attachments);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </form>
       </Form>
     </div>

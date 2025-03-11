@@ -97,6 +97,7 @@ export type Database = {
         Row: {
           accredited_only: boolean | null
           approved: boolean | null
+          attachments: Json | null
           closing_date: string | null
           created_at: string | null
           description: string | null
@@ -120,6 +121,7 @@ export type Database = {
         Insert: {
           accredited_only?: boolean | null
           approved?: boolean | null
+          attachments?: Json | null
           closing_date?: string | null
           created_at?: string | null
           description?: string | null
@@ -143,6 +145,7 @@ export type Database = {
         Update: {
           accredited_only?: boolean | null
           approved?: boolean | null
+          attachments?: Json | null
           closing_date?: string | null
           created_at?: string | null
           description?: string | null
@@ -169,6 +172,7 @@ export type Database = {
         Row: {
           accredited_only: boolean | null
           approved: boolean | null
+          attachments: Json | null
           closing_date: string | null
           created_at: string
           description: string | null
@@ -199,6 +203,7 @@ export type Database = {
         Insert: {
           accredited_only?: boolean | null
           approved?: boolean | null
+          attachments?: Json | null
           closing_date?: string | null
           created_at?: string
           description?: string | null
@@ -229,6 +234,7 @@ export type Database = {
         Update: {
           accredited_only?: boolean | null
           approved?: boolean | null
+          attachments?: Json | null
           closing_date?: string | null
           created_at?: string
           description?: string | null

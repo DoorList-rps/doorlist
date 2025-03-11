@@ -5,6 +5,7 @@ import SponsorDetails from "./SponsorDetails";
 import RelatedInvestments from "./RelatedInvestments";
 import { useRelatedInvestments } from "@/hooks/useRelatedInvestments";
 import type { Tables } from "@/integrations/supabase/types";
+import InvestmentAttachments from "./InvestmentAttachments";
 
 interface InvestmentContentProps {
   investment: Tables<'investments'> & {
@@ -51,6 +52,8 @@ const InvestmentContent = ({ investment }: InvestmentContentProps) => {
           </div>
         )}
       </div>
+
+      <InvestmentAttachments investment={investment} />
 
       {investment.sponsor_name && (
         <RelatedInvestments 
