@@ -6,7 +6,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 // Get environment variables
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const zapierWebhookUrl = "https://hooks.zapier.com/hooks/catch/21071318/2qdgze1/";
+const zapierWebhookUrl = Deno.env.get('ZAPIER_WEBHOOK_URL');
 
 // Create Supabase client with admin privileges
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -47,33 +47,68 @@ serve(async (req) => {
         changes: type === 'UPDATE' ? getChangedFields(record, old_record) : null
       };
 
-      // Send to Zapier webhook
-      console.log('Sending profile data to Zapier webhook');
-      try {
-        const zapierResponse = await fetch(zapierWebhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(profileData),
-        });
+      // Send to Zapier webhook if configured
+      if (zapierWebhookUrl) {
+        console.log('Sending profile data to Zapier webhook');
+        try {
+          const zapierResponse = await fetch(zapierWebhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(profileData),
+          });
+          
+          console.log('Zapier response status:', zapierResponse.status);
+          
+          return new Response(
+            JSON.stringify({ 
+              success: true, 
+              message: `Profile ${type} event processed successfully`
+            }),
+            { 
+              status: 200,
+              headers: { 
+                ...corsHeaders,
+                'Content-Type': 'application/json' 
+              },
+            }
+          );
+        } catch (zapierError) {
+          console.error('Error sending to Zapier:', zapierError);
+          throw zapierError;
+        }
+      } else {
+        console.warn('ZAPIER_WEBHOOK_URL environment variable is not set');
         
-        console.log('Zapier response status:', zapierResponse.status);
+        // Try alternative webhook URL as a fallback if no environment variable is set
+        const fallbackWebhookUrl = "https://hooks.zapier.com/hooks/catch/21071318/2qdgze1/";
+        console.log('Trying fallback webhook URL');
         
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            message: `Profile ${type} event processed successfully`
-          }),
-          { 
-            status: 200,
-            headers: { 
-              ...corsHeaders,
-              'Content-Type': 'application/json' 
-            },
-          }
-        );
-      } catch (zapierError) {
-        console.error('Error sending to Zapier:', zapierError);
-        throw zapierError;
+        try {
+          const zapierResponse = await fetch(fallbackWebhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(profileData),
+          });
+          
+          console.log('Fallback Zapier response status:', zapierResponse.status);
+          
+          return new Response(
+            JSON.stringify({ 
+              success: true, 
+              message: `Profile ${type} event processed successfully via fallback URL`
+            }),
+            { 
+              status: 200,
+              headers: { 
+                ...corsHeaders,
+                'Content-Type': 'application/json' 
+              },
+            }
+          );
+        } catch (fallbackError) {
+          console.error('Error sending to fallback webhook:', fallbackError);
+          throw fallbackError;
+        }
       }
     }
 

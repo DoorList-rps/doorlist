@@ -67,9 +67,13 @@ const SignUpForm = ({ isLoading, setIsLoading }: SignUpFormProps) => {
           event_name: 'New User Sign Up',
           customer_properties: {
             email: email,
+            $email: email, // Adding Klaviyo's required identifier
             first_name: firstName,
+            $first_name: firstName, // Adding Klaviyo's naming convention
             last_name: lastName,
+            $last_name: lastName, // Adding Klaviyo's naming convention
             phone_number: phoneNumber,
+            $phone_number: phoneNumber, // Adding Klaviyo's naming convention
             is_accredited_investor: isAccreditedInvestor === "true"
           },
           properties: {
