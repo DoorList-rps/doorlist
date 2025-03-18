@@ -77,38 +77,20 @@ serve(async (req) => {
           throw zapierError;
         }
       } else {
-        console.warn('ZAPIER_WEBHOOK_URL environment variable is not set');
-        
-        // Try alternative webhook URL as a fallback if no environment variable is set
-        const fallbackWebhookUrl = "https://hooks.zapier.com/hooks/catch/21071318/2qdgze1/";
-        console.log('Trying fallback webhook URL');
-        
-        try {
-          const zapierResponse = await fetch(fallbackWebhookUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(profileData),
-          });
-          
-          console.log('Fallback Zapier response status:', zapierResponse.status);
-          
-          return new Response(
-            JSON.stringify({ 
-              success: true, 
-              message: `Profile ${type} event processed successfully via fallback URL`
-            }),
-            { 
-              status: 200,
-              headers: { 
-                ...corsHeaders,
-                'Content-Type': 'application/json' 
-              },
-            }
-          );
-        } catch (fallbackError) {
-          console.error('Error sending to fallback webhook:', fallbackError);
-          throw fallbackError;
-        }
+        console.error('ZAPIER_WEBHOOK_URL environment variable is not set');
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            message: 'ZAPIER_WEBHOOK_URL environment variable is not set'
+          }),
+          { 
+            status: 500,
+            headers: { 
+              ...corsHeaders,
+              'Content-Type': 'application/json' 
+            },
+          }
+        );
       }
     }
 

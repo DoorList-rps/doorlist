@@ -19,10 +19,6 @@ serve(async (req) => {
     const { event_name, customer_properties, properties } = await req.json()
     console.log('Received event data:', { event_name, customer_properties, properties })
 
-    if (!KLAVIYO_PRIVATE_KEY) {
-      console.warn('KLAVIYO_PRIVATE_KEY is not set, only sending to Zapier webhook if configured')
-    }
-
     // Create a proper profile object for Klaviyo API V3
     // Ensure we have the mandatory $email field with correct naming for Klaviyo
     const profile = {
@@ -105,6 +101,8 @@ serve(async (req) => {
           error: klaviyoError.message
         }
       }
+    } else {
+      console.warn('KLAVIYO_PRIVATE_KEY is not set, only sending to Zapier webhook if configured')
     }
 
     // Try sending to Zapier webhook if the URL is configured
@@ -149,7 +147,7 @@ serve(async (req) => {
         }
       }
     } else {
-      console.warn('ZAPIER_WEBHOOK_URL is not set, skipping webhook integration')
+      console.error('ZAPIER_WEBHOOK_URL is not set, skipping webhook integration')
     }
 
     // Determine overall success status
